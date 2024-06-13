@@ -27,11 +27,14 @@ class PerfectWorldApi:
     async def get_token(self) -> Optional[List[str]]:
         user_list = await CS2User.get_all_user()
         if user_list:
-            user = random.choice(user_list)
-            token = await CS2User.get_user_cookie_by_uid(user)
+            user: CS2User = random.choice(user_list)
+            if user.uid is None:
+                raise Exception('No valid uid')
+            print(user)
+            token = await CS2User.get_user_cookie_by_uid(user.uid)
             if token is None:
                 raise Exception('No valid cookie')
-            return [user, token]
+            return [user.uid, token]
 
     async def _pf_request(
         self,
@@ -110,12 +113,14 @@ class PerfectWorldApi:
         if token is None:
             return -1
         header = self._HEADER
-        header['access_token'] = token
+        header['pwasteamid']= uid
         header['Content-Type'] = 'application/x-www-form-urlencoded'
+        logger.info(header)
         data = await self._pf_request(
             UserInfoAPI,
             header=header,
             pwasteamid=uid,
+            method='POST',
             json={
                 'with_green_info': 1,
                 'with_perfect_power': 1,
