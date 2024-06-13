@@ -1,7 +1,7 @@
 from typing import Union
 
-UID_HINT = '[lol] 你还没有绑定UID，请先使用[lol绑定]命令进行绑定'
-CK_HINT = '[lol] 你还没有添加可用CK，请先使用[lol添加ck]命令进行绑定'
+UID_HINT = '[lol] 你还没有绑定UID，请先使用[csgo绑定]命令进行绑定'
+CK_HINT = '[lol] 你还没有添加可用TOKEN，请先使用[csgo添加tk]命令进行绑定'
 
 error_dict = {
     -51: UID_HINT,

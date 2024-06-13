@@ -1,12 +1,16 @@
 
+import random
 import json as js
 from copy import deepcopy
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Dict, List, Union, Literal, Optional, cast
+
 from httpx import AsyncClient
+
 from gsuid_core.logger import logger
 
-from ..database.models import CS2User
-from .api import UserInfoAPI, DailyStatsAPI, UserSeasonScoreAPI
+from .models import UserInfo, UserSeasonScore
+from ..database.models import CS2Bind, CS2User
+from .api import UserInfoAPI, UserSeasonScoreAPI
 
 
 class PerfectWorldApi:
@@ -19,6 +23,16 @@ class PerfectWorldApi:
         'Safari/537.36',
         'HOST': 'pwaweblogin.wmpvp.com',
     } 
+
+    async def get_token(self) -> Optional[List[str]]:
+        user_list = await CS2User.get_all_user()
+        if user_list:
+            user = random.choice(user_list)
+            token = await CS2User.get_user_cookie_by_uid(user)
+            if token is None:
+                raise Exception('No valid cookie')
+            return [user, token]
+
     async def _pf_request(
         self,
         url: str,
@@ -27,9 +41,10 @@ class PerfectWorldApi:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,  # noqa: F811
         pwasteamid: Optional[str] = None,
-        need_ck: bool = True,
+        need_tk: bool = True,
     ) -> Union[Dict, int]:
         header = deepcopy(self._HEADER)
+
         if pwasteamid:
             header['pwasteamid'] = pwasteamid
 
@@ -59,7 +74,57 @@ class PerfectWorldApi:
             if (
                 'result' in raw_data
                 and 'error_code' in raw_data['result']
-                and raw_data['result']['error_code'] != 0
+                and raw_data['code'] != 0
             ):
                 return raw_data['result']['error_code']
             return raw_data
+    
+    async def get_season_scoce(
+        self, uid: str
+    ):
+        uid_token = await self.get_token()
+        
+        if uid_token is None:
+            return -1
+        token = uid_token[-1]
+        params ={
+            'uid': uid,
+            'access_token': token
+        }
+        data = await self._pf_request(
+            UserSeasonScoreAPI,
+            params=params,
+            pwasteamid=uid,
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserSeasonScore, data)
+    
+    async def get_userinfo(
+        self, uid: str
+    ):
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+        token = uid_token[-1]
+        if token is None:
+            return -1
+        header = self._HEADER
+        header['access_token'] = token
+        header['Content-Type'] = 'application/x-www-form-urlencoded'
+        data = await self._pf_request(
+            UserInfoAPI,
+            header=header,
+            pwasteamid=uid,
+            json={
+                'with_green_info': 1,
+                'with_perfect_power': 1,
+                'with_roles': 1,
+                'with_ladder_info': '1',
+                'access_token': token,
+                'lang': 'zh',
+            },
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserInfo, data)

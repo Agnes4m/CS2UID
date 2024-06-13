@@ -4,7 +4,7 @@ from ..utils.database.models import CS2User
 
 
 async def add_token(ev: Event, tk: str):
-    await CS2User.insert_data(ev.user_id, ev.bot_id, token=tk)
+    await CS2User.insert_data(ev.user_id, ev.bot_id, cookie=tk)
     return '添加成功！'
 
 
