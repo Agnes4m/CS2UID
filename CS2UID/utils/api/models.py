@@ -3,6 +3,7 @@ from typing import List, TypedDict
 
 class UsrInfo(TypedDict):
     """个人信息"""
+
     uid: str
     steamAccountId: int
     zqId: str
@@ -26,7 +27,7 @@ class UsrInfo(TypedDict):
 
 class UserInfo(TypedDict):
     code: int
-    msg: str 
+    msg: str
     data: UsrInfo
 
 
@@ -37,9 +38,9 @@ class SeasonScore(TypedDict):
     user_id: int
     season: str
     curr_s_level: int
-   
-    
+
+
 class UserSeasonScore(TypedDict):
     code: int
-    msg: str 
+    msg: str
     data: List[SeasonScore]

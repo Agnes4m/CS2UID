@@ -1,11 +1,9 @@
-
 import random
 import json as js
 from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 from httpx import AsyncClient
-
 from gsuid_core.logger import logger
 
 from ..database.models import CS2User
@@ -22,7 +20,7 @@ class PerfectWorldApi:
         'Electron/8.5.5'
         'Safari/537.36',
         'HOST': 'pwaweblogin.wmpvp.com',
-    } 
+    }
 
     async def get_token(self) -> Optional[List[str]]:
         user_list = await CS2User.get_all_user()
@@ -41,7 +39,7 @@ class PerfectWorldApi:
         method: Literal['GET', 'POST'] = 'GET',
         header: Dict[str, str] = _HEADER,
         params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,  
+        json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         pwasteamid: Optional[str] = None,
         need_tk: bool = True,
@@ -82,19 +80,14 @@ class PerfectWorldApi:
             ):
                 return raw_data['result']['error_code']
             return raw_data
-    
-    async def get_season_scoce(
-        self, uid: str
-    ):
+
+    async def get_season_scoce(self, uid: str):
         uid_token = await self.get_token()
-        
+
         if uid_token is None:
             return -1
         token = uid_token[-1]
-        params ={
-            'uid': uid,
-            'access_token': token
-        }
+        params = {'uid': uid, 'access_token': token}
         data = await self._pf_request(
             UserSeasonScoreAPI,
             params=params,
@@ -103,10 +96,8 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
         return cast(UserSeasonScore, data)
-    
-    async def get_userinfo(
-        self, uid: str
-    ):
+
+    async def get_userinfo(self, uid: str):
         uid_token = await self.get_token()
         if uid_token is None:
             return -1

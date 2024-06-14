@@ -1,11 +1,11 @@
+from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.models import Event
-from gsuid_core.sv import SV
 from gsuid_core.utils.database.api import get_uid
 
-from ..utils.database.models import CS2Bind
 from ..utils.error_reply import UID_HINT
 from .csgo_info import get_csgo_info_img
+from ..utils.database.models import CS2Bind
 
 csgo_user_info = SV('CS2用户信息查询')
 
