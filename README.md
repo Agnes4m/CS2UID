@@ -29,7 +29,7 @@
 </p></details>
 
 <details><summary>查询基本信息 - 命令: go信息(半成品)</summary><p>
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/test1.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/test1.jpg" width="256" height="256" alt="CS2lUID_test1"></a>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/test1.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/test1.png" width="256" height="256" alt="CS2lUID_test1"></a>
 </p></details>
 
 <details><summary>添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid</summary><p>
