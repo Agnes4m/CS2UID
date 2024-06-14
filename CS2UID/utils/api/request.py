@@ -1,16 +1,16 @@
 
-import random
 import json as js
+import random
 from copy import deepcopy
-from typing import Any, Dict, List, Union, Literal, Optional, cast
+from typing import Any, Dict, List, Literal, Optional, Union, cast
 
 from httpx import AsyncClient
 
 from gsuid_core.logger import logger
 
-from .models import UserInfo, UserSeasonScore
 from ..database.models import CS2Bind, CS2User
 from .api import UserInfoAPI, UserSeasonScoreAPI
+from .models import UserInfo, UserSeasonScore
 
 
 class PerfectWorldApi:
@@ -30,7 +30,6 @@ class PerfectWorldApi:
             user: CS2User = random.choice(user_list)
             if user.uid is None:
                 raise Exception('No valid uid')
-            print(user)
             token = await CS2User.get_user_cookie_by_uid(user.uid)
             if token is None:
                 raise Exception('No valid cookie')
@@ -42,7 +41,8 @@ class PerfectWorldApi:
         method: Literal['GET', 'POST'] = 'GET',
         header: Dict[str, str] = _HEADER,
         params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,  # noqa: F811
+        json: Optional[Dict[str, Any]] = None,  
+        data: Optional[Dict[str, Any]] = None,
         pwasteamid: Optional[str] = None,
         need_tk: bool = True,
     ) -> Union[Dict, int]:
@@ -61,6 +61,7 @@ class PerfectWorldApi:
                 headers=header,
                 params=params,
                 json=json,
+                data=data,
                 timeout=300,
             )
             try:
@@ -113,15 +114,14 @@ class PerfectWorldApi:
         if token is None:
             return -1
         header = self._HEADER
-        header['pwasteamid']= uid
+        header['pwasteamid'] = uid
+        header['Accept'] = 'application/json, text/plain, */*'
         header['Content-Type'] = 'application/x-www-form-urlencoded'
-        logger.info(header)
         data = await self._pf_request(
             UserInfoAPI,
             header=header,
-            pwasteamid=uid,
             method='POST',
-            json={
+            data={
                 'with_green_info': 1,
                 'with_perfect_power': 1,
                 'with_roles': 1,
@@ -130,6 +130,7 @@ class PerfectWorldApi:
                 'lang': 'zh',
             },
         )
+        print(data)
         if isinstance(data, int):
             return data
         return cast(UserInfo, data)
