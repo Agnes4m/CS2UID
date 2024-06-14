@@ -1,16 +1,16 @@
 
-import json as js
 import random
+import json as js
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 from httpx import AsyncClient
 
 from gsuid_core.logger import logger
 
-from ..database.models import CS2Bind, CS2User
-from .api import UserInfoAPI, UserSeasonScoreAPI
+from ..database.models import CS2User
 from .models import UserInfo, UserSeasonScore
+from .api import UserInfoAPI, UserSeasonScoreAPI
 
 
 class PerfectWorldApi:
