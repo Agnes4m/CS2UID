@@ -97,6 +97,7 @@ class UserDetailMap(TypedDict):
 
 class UserDetailhotWeapons(TypedDict):
     """主要武器数据"""
+
     weaponImage: str
     """武器图片url"""
     weaponName: str
@@ -110,7 +111,8 @@ class UserDetailhotWeapons(TypedDict):
 
 class UserDetailscoreList(TypedDict):
     """比赛记录"""
-    matchId: str 
+
+    matchId: str
     """比赛id"""
     score: int
     """赛后段位评分"""
@@ -149,7 +151,7 @@ class UserDetailhotWeapons2(TypedDict):
     """击杀时间"""
     timeToKillTotal: int
     """击杀总时间"""
-    avgTimeToKill: int 
+    avgTimeToKill: int
     """平均击杀时间"""
     levelAvgTimeToKill: str
     """平均击杀时间评分"""
@@ -168,9 +170,9 @@ class UserDetailhotWeapons2(TypedDict):
 
 
 class UserDetailData(TypedDict):
-    steamid: str
+    steamId: str
     """64位steamid"""
-    seasonld: str
+    seasonId: str
     """赛季S16"""
     pvpRank: int
     avatar: str
@@ -201,9 +203,9 @@ class UserDetailData(TypedDict):
     """RWS胜利贡献"""
     adr: float
     """ADR平均回合伤害"""
-    headShotRaition: float
+    headShotRatio: float
     """爆头率"""
-    entryKillRation: float
+    entryKillRatio: float
     """首杀率"""
     k2: int
     """回合2杀数量"""
@@ -213,7 +215,7 @@ class UserDetailData(TypedDict):
     """回合4杀数量"""
     k5: int
     """回合5杀数量"""
-    multikill: int
+    multiKill: int
     """连杀数量"""
     vs1: int
     """残局1v1数量"""
@@ -254,10 +256,12 @@ class UserDetailData(TypedDict):
     weList: List[float]
     """we评分变化"""
     hotWeapons2: List[UserDetailhotWeapons2]
+    """武器数据2"""
 
 
 class UserDetailRequest(TypedDict):
     """detail返回数据"""
-    statusCode:int
+
+    statusCode: int
     errorMessage: str
     data: UserDetailData

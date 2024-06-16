@@ -1,5 +1,5 @@
 HOST = 'https://pwaweblogin.wmpvp.com'
-APIHOST= "https://api.wmpvp.com"
+APIHOST = "https://api.wmpvp.com"
 
 UserInfoAPI = f"{HOST}/user-info"
 UserSeasonScoreAPI = f'{HOST}/user-info/season-ladder-score-list'

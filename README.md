@@ -1,7 +1,7 @@
 # CS2UID
 
 <p align="center">
-  <a href="https://github.com/Agnes4m/CS2UID"><img src="https://github.com/Agnes4m/CS2UID/blob/main/logo1.jpg" width="256" height="256" alt="CS2lUID"></a>
+  <a href="https://github.com/Agnes4m/CS2UID"><img src="https://github.com/Agnes4m/CS2UID/blob/main/logo.jpg" width="256" height="256" alt="CS2lUID"></a>
 </p>
 <h1 align = "center">CS2UID 0.1</h1>
 <h4 align = "center">🚧支持QQ群/频道、OneBot、微信、KOOK、Tg、飞书、DoDo、~~米游社~~、Discord的CS2 bot插件🚧</h4>
@@ -29,7 +29,7 @@
 </p></details>
 
 <details><summary>查询基本信息 - 命令: go信息(半成品)</summary><p>
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/test1.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/test1.png" width="256" height="256" alt="CS2lUID_test1"></a>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/test.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/test1.png" width="360" height="800" alt="CS2lUID_test"></a>
 </p></details>
 
 <details><summary>添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid</summary><p>
@@ -55,10 +55,8 @@
 
 ## 丨待做功能
 1. 搜索steam/完美平台用户昵称获取uid
-2. 获取个人枪械水平等详细信息
-3. 获取最近对战信息
-4. 获取steam仓库信息
-5. 获取5e对~~转~~站平台战绩
+2. 获取steam仓库信息
+3. 获取5e对~~转~~站平台战绩
 
 ## 丨其他
 

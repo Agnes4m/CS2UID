@@ -4,7 +4,6 @@ from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 from httpx import AsyncClient
-
 from gsuid_core.logger import logger
 
 from ..database.models import CS2User
@@ -136,7 +135,6 @@ class PerfectWorldApi:
         header["HOST"] = "api.wmpvp.com"
         header["User-Agent"] = "okhttp/4.11.0"
         header['Content-Type'] = 'application/json;charset=UTF-8'
-        logger.info(f"header: {header}")
         data = await self._pf_request(
             UserDetailAPI,
             header=header,
@@ -145,10 +143,9 @@ class PerfectWorldApi:
                 'toSteamId': uid,
                 'csgoSeasonId': "",
                 'mySteamId': uid_token[0],
-                'accessToken': uid_token[-1]
+                'accessToken': uid_token[-1],
             },
         )
-        # print(data)
         if isinstance(data, int):
             return data
         return cast(UserDetailRequest, data)
