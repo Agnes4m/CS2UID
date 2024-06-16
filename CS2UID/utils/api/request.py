@@ -4,11 +4,12 @@ from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 from httpx import AsyncClient
+
 from gsuid_core.logger import logger
 
 from ..database.models import CS2User
-from .models import UserInfo, UserSeasonScore
-from .api import UserInfoAPI, UserSeasonScoreAPI
+from .api import UserInfoAPI, UserDetailAPI, UserSeasonScoreAPI
+from .models import UserInfo, UserSeasonScore, UserDetailRequest
 
 
 class PerfectWorldApi:
@@ -121,7 +122,33 @@ class PerfectWorldApi:
                 'lang': 'zh',
             },
         )
-        print(data)
         if isinstance(data, int):
             return data
         return cast(UserInfo, data)
+
+    async def get_userdetail(self, uid: str):
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["HOST"] = "api.wmpvp.com"
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        logger.info(f"header: {header}")
+        data = await self._pf_request(
+            UserDetailAPI,
+            header=header,
+            method='POST',
+            json={
+                'toSteamId': uid,
+                'csgoSeasonId': "",
+                'mySteamId': uid_token[0],
+                'accessToken': uid_token[-1]
+            },
+        )
+        # print(data)
+        if isinstance(data, int):
+            return data
+        return cast(UserDetailRequest, data)

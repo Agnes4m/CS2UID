@@ -2,14 +2,15 @@ from pathlib import Path
 from typing import List, Union
 
 from PIL import Image, ImageDraw
-from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.utils import download_pic_to_image
-from gsuid_core.utils.fonts.fonts import core_font as csgo_font
-from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
+from gsuid_core.utils.fonts.fonts import core_font as csgo_font
+from gsuid_core.utils.image.convert import convert_img
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring
+from gsuid_core.utils.image.utils import download_pic_to_image
+
+from ..utils.api.models import SeasonScore, UsrInfo
 from ..utils.csgo_api import pf_api
 from ..utils.error_reply import get_error
-from ..utils.api.models import UsrInfo, SeasonScore
 
 TEXTURE = Path(__file__).parent / "texture2d"
 
@@ -17,6 +18,7 @@ TEXTURE = Path(__file__).parent / "texture2d"
 async def get_csgo_info_img(uid: str) -> Union[str, bytes]:
     season_scoce = await pf_api.get_season_scoce(uid)
     user_info = await pf_api.get_userinfo(uid)
+    detail = await pf_api.get_userdetail(uid)
     # logger.info(season_scoce)
     # logger.info(user_info)
     if isinstance(season_scoce, int):

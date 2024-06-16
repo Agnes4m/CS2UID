@@ -44,3 +44,220 @@ class UserSeasonScore(TypedDict):
     code: int
     msg: str
     data: List[SeasonScore]
+
+
+class UserDetailMap(TypedDict):
+    map: str
+    """地图英文名称"""
+    mapImage: str
+    """地图图片url"""
+    mapLogo: str
+    """地图logo url"""
+    mapName: str
+    """地图中文名称"""
+    totalMatch: int
+    """该地图总场次"""
+    winCount: int
+    """该地图胜场"""
+    totalKill: int
+    """该地图总击杀"""
+    totalAdr: float
+    """累计adr"""
+    rank: None
+    """排名(大概)"""
+    ratingSum: float
+    """胜方评分"""
+    rwsSum: float
+    """胜方RWS"""
+    deathNum: int
+    """该地图总死亡"""
+    firstKillNum: int
+    """该地图首杀数"""
+    firstDeathNum: int
+    """该地图首死数"""
+    headshotKillNum: int
+    """该地图爆头数"""
+    matchMvpNum: int
+    """该地图MVP数"""
+    threeKillNum: int
+    """该地图三杀数"""
+    fourKillNum: int
+    """该地图四杀数"""
+    fiveKillNum: int
+    """该地图五杀数"""
+    v3Num: int
+    """该地图1V3数"""
+    v4Num: int
+    """该地图1V4数"""
+    v5Num: int
+    """该地图1V5数"""
+    scuffle: bool
+    """是否是混战模式"""
+
+
+class UserDetailhotWeapons(TypedDict):
+    """主要武器数据"""
+    weaponImage: str
+    """武器图片url"""
+    weaponName: str
+    """武器名称"""
+    weaponKill: int
+    """武器击杀数"""
+    weaponHeadShot: int
+    """武器爆头数"""
+    totalMatch: int
+
+
+class UserDetailscoreList(TypedDict):
+    """比赛记录"""
+    matchId: str 
+    """比赛id"""
+    score: int
+    """赛后段位评分"""
+    time: float
+    """比赛时间戳"""
+    stars: int
+    slevel: int
+
+
+class UserDetailhotWeapons2(TypedDict):
+    name: str
+    """武器英文名称"""
+    image: str
+    """武器图片url"""
+    nameZh: str
+    """武器中文名称"""
+    matchNum: int
+    """使用场次"""
+    headshotSum: int
+    """爆头数"""
+    headshotRate: float
+    """爆头率"""
+    killNum: int
+    """击杀数"""
+    damageSum: int
+    """伤害量"""
+    avgDamage: float
+    """平均伤害量"""
+    firstShotHitCount: int
+    """首发命中数"""
+    firstShotShotCount: int
+    """首发射击数"""
+    firstShotAccuracy: float
+    """首发命中率"""
+    timeToKillCount: int
+    """击杀时间"""
+    timeToKillTotal: int
+    """击杀总时间"""
+    avgTimeToKill: int 
+    """平均击杀时间"""
+    levelAvgTimeToKill: str
+    """平均击杀时间评分"""
+    levelAccuracy: str
+    """命中率评分"""
+    accuracyType: int
+    """命中率类型"""
+    levelAvgDamage: str
+    """平均伤害评分"""
+    levelHeadshotRate: str
+    """爆头率评分"""
+    levelAvgKillNum: str
+    """平均击杀数评分"""
+    sprayAccuracy: float
+    """扫射精准度"""
+
+
+class UserDetailData(TypedDict):
+    steamid: str
+    """64位steamid"""
+    seasonld: str
+    """赛季S16"""
+    pvpRank: int
+    avatar: str
+    """头像url"""
+    name: str
+    """名字"""
+    cnt: int
+    """赛季场次"""
+    kd: float
+    """K/D"""
+    winRate: float
+    """胜率"""
+    rating: float
+    pwRating: float
+    """完美平台Rating Pro"""
+    hitRate: float
+    commonRating: float
+    kills: int
+    """击杀数"""
+    deaths: int
+    """死亡数"""
+    assists: int
+    """助攻数"""
+    mvpCount: int
+    """MVP数"""
+    gameScore: int
+    rws: float
+    """RWS胜利贡献"""
+    adr: float
+    """ADR平均回合伤害"""
+    headShotRaition: float
+    """爆头率"""
+    entryKillRation: float
+    """首杀率"""
+    k2: int
+    """回合2杀数量"""
+    k3: int
+    """回合3杀数量"""
+    k4: int
+    """回合4杀数量"""
+    k5: int
+    """回合5杀数量"""
+    multikill: int
+    """连杀数量"""
+    vs1: int
+    """残局1v1数量"""
+    vs2: int
+    """残局1v2数量"""
+    vs3: int
+    """残局1v3数量"""
+    vs4: int
+    """残局1v4数量"""
+    vs5: int
+    """残局1v5数量"""
+    endingWin: int
+    """残局胜利数量"""
+    hotMaps: List[UserDetailMap]
+    """常用地图战绩"""
+    historyRatings: List[float]
+    historyPwRatings: List[float]
+    historyScores: List[int]
+    historyRws: List[float]
+    historyDates: List[str]
+    """"2024-06-14 21:21:49"""
+    titles: list
+    shot: float
+    victory: float
+    breach: float
+    snipe: float
+    prop: float
+    vs1WinRate: float
+    summary: str
+    hotWeapons: List[UserDetailhotWeapons]
+    avgWe: float
+    """WE 制胜评价"""
+    pvpScore: int
+    """天梯段位分"""
+    stars: int
+    """星级"""
+    scoreList: List[UserDetailscoreList]
+    weList: List[float]
+    """we评分变化"""
+    hotWeapons2: List[UserDetailhotWeapons2]
+
+
+class UserDetailRequest(TypedDict):
+    """detail返回数据"""
+    statusCode:int
+    errorMessage: str
+    data: UserDetailData
