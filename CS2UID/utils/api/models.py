@@ -265,3 +265,91 @@ class UserDetailRequest(TypedDict):
     statusCode: int
     errorMessage: str
     data: UserDetailData
+
+
+class TagDecoration(TypedDict):
+    """
+    [
+    {
+    "name": "装备",
+    "category": "Type",
+    "internal_name": "CSGO_Type_Equipment",
+    "category_name": "类型"
+    },
+    {
+    "name": "宙斯 X27 电击枪",
+    "category": "Weapon",
+    "internal_name": "weapon_taser",
+    "category_name": "武器"
+    },
+    {
+    "name": "千瓦收藏品",
+    "category": "ItemSet",
+    "internal_name": "set_community_33",
+    "category_name": "收藏品"
+    },
+    {
+    "name": "StatTrak™",
+    "category": "Quality",
+    "internal_name": "strange",
+    "category_name": "类别"
+    },
+    {
+    "name": "保密",
+    "category": "Rarity",
+    "internal_name": "Rarity_Legendary_Weapon",
+    "category_name": "品质"
+    },
+    {
+    "name": "略有磨损",
+    "category": "Exterior",
+    "internal_name": "WearCategory1",
+    "category_name": "外观"
+    }
+    ],
+    """
+
+    name: str
+    """中文名"""
+    category: str
+    """英文名"""
+    internal_name: str
+    """英文属性"""
+    category_name: str
+    """中文属性"""
+
+
+class OneGet(TypedDict):
+    itemId: int
+    """物品id"""
+    goodsId: int
+    """物品种类id"""
+    name: str
+    """物品名称"""
+    marketName: str
+    """物品市场名称"""
+    picUrl: str
+    """图片url"""
+    steamPrice: int
+    """物品steam价格100倍"""
+    suggestPrice: int
+    """物品buff价格100倍"""
+    description: str
+    """物品描述"""
+    decorationTags: List[TagDecoration]
+
+
+class SteamGet(TypedDict):
+    totalCount: int
+    """物品数量"""
+    totalPrice: int
+    """总物品steam价格100倍"""
+    previewItem: List[OneGet]
+
+
+class SteamGetRequest(TypedDict):
+    """steamcn库存返回数据"""
+
+    code: int
+    message: str
+    result: SteamGet

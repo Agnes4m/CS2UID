@@ -7,8 +7,18 @@ from httpx import AsyncClient
 from gsuid_core.logger import logger
 
 from ..database.models import CS2User
-from .api import UserInfoAPI, UserDetailAPI, UserSeasonScoreAPI
-from .models import UserInfo, UserSeasonScore, UserDetailRequest
+from .api import (
+    UserInfoAPI,
+    UserDetailAPI,
+    UserSteamPreview,
+    UserSeasonScoreAPI,
+)
+from .models import (
+    UserInfo,
+    SteamGetRequest,
+    UserSeasonScore,
+    UserDetailRequest,
+)
 
 
 class PerfectWorldApi:
@@ -18,8 +28,7 @@ class PerfectWorldApi:
         '(KHTML, like Gecko) perfectworldarena/1.0.24060811   '
         'Chrome/80.0.3987.163'
         'Electron/8.5.5'
-        'Safari/537.36',
-        'HOST': 'pwaweblogin.wmpvp.com',
+        'Safari/537.36'
     }
 
     async def get_token(self) -> Optional[List[str]]:
@@ -149,3 +158,23 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
         return cast(UserDetailRequest, data)
+
+    async def get_steamgoods(self, uid: str, search_number: int = 10):
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        header['token'] = uid_token[-1]
+        data = await self._pf_request(
+            UserSteamPreview,
+            header=header,
+            method='POST',
+            params={'steamId': uid, 'previewSize': search_number},
+        )
+        if isinstance(data, int):
+            return data
+        return cast(SteamGetRequest, data)
