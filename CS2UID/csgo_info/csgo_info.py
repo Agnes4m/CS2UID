@@ -1,9 +1,8 @@
 import datetime
-import random
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Union
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
@@ -12,6 +11,7 @@ from gsuid_core.utils.image.utils import download_pic_to_image
 from ..utils.api.models import UserDetailData
 from ..utils.csgo_api import pf_api
 from ..utils.error_reply import get_error
+from .utils import assign_rank, paste_img, resize_image_to_percentage
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -21,84 +21,13 @@ async def get_csgo_info_img(uid: str) -> Union[str, bytes]:
     # season_scoce = await pf_api.get_season_scoce(uid)
     # user_info = await pf_api.get_userinfo(uid)
     detail = await pf_api.get_userdetail(uid)
+    print(detail)
     # logger.info(season_scoce)
     # logger.info(user_info)
     if isinstance(detail, int):
         return get_error(detail)
 
     return await draw_csgo_info_img(detail['data'])
-
-
-async def paste_img(
-    img: Image.Image,
-    msg: str,
-    size: int,
-    site: Tuple[int, int],
-    is_mid: bool = False,
-    long: Tuple[int, int] = (0, 900),
-):
-    """贴文字"""
-    # draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(str(FONT_PATH), size)
-
-    aa, ab, ba, bb = font.getbbox(msg)
-    if is_mid and long:
-        site_x = round((long[1] - long[0] - ba + aa) / 2)
-    else:
-        site_x = site[0]
-
-    # 绘制白色矩形遮罩
-    rect_color = (255, 255, 255, 128)
-    site_white = (
-        site_x + aa - 5,
-        site[1] + ab - 5,
-        site_x + ba + 5,
-        site[1] + bb + 7,
-    )
-    mask = Image.new(
-        'RGBA', (ba - aa + 10, bb - ab + 10), (255, 255, 255, 160)
-    )
-    draw_mask = ImageDraw.Draw(mask)
-    draw_mask.rectangle(site_white, fill=rect_color)
-
-    draw_mask.text(xy=(5, 5), text=msg, font=font, fill=(0, 0, 0, 255))
-    img.paste(mask, site, mask)
-
-
-async def assign_rank(rank_score: int) -> str:
-    if rank_score < 1000:
-        return 'D'
-    elif 1000 <= rank_score < 1200:
-        return 'D+'
-    elif 1200 <= rank_score < 1400:
-        return 'C'
-    elif 1400 <= rank_score < 1600:
-        return 'C+'
-    elif 1600 <= rank_score < 1800:
-        return 'B'
-    elif 1800 <= rank_score < 2000:
-        return 'B+'
-    elif 2000 <= rank_score < 2200:
-        return 'A'
-    elif 2200 <= rank_score < 2400:
-        return 'A+'
-    elif rank_score > 2400:
-        return 'S'
-    else:
-        return 'D'
-
-
-async def resize_image_to_percentage(img: Image.Image, percentage: float):
-    """图片缩放"""
-    width, height = img.size
-    new_width = int(width * percentage / 100)
-    new_height = int(height * percentage / 100)
-    out_img = Image.new(
-        'RGBA', (new_width, new_height), color=(255, 255, 255, 255)
-    )
-    pic_new = img.resize((new_width, new_height))
-    out_img.paste(pic_new)
-    return out_img
 
 
 async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
@@ -110,15 +39,16 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     avatar = detail["avatar"]
 
     # 背景图
-    ex = ['.jpg', '.png', '.jpeg']
-    bg_path = TEXTURE / "bg"
-    bg_list = [p for p in bg_path.glob('**/*') if p.suffix.lower() in ex]
-    img = Image.open(random.choice(bg_list))
+    # ex = ['.jpg', '.png', '.jpeg']
+    # bg_path = TEXTURE / "bg"
+    # bg_list = [p for p in bg_path.glob('**/*') if p.suffix.lower() in ex]
+    img = Image.open(TEXTURE / "bg" / "1.jpg")
+
+    # 头像
     if img.mode == 'RGB':
         img = img.convert('RGBA')
     head = await download_pic_to_image(avatar)
     round_head = await draw_pic_with_ring(head, 200)
-
     img.paste(round_head, (350, 50), round_head)
 
     await paste_img(img, f"昵称：  {name}", 40, (300, 300), is_mid=True)
@@ -202,7 +132,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             (site_x, site_y + 60),
         )
         sa = usr_weapon['sprayAccuracy']
-        sa_out = f"{sa*100:.2f}%" if isinstance(sa, int) else sa
+        sa_out = f"{(sa*100):.2f}%" if sa else sa
         await paste_img(
             img,
             f"扫射精准率：{sa_out}",
@@ -217,93 +147,98 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         )        
 
     """地图战绩"""
-    for i in range(2):
-        site_x = 500
-        site_y = 630
-        if i == 1:
-            site_y += 350
+    if detail['hotMaps'] is None  :
+        pass
+    elif len(detail['hotMaps']) == 1 :
+        s = 1
+    else:
+        s = 2
+        for i in range(s):
+            site_x = 500
+            site_y = 630
+            if i == 1:
+                site_y += 350
+            usr_map = detail['hotMaps'][i]
 
-        usr_map = detail['hotMaps'][i]
+            await paste_img(img, "地图战绩", 20, (site_x, site_y))
+            await paste_img(
+                img, f"地图：{usr_map['mapName']}", 20, (site_x, site_y + 30)
+            )
+            Match = usr_map['totalMatch']
+            await paste_img(
+                img, f"场次：{usr_map['totalMatch']}", 20, (site_x, site_y + 60)
+            )
+            await paste_img(
+                img, f"胜场：{usr_map['winCount']}", 20, (site_x, site_y + 90)
+            )
+            await paste_img(
+                img, f"击杀：{usr_map['totalKill']}", 20, (site_x, site_y + 120)
+            )
+            await paste_img(
+                img, f"死亡：{usr_map['deathNum']}", 20, (site_x, site_y + 150)
+            )
+            await paste_img(
+                img, f"首杀：{usr_map['firstKillNum']}", 20, (site_x, site_y + 180)
+            )
+            await paste_img(
+                img,
+                f"首死：{usr_map['firstDeathNum']}",
+                20,
+                (site_x, site_y + 210),
+            )
+            await paste_img(
+                img,
+                f"爆头：{usr_map['headshotKillNum']}",
+                20,
+                (site_x, site_y + 240),
+            )
 
-        await paste_img(img, "地图战绩", 20, (site_x, site_y))
-        await paste_img(
-            img, f"地图：{usr_map['mapName']}", 20, (site_x, site_y + 30)
-        )
-        Match = usr_map['totalMatch']
-        await paste_img(
-            img, f"场次：{usr_map['totalMatch']}", 20, (site_x, site_y + 60)
-        )
-        await paste_img(
-            img, f"胜场：{usr_map['winCount']}", 20, (site_x, site_y + 90)
-        )
-        await paste_img(
-            img, f"击杀：{usr_map['totalKill']}", 20, (site_x, site_y + 120)
-        )
-        await paste_img(
-            img, f"死亡：{usr_map['deathNum']}", 20, (site_x, site_y + 150)
-        )
-        await paste_img(
-            img, f"首杀：{usr_map['firstKillNum']}", 20, (site_x, site_y + 180)
-        )
-        await paste_img(
-            img,
-            f"首死：{usr_map['firstDeathNum']}",
-            20,
-            (site_x, site_y + 210),
-        )
-        await paste_img(
-            img,
-            f"爆头：{usr_map['headshotKillNum']}",
-            20,
-            (site_x, site_y + 240),
-        )
-
-        await paste_img(
-            img, f"MVP：{usr_map['matchMvpNum']}", 20, (site_x, site_y + 270)
-        )
-        rws = usr_map['rwsSum'] / Match
-        await paste_img(
-            img, f"RWS：{rws:.2f}", 20, (site_x + 200, site_y + 30)
-        )
-        adr = usr_map['totalAdr'] / Match
-        await paste_img(
-            img,
-            f"ARD：{adr:.2f}",
-            20,
-            (site_x + 200, site_y + 60),
-        )
-        await paste_img(
-            img,
-            f"3K：{usr_map['threeKillNum']}",
-            20,
-            (site_x + 200, site_y + 90),
-        )
-        await paste_img(
-            img,
-            f"4K：{usr_map['fourKillNum']}",
-            20,
-            (site_x + 200, site_y + 120),
-        )
-        await paste_img(
-            img,
-            f"5K：{usr_map['fiveKillNum']}",
-            20,
-            (site_x + 200, site_y + 150),
-        )
-        await paste_img(
-            img, f"1v3：{usr_map['v3Num']}", 20, (site_x + 200, site_y + 180)
-        )
-        await paste_img(
-            img, f"1v4：{usr_map['v4Num']}", 20, (site_x + 200, site_y + 210)
-        )
-        await paste_img(
-            img, f"1v5：{usr_map['v5Num']}", 20, (site_x + 200, site_y + 240)
-        )
-        # 地图logo
-        map: Image.Image = await download_pic_to_image(usr_map['mapLogo'])
-        map_out = await resize_image_to_percentage(map, 40)
-        # map_out = await draw_pic_with_ring(map, 10)
-        img.paste(map_out, (site_x + 200, site_y - 20), map_out)
+            await paste_img(
+                img, f"MVP：{usr_map['matchMvpNum']}", 20, (site_x, site_y + 270)
+            )
+            rws = usr_map['rwsSum'] / Match
+            await paste_img(
+                img, f"RWS：{rws:.2f}", 20, (site_x + 200, site_y + 30)
+            )
+            adr = usr_map['totalAdr'] / Match
+            await paste_img(
+                img,
+                f"ARD：{adr:.2f}",
+                20,
+                (site_x + 200, site_y + 60),
+            )
+            await paste_img(
+                img,
+                f"3K：{usr_map['threeKillNum']}",
+                20,
+                (site_x + 200, site_y + 90),
+            )
+            await paste_img(
+                img,
+                f"4K：{usr_map['fourKillNum']}",
+                20,
+                (site_x + 200, site_y + 120),
+            )
+            await paste_img(
+                img,
+                f"5K：{usr_map['fiveKillNum']}",
+                20,
+                (site_x + 200, site_y + 150),
+            )
+            await paste_img(
+                img, f"1v3：{usr_map['v3Num']}", 20, (site_x + 200, site_y + 180)
+            )
+            await paste_img(
+                img, f"1v4：{usr_map['v4Num']}", 20, (site_x + 200, site_y + 210)
+            )
+            await paste_img(
+                img, f"1v5：{usr_map['v5Num']}", 20, (site_x + 200, site_y + 240)
+            )
+            # 地图logo
+            map: Image.Image = await download_pic_to_image(usr_map['mapLogo'])
+            map_out = await resize_image_to_percentage(map, 40)
+            # map_out = await draw_pic_with_ring(map, 10)
+            img.paste(map_out, (site_x + 200, site_y - 20), map_out)
 
     """最近战绩"""
     await paste_img(img, "最近战绩", 20, (60, 1350))

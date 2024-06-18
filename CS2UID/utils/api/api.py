@@ -10,7 +10,7 @@ DailyStatsAPI = f'{HOST}/user-info/daily-stats'
 # post
 UserDetailAPI = f'{APIHOST}/api/csgo/home/pvp/detailStats'
 UserHomematchApi = f"{DailyStatsAPI}/api/csgo/home/match/list"
-UserHomeApi = f"{DailyStatsAPI}/api/csgo/home/official/detailStats"
+UserHomeApi = f"{APIHOST}/api/csgo/home/official/detailStats"
 
 # get
 u1 = "appdecoration/steamcn/csgo/decoration/getSteamInventoryPreview"
