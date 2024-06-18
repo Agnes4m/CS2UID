@@ -1,23 +1,28 @@
-import random
 import json as js
+import random
 from copy import deepcopy
-from typing import Any, Dict, List, Union, Literal, Optional, cast
+from typing import Any, Dict, List, Literal, Optional, Union, cast
 
 from httpx import AsyncClient
+
 from gsuid_core.logger import logger
 
 from ..database.models import CS2User
 from .api import (
-    UserInfoAPI,
     UserDetailAPI,
-    UserSteamPreview,
+    UserHomeApi,
+    UserHomematchApi,
+    UserInfoAPI,
     UserSeasonScoreAPI,
+    UserSteamPreview,
 )
 from .models import (
-    UserInfo,
     SteamGetRequest,
-    UserSeasonScore,
     UserDetailRequest,
+    UserHomedetailRequest,
+    UserHomeRequest,
+    UserInfo,
+    UserSeasonScore,
 )
 
 
@@ -178,3 +183,54 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
         return cast(SteamGetRequest, data)
+
+    async def get_csgohomematch(self, uid: str, search_number: int = 11):
+        """国服对战信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        header['token'] = uid_token[-1]
+        data = await self._pf_request(
+            UserHomematchApi,
+            header=header,
+            method='POST',
+            json={
+                'toSteamId': uid,
+                'dataSource': 0,
+                'mySteamId': uid_token[0],
+                'pageSize': search_number,
+            },
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserHomeRequest, data)
+
+    async def get_csgohomedetail(self, uid: str, search_number: int = 11):
+        """国服个人信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        header['token'] = uid_token[-1]
+        data = await self._pf_request(
+            UserHomeApi,
+            header=header,
+            method='POST',
+            json={
+                'toSteamId': uid,
+                'mySteamId': uid_token[0],
+                'accessToken': uid_token[-1],
+            },
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserHomedetailRequest, data)

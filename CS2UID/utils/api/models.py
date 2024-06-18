@@ -353,3 +353,181 @@ class SteamGetRequest(TypedDict):
     code: int
     message: str
     result: SteamGet
+
+
+class UserHomeMatch(TypedDict):
+    matchId: str
+    playerId: str
+    honor: str
+    k4: int
+    k5: int
+    matchScore: float
+    mapUrl: str
+    """地图url"""
+    mapLogo: str
+    """地图logo url"""
+    mapName: str
+    """地图中文名"""
+    team: int
+    """1,2表示队伍"""
+    winTeam: int
+    score1: int
+    score2: int
+    rating: float
+    startTime: str
+    """2024-06-13 21:10:39"""
+    endTime: str
+    timeStamp: int
+    pageTimeStamp: int
+    kill: int
+    """击杀数"""
+    death: int
+    """死亡数"""
+    assist: int
+    """助攻数"""
+    duration: int
+    dataSource: int
+    mode: str
+    """游戏模式 国服竞技"""
+    mvp: bool
+    """是否是MVP"""
+
+
+class UserHomematchData(TypedDict):
+    dataPublic: bool
+    matchList: List[UserHomeMatch]
+
+
+class UserHomeRequest(TypedDict):
+    statusCode:  int
+    errorMessage:  str
+    data: UserHomematchData
+
+
+class UserhomeMap(TypedDict):
+    map: str
+    """地图英文名"""
+    mapImage: str
+    """地图url"""
+    mapLogo: str
+    """地图logo url"""
+    mapName: str
+    """地图中文名"""
+    totalMatch: int
+    """场次"""
+    winCount: int
+    """胜场"""
+    totalKill: int
+    """击杀"""
+    totalAdr: float
+    """adr总和"""
+    rank: int
+    """等级，0为无段位"""
+    ratingSum: float
+    """ration总和"""
+    rwsSum: float
+    """rws总和"""
+    deathNum: int
+    """死亡"""
+    firstKillNum: int
+    """首杀"""
+    firstDeathNum: int
+    """首死"""
+    headshotKillNum: int
+    """爆头"""
+    matchMvpNum: int
+    """mvp次数"""
+    threeKillNum: int
+    """三杀数"""
+    fourKillNum: int
+    """四杀数"""
+    fiveKillNum: int
+    """五杀数"""
+    v3Num: int
+    """1v3残局"""
+    v4Num: int
+    """1v4残局"""
+    v5Num: int
+    """1v5残局"""
+
+
+class UserhomeWeapon(TypedDict):
+    weaponImage: str
+    """图片url"""
+    weaponName: str
+    """名称"""
+    weaponKill: int
+    """击杀"""
+    weaponHeadShot: int
+    """爆头"""
+    totalMatch: int
+    """击杀场次"""
+
+
+class UserHomedetailData(TypedDict):
+    steamId: str
+    historyWinCount: int
+    """胜场"""
+    cnt: int
+    """总场次"""
+    kd: float
+    """kd"""
+    winRate: float
+    """胜方Rate"""
+    rating: float
+    kills: int
+    """击杀数"""
+    deaths: int
+    """死亡数"""
+    assists: int
+    """助攻数"""
+    rws: float
+    adr: float
+    kast: int
+    endingWin: int
+    """残局胜场"""
+    k3: int
+    """回合3杀"""
+    k4: int
+    """回合4杀"""
+    k5: int
+    """回合5杀"""
+    vs3: int
+    vs4: int
+    vs5: int
+    multiKill: int
+    headShotRatio: float
+    """爆头率"""
+    entryKillRatio: float
+    """首杀率"""
+    awpKillRatio: float
+    """狙首杀率"""
+    flashSuccessRatio: float
+    """闪白率"""
+    hotMaps: List[UserhomeMap]
+    hotWeapons: List[UserhomeWeapon]
+    historyRatings: List[float]
+    historyRanks: List[int]
+    historyComprehensiveScores: list
+    historyRws: List[float]
+    historyDates: List[str]
+    """2024-06-13 21:10:39"""
+    refreshed: bool
+    entryKillAvg: float
+    matchList: list
+    nickName: str
+    """姓名"""
+    avatar: str
+    """头像url"""
+    friendCode: str
+    """好友码"""
+    hours: int
+    """游戏时间"""
+    rank: int
+    authStats: int
+
+
+class UserHomedetailRequest(TypedDict):
+    statusCode:  int
+    errorMessage:  str
+    data: UserHomedetailData

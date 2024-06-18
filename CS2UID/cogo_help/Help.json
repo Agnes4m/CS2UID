@@ -1,0 +1,57 @@
+{
+  "基础服务": {
+    "desc": "需要先绑定uid",
+    "data": [
+      {
+        "name": "csgo绑定uid",
+        "desc": "绑定你的steam UID",
+        "eg": "csgo绑定uid 123456",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "csgo删除uid",
+        "desc": "删除你的steam UID",
+        "eg": "csgo删除uid 123456",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "csgo切换uid",
+        "desc": "切换你的steam UID",
+        "eg": "csgo切换uid123456",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      }
+    ]
+  },
+  "查询服务": {
+    "desc": "默认查绑定信息，也可以后带uid",
+    "data": [
+      {
+        "name": "csgo查询",
+        "desc": "查询csgo完美平台数据一览",
+        "eg": "csgo查询",
+        "need_ck": true,
+        "need_sk": false,
+        "need_admin": false
+      }
+    ]
+  },
+  "其他服务": {
+    "desc": "一些杂项服务",
+    "data": [
+      {
+        "name": "csgo帮助",
+        "desc": "呼出该帮助界面",
+        "eg": "csgo帮助",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      }
+    ]
+  }
+}

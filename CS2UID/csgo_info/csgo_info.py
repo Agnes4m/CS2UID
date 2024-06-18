@@ -1,16 +1,17 @@
-import random
 import datetime
+import random
 from pathlib import Path
 from typing import Tuple, Union
 
 from PIL import Image, ImageDraw, ImageFont
-from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.utils import download_pic_to_image
-from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
+from gsuid_core.utils.image.convert import convert_img
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring
+from gsuid_core.utils.image.utils import download_pic_to_image
+
+from ..utils.api.models import UserDetailData
 from ..utils.csgo_api import pf_api
 from ..utils.error_reply import get_error
-from ..utils.api.models import UserDetailData
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -52,10 +53,10 @@ async def paste_img(
         site_x + aa - 5,
         site[1] + ab - 5,
         site_x + ba + 5,
-        site[1] + bb + 5,
+        site[1] + bb + 7,
     )
     mask = Image.new(
-        'RGBA', (ba - aa + 10, bb - ab + 10), (255, 255, 255, 128)
+        'RGBA', (ba - aa + 10, bb - ab + 10), (255, 255, 255, 160)
     )
     draw_mask = ImageDraw.Draw(mask)
     draw_mask.rectangle(site_white, fill=rect_color)
@@ -162,38 +163,58 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     await paste_img(img, f"vs5：{detail['vs5']}", 20, (700, 570))
 
     """武器"""
-    for i in range(4):
+    for i in range(8):
         site_x = 100
-        site_y = 750
+        site_y = 700
         s = i
-        if s == 1:
+        if s%2 == 0:
+            site_y += 75*s
+        else:
             site_x += 200
-        elif s == 2:
-            site_y += 100
-        elif s == 3:
-            site_x += 200
-            site_y += 100
+            site_y += 75*(s-1)
+        # if s == 1:
+        #     site_x += 200
+        # elif s == 2:
+        #     site_y += 150
+        # elif s == 3:
+        #     site_x += 200
+        #     site_y += 150
 
-        usr_weapon = detail['hotWeapons'][i]
-        weap = await download_pic_to_image(usr_weapon['weaponImage'])
+        usr_weapon = detail['hotWeapons2'][i]
+        weap = await download_pic_to_image(usr_weapon['image'])
         weap_out = await resize_image_to_percentage(weap, 8)
         # weap_out = await draw_pic_with_ring(weap_out, 5)
         img.paste(weap_out, (site_x, site_y), weap_out)
         await paste_img(
-            img, f"{usr_weapon['weaponName']}", 20, (site_x + 80, site_y)
+            img, f"{usr_weapon['nameZh']}", 20, (site_x + 80, site_y)
         )
+
         await paste_img(
             img,
-            f"武器击杀：{usr_weapon['weaponKill']}",
+            f"首发命中率：{usr_weapon['firstShotAccuracy']*100:.2f}%",
             20,
             (site_x, site_y + 30),
         )
         await paste_img(
             img,
-            f"武器爆头：{usr_weapon['weaponHeadShot']}",
+            f"击杀时间：{usr_weapon['avgTimeToKill']}ms",
             20,
             (site_x, site_y + 60),
         )
+        sa = usr_weapon['sprayAccuracy']
+        sa_out = f"{sa*100:.2f}%" if isinstance(sa, int) else sa
+        await paste_img(
+            img,
+            f"扫射精准率：{sa_out}",
+            20,
+            (site_x, site_y + 90),
+        )
+        await paste_img(
+            img,
+            f"爆头率：{usr_weapon['headshotRate']*100:.2f}%",
+            20,
+            (site_x, site_y + 120),
+        )        
 
     """地图战绩"""
     for i in range(2):

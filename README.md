@@ -20,19 +20,34 @@
 
 ## 丨安装方式
 
-暂无
+方法一：指令`core安装插件CS2UID`
+
+<details><summary>方法二： 手动安装</summary><p>
+
+```bash
+cd gsuid_core
+cd plugins
+
+# 安装CS2UID
+git clone https://github.com/Agnes4m/CS2UID.
+# 返回主目录
+cd ../
+
+# 启动Bot（如此时GsCore正在运行，请先使用Ctrl+C快捷键关闭GsCore，无需重启Bot（如NoneBot2））
+poetry run core
+```
+</p></details>
+
 
 ## 丨功能
 
-<details><summary>绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</summary><p>
-还没有图
-</p></details>
+- 绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</
 
-<details><summary>查询基本信息 - 命令: go信息(半成品)</summary><p>
+- <details><summary>查询基本信息 - 命令: go信息(半成品)</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/test.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/test1.png" width="360" height="800" alt="CS2lUID_test"></a>
 </p></details>
 
-<details><summary>添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid</summary><p>
+- <details><summary>添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid</summary><p>
 还没有图
 </p></details>
 
