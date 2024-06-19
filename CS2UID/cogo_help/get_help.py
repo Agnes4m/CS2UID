@@ -4,7 +4,6 @@ from typing import Dict, Union
 import aiofiles
 from PIL import Image
 from msgspec import json as msgjson
-
 from gsuid_core.help.model import PluginHelp
 from gsuid_core.utils.fonts.fonts import core_font
 from gsuid_core.help.draw_plugin_help import get_help
@@ -30,10 +29,9 @@ async def get_csgo_core_help() -> Union[bytes, str]:
         return '暂未找到帮助数据...'
 
     bg_out = Image.open(TEXT_PATH / 'bg.jpg')
-    bg_new = Image.new('RGBA',
-                       (bg_out.width,
-                        bg_out.height),
-                       (255, 255, 255, 100))
+    bg_new = Image.new(
+        'RGBA', (bg_out.width, bg_out.height), (255, 255, 255, 100)
+    )
     bg_out.paste(bg_new, None, bg_new)
 
     img = await get_help(

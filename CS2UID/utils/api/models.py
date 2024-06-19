@@ -399,8 +399,8 @@ class UserHomematchData(TypedDict):
 
 
 class UserHomeRequest(TypedDict):
-    statusCode:  int
-    errorMessage:  str
+    statusCode: int
+    errorMessage: str
     data: UserHomematchData
 
 
@@ -528,6 +528,6 @@ class UserHomedetailData(TypedDict):
 
 
 class UserHomedetailRequest(TypedDict):
-    statusCode:  int
-    errorMessage:  str
+    statusCode: int
+    errorMessage: str
     data: UserHomedetailData

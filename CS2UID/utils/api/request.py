@@ -1,28 +1,27 @@
-import json as js
 import random
+import json as js
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 from httpx import AsyncClient
-
 from gsuid_core.logger import logger
 
 from ..database.models import CS2User
 from .api import (
-    UserDetailAPI,
     UserHomeApi,
-    UserHomematchApi,
     UserInfoAPI,
-    UserSeasonScoreAPI,
+    UserDetailAPI,
+    UserHomematchApi,
     UserSteamPreview,
+    UserSeasonScoreAPI,
 )
 from .models import (
+    UserInfo,
     SteamGetRequest,
+    UserHomeRequest,
+    UserSeasonScore,
     UserDetailRequest,
     UserHomedetailRequest,
-    UserHomeRequest,
-    UserInfo,
-    UserSeasonScore,
 )
 
 

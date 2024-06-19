@@ -20,8 +20,10 @@ async def paste_img(
     font = ImageFont.truetype(str(FONT_PATH), size)
 
     aa, ab, ba, bb = font.getbbox(msg)
-    if is_mid and long:
+    if is_mid:
+        print(font.getbbox(msg))
         site_x = round((long[1] - long[0] - ba + aa) / 2)
+        print(f"横坐标{site_x}")
     else:
         site_x = site[0]
 

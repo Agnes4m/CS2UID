@@ -43,18 +43,24 @@ poetry run core
 
 - 绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</
 
-- <details><summary>查询基本信息 - 命令: go信息(半成品)</summary><p>
+- <details><summary>查询基本信息 - 命令: csgo查询</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/test.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/test1.png" width="360" height="800" alt="CS2lUID_test"></a>
 </p></details>
 
-- <details><summary>添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid</summary><p>
-还没有图
-</p></details>
+- 查询官匹基本信息 - 命令: csgo查询官匹
+
+- 查询好友码 - 命令: csgo好友码
+
+### 管理员功能
+
+- 添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid
+
 
 ## 丨使用方式
+
 1. 安装插件
 2. 使用**小号**打开**完美对战平台**
-3. 打开Fiddler，抓取**pwasteamid**和**access_token**
+3. 打开Fiddler或者其他抓包软件，抓取**pwasteamid**和**access_token**
    1. host为`pwaweblogin.wmpvp.com`的请求
    2. 部分Cookie中**steam_cn_token**的值是等同**access_token**的值的
 
@@ -68,13 +74,25 @@ poetry run core
    2. 发送`csgo绑定uid`
    3. 可以进行查询，使用`csgo查询`进行查询即可
 
+## 丨获取uid的方法（为啥这么多玩cs的都不知道steam id）
+
+1. steam打开个人资料，右击复制url，最后的一长串数字就是uid
+2. pc完美对战平台个人资料，steam64位id
+3. 手机app完美对战平台，左上三横线-设置-我的账号-steam账号-64位id
+4. 抓包
+
 ## 丨待做功能
+
 1. 搜索steam/完美平台用户昵称获取uid
-2. 获取5e对~~转~~站平台战绩
-3. 优化图片
+2. 获取对战记录详情数据
+3. 获取steam库存饰品数据
+4. 优化图片
+5. 获取5e对~~转~~站平台战绩
+
 
 ## 丨其他
 
 + 本项目仅供学习使用，请勿用于商业用途
++ 喜欢可以点个star，欢迎大佬pr支持本项目
 + 头像来自完美平台CS虚拟主播[永恒娘](https://b23.tv/DKblgCH)，侵删
 + [GPL-3.0 License](https://github.com/qwerdvd/StarRailUID/blob/master/LICENSE)

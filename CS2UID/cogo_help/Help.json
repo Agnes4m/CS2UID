@@ -29,12 +29,28 @@
     ]
   },
   "查询服务": {
-    "desc": "默认查绑定信息，也可以后带uid",
+    "desc": "默认查完美绑定战绩，也可以后带uid",
     "data": [
       {
         "name": "csgo查询",
         "desc": "查询csgo完美平台数据一览",
         "eg": "csgo查询",
+        "need_ck": true,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "csgo查询官匹",
+        "desc": "查询csgo官匹数据一览",
+        "eg": "csgo查询官匹",
+        "need_ck": true,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "csgo好友码",
+        "desc": "查询csgo官匹好友码",
+        "eg": "csgo好友码",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
