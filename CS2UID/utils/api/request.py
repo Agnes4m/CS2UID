@@ -1,27 +1,29 @@
-import random
 import json as js
+import random
 from copy import deepcopy
-from typing import Any, Dict, List, Union, Literal, Optional, cast
+from typing import Any, Dict, List, Literal, Optional, Union, cast
 
-from httpx import AsyncClient
 from gsuid_core.logger import logger
+from httpx import AsyncClient
 
 from ..database.models import CS2User
 from .api import (
-    UserHomeApi,
-    UserInfoAPI,
+    CsgoFall,
     UserDetailAPI,
+    UserHomeApi,
     UserHomematchApi,
-    UserSteamPreview,
+    UserInfoAPI,
     UserSeasonScoreAPI,
+    UserSteamPreview,
 )
 from .models import (
-    UserInfo,
     SteamGetRequest,
-    UserHomeRequest,
-    UserSeasonScore,
     UserDetailRequest,
+    UserFallRequest,
     UserHomedetailRequest,
+    UserHomeRequest,
+    UserInfo,
+    UserSeasonScore,
 )
 
 
@@ -163,7 +165,7 @@ class PerfectWorldApi:
             return data
         return cast(UserDetailRequest, data)
 
-    async def get_steamgoods(self, uid: str, search_number: int = 18):
+    async def get_steamgoods(self, uid: str):
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
@@ -176,7 +178,7 @@ class PerfectWorldApi:
         data = await self._pf_request(
             UserSteamPreview,
             header=header,
-            params={'steamId': uid, 'previewSize': search_number},
+            params={'steamId': uid, 'previewSize': 20},
         )
         if isinstance(data, int):
             return data
@@ -232,3 +234,24 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
         return cast(UserHomedetailRequest, data)
+
+
+    async def get_fall(self, uid: str):
+        """获取掉落箱子信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        header['token'] = uid_token[-1]
+        data = await self._pf_request(
+            CsgoFall,
+            header=header,
+            params={'steamId': uid, 'token': uid_token[-1]},
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserFallRequest, data)

@@ -2,15 +2,15 @@ import datetime
 from pathlib import Path
 from typing import Union
 
-from PIL import Image
 from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
+from gsuid_core.utils.image.utils import download_pic_to_image
+from PIL import Image
 
-from ..utils.csgo_api import pf_api
 from ..utils.api.models import UserDetailData
-from ..utils.error_reply import not_msg, get_error
-from .utils import paste_img, assign_rank, resize_image_to_percentage
+from ..utils.csgo_api import pf_api
+from ..utils.error_reply import get_error, not_msg
+from .utils import assign_rank, paste_img, resize_image_to_percentage
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -267,6 +267,6 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         img,
         f"{Create} & {Power} & {Design} & {Data}",
         20,
-        (0, 1950),
+        (0, 1970),
     )
     return await convert_img(img)

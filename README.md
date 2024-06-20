@@ -41,21 +41,21 @@ poetry run core
 
 ## 丨功能
 
-- 绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</
+绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</
 
-- <details><summary>查询基本信息 - 命令: csgo查询</summary><p>
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test1.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/img/test1.png" width="360" height="800" alt="CS2lUID_查询"></a>
+<details><summary>查询基本信息 - 命令: csgo查询</summary><p>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test1.jpg"><img src="./img/test1.png" width="360" height="800" alt="CS2lUID_查询"></a>
 </p></details>
 
-- <details><summary>查询官匹基本信息 - 命令: csgo查询官匹</summary><p>
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test2.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/img/test2.png" width="360" height="800" alt="CS2lUID_官匹"></a>
+<details><summary>查询官匹基本信息 - 命令: csgo查询官匹</summary><p>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test2.jpg"><img src="./img/test2.png" width="360" height="800" alt="CS2lUID_官匹"></a>
 </p></details>
 
-- <details><summary>查询steam库存 - 命令: csgo库存</summary><p>
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test3.jpg"><img src="https://github.com/Agnes4m/CS2UID/blob/main/img/test3.png" width="360" height="800" alt="CS2lUID_库存"></a>
+<details><summary>查询steam库存 - 命令: csgo库存</summary><p>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test3.jpg"><img src="./img/test3.png" width="360" height="800" alt="CS2lUID_库存"></a>
 </p></details>
 
-- 查询好友码 - 命令: csgo好友码
+查询好友码 - 命令: csgo好友码
 
 ### 管理员功能
 

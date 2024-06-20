@@ -531,3 +531,25 @@ class UserHomedetailRequest(TypedDict):
     statusCode: int
     errorMessage: str
     data: UserHomedetailData
+
+
+class UserFall(TypedDict):
+    """官匹箱子刷新"""
+    curLevel: int
+    """当前等级"""
+    levelUpProgress: int
+    """当前经验百分比"""
+    refreshTimePoint: int
+    """刷新时间"""
+    statusDesc: str
+    """掉落说明中文"""
+    levelTitle: str
+    """军衔中文"""
+    levelIcon: str
+    """图片url"""
+
+
+class UserFallRequest(TypedDict):
+    code: int
+    message: str
+    result: UserFall

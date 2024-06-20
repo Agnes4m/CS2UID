@@ -54,6 +54,14 @@
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
+      },
+      {
+        "name": "csgo库存",
+        "desc": "查询steam里csgo库存，可以带数字，默认显示20个",
+        "eg": "csgo库存20",
+        "need_ck": true,
+        "need_sk": false,
+        "need_admin": false
       }
     ]
   },

@@ -29,14 +29,8 @@ async def send_csgo_goods_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
         return await bot.send(UID_HINT)
-    count = ev.text.split("库存")[-1]
-    if count.isdigit() and 0 < int(count):
-        count = int(count)
-        if count > 50:
-            return "最大只支持展示50个啦"
-    else:
-        count = 20
-    await bot.send(await get_csgo_goods_img(uid, count))
+
+    await bot.send(await get_csgo_goods_img(uid))
 
 
 @csgo_user_info.on_command(('好友码'), block=True)

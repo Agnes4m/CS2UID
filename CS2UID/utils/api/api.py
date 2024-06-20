@@ -15,3 +15,4 @@ UserHomeApi = f"{APIHOST}/api/csgo/home/official/detailStats"
 # get
 u1 = "appdecoration/steamcn/csgo/decoration/getSteamInventoryPreview"
 UserSteamPreview = f"{STEAMCNHOST}/{u1}"
+CsgoFall = f"{STEAMCNHOST}/appdatacenter/csgo/official/fall/userCsgoInfo"

@@ -6,9 +6,9 @@ from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
 from ..utils.csgo_api import pf_api
-from ..utils.api.models import UserHomedetailData
 from ..utils.error_reply import not_msg, get_error
 from .utils import paste_img, resize_image_to_percentage
+from ..utils.api.models import UserFall, UserHomedetailData
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -17,17 +17,22 @@ FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 async def get_csgohome_info_img(uid: str, friend: bool = False):
 
     detail = await pf_api.get_csgohomedetail(uid)
+    fall = await pf_api.get_fall(uid)
     # print(detail)
-    if isinstance(detail, int):
+    
+    if isinstance(detail, int) :
         return get_error(detail)
+    if isinstance(fall, int) :
+        return get_error(fall)    
     if friend:
         return detail['data']["friendCode"]
     if len(detail['data']['hotMaps']) == 0:
         return not_msg
-    return await draw_csgohome_info_img(detail['data'])
+    print(fall)
+    return await draw_csgohome_info_img(detail['data'], fall["result"])
 
 
-async def draw_csgohome_info_img(detail: UserHomedetailData) -> bytes | str:
+async def draw_csgohome_info_img(detail: UserHomedetailData, fall: UserFall) -> bytes | str:
     if not detail:
         return "token已过期"
     name = detail["nickName"]
@@ -48,6 +53,18 @@ async def draw_csgohome_info_img(detail: UserHomedetailData) -> bytes | str:
     await paste_img(img, f"昵称：  {name}", 40, (300, 300), is_mid=True)
     await paste_img(img, f"uid：  {uid}", 20, (330, 350), is_mid=True)
 
+    # 等级
+    if fall['levelTitle']:
+        logo = await download_pic_to_image(fall['levelIcon'])
+        round_head = await draw_pic_with_ring(head, 3)
+        img.paste(logo, (100, 340), logo)
+        
+        msg = f"{fall['levelTitle']}-{fall['curLevel']}级  {fall['statusDesc']}"
+        await paste_img(img, msg, 30, (250, 380))
+        
+        await paste_img(img, f"当前经验值{fall['levelUpProgress']}%", 30, (600, 380))
+    else:
+        await paste_img(img, fall['statusDesc'], 30, (330, 380), is_mid=True)
     await paste_img(
         img,
         f"胜场/场次：{detail['historyWinCount']} / {detail['cnt']}",
@@ -113,5 +130,15 @@ async def draw_csgohome_info_img(detail: UserHomedetailData) -> bytes | str:
             20,
             (site_x, site_y + 90),
         )
+    Create = 'Create by GsCore'
+    Power = 'Power by CS2UID'
+    Design = 'Design by Agnes Digital'
+    Data = 'Data by Perfect World'
+    await paste_img(
+        img,
+        f"{Create} & {Power} & {Design} & {Data}",
+        20,
+        (0, 1970),
+    )
 
     return await convert_img(img)
