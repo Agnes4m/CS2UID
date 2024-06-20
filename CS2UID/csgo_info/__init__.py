@@ -5,6 +5,7 @@ from gsuid_core.utils.database.api import get_uid
 
 from ..utils.error_reply import UID_HINT
 from .csgo_info import get_csgo_info_img
+from .csgo_goods import get_csgo_goods_img
 from ..utils.database.models import CS2Bind
 from .csgohome_info import get_csgohome_info_img
 
@@ -21,6 +22,21 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
         await bot.send(await get_csgohome_info_img(uid))
     else:
         await bot.send(await get_csgo_info_img(uid))
+
+
+@csgo_user_info.on_command(('库存'), block=True)
+async def send_csgo_goods_msg(bot: Bot, ev: Event):
+    uid = await get_uid(bot, ev, CS2Bind)
+    if uid is None:
+        return await bot.send(UID_HINT)
+    count = ev.text.split("库存")[-1]
+    if count.isdigit() and 0 < int(count):
+        count = int(count)
+        if count > 50:
+            return "最大只支持展示50个啦"
+    else:
+        count = 20
+    await bot.send(await get_csgo_goods_img(uid, count))
 
 
 @csgo_user_info.on_command(('好友码'), block=True)

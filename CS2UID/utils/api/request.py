@@ -163,7 +163,7 @@ class PerfectWorldApi:
             return data
         return cast(UserDetailRequest, data)
 
-    async def get_steamgoods(self, uid: str, search_number: int = 10):
+    async def get_steamgoods(self, uid: str, search_number: int = 18):
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
@@ -176,7 +176,6 @@ class PerfectWorldApi:
         data = await self._pf_request(
             UserSteamPreview,
             header=header,
-            method='POST',
             params={'steamId': uid, 'previewSize': search_number},
         )
         if isinstance(data, int):

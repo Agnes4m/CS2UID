@@ -14,35 +14,45 @@ async def paste_img(
     is_mid: bool = False,
     long: Tuple[int, int] = (0, 900),
     color: Tuple[int, int, int, int] = (0, 0, 0, 255),
+    leng: int = 50,
 ):
     """贴文字"""
     # draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(str(FONT_PATH), size)
 
-    aa, ab, ba, bb = font.getbbox(msg)
-    if is_mid:
-        print(font.getbbox(msg))
-        site_x = round((long[1] - long[0] - ba + aa) / 2)
-        print(f"横坐标{site_x}")
-    else:
-        site_x = site[0]
+    # 行数
+    s: int = len(msg) // leng
 
-    # 绘制白色矩形遮罩
-    rect_color = (255, 255, 255, 128)
-    site_white = (
-        site_x + aa - 5,
-        site[1] + ab - 5,
-        site_x + ba + 5,
-        site[1] + bb + 7,
-    )
-    mask = Image.new(
-        'RGBA', (ba - aa + 10, bb - ab + 10), (255, 255, 255, 160)
-    )
-    draw_mask = ImageDraw.Draw(mask)
-    draw_mask.rectangle(site_white, fill=rect_color)
+    for i in range(s + 1):
+        if i == s + 1:
+            out_msg = msg[(s * leng) :]
+        else:
+            out_msg = msg[(s * leng) : ((s + 1) * leng)]
+        font = ImageFont.truetype(str(FONT_PATH), size)
 
-    draw_mask.text(xy=(5, 5), text=msg, font=font, fill=color)
-    img.paste(mask, site, mask)
+        aa, ab, ba, bb = font.getbbox(out_msg)
+        if is_mid:
+            print(font.getbbox(out_msg))
+            site_x = round((long[1] - long[0] - ba + aa) / 2)
+            print(f"横坐标{site_x}")
+        else:
+            site_x = site[0]
+
+        # 绘制白色矩形遮罩
+        rect_color = (255, 255, 255, 128)
+        site_white = (
+            site_x + aa - 5,
+            site[1] + ab - 5 + (s + 2) * size,
+            site_x + ba + 5,
+            site[1] + bb + 7 + (s + 2) * size,
+        )
+        mask = Image.new(
+            'RGBA', (ba - aa + 10, bb - ab + 10), (255, 255, 255, 160)
+        )
+        draw_mask = ImageDraw.Draw(mask)
+        draw_mask.rectangle(site_white, fill=rect_color)
+
+        draw_mask.text(xy=(5, 5), text=out_msg, font=font, fill=color)
+        img.paste(mask, site, mask)
 
 
 async def assign_rank(rank_score: int) -> str:
