@@ -1,21 +1,24 @@
 from pathlib import Path
 from typing import List, Union
 
-from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.image_tools import draw_pic_with_ring
-from gsuid_core.utils.image.utils import download_pic_to_image
 from PIL import Image
+from gsuid_core.utils.image.convert import convert_img
+from gsuid_core.utils.image.utils import download_pic_to_image
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
-from ..utils.api.models import Match
 from ..utils.csgo_api import pf_api
+from ..utils.api.models import Match
+from .utils import paste_img, add_detail
 from ..utils.error_reply import get_error
-from .utils import add_detail, paste_img
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
-green_logo = Image.open(TEXTURE/ 'green.png')
+green_logo = Image.open(TEXTURE / 'green.png')
 
-async def get_csgo_match_img(uid: str, tag: int, _type:int) -> Union[str, bytes]:
+
+async def get_csgo_match_img(
+    uid: str, tag: int, _type: int
+) -> Union[str, bytes]:
     detail = await pf_api.get_csgopfmatch(uid, tag, _type)
     print(detail)
     if tag == 1:
@@ -32,7 +35,7 @@ async def get_csgo_match_img(uid: str, tag: int, _type:int) -> Union[str, bytes]
         avatar = msg['data']['avatar']
     if isinstance(detail, int):
         return get_error(detail)
-    
+
     # 类型
     if tag == 1:
         match_type = "国服竞技"
@@ -51,8 +54,10 @@ async def get_csgo_match_img(uid: str, tag: int, _type:int) -> Union[str, bytes]
             match_type = "完美自定义"
         else:
             match_type = "完美平台对战"
-                         
-    return await draw_csgo_match_img(detail['data']['matchList'], name, avatar, uid, match_type)
+
+    return await draw_csgo_match_img(
+        detail['data']['matchList'], name, avatar, uid, match_type
+    )
 
 
 async def create_one_match_img(detail: Match) -> Image.Image:
@@ -67,15 +72,22 @@ async def create_one_match_img(detail: Match) -> Image.Image:
     logo = await download_pic_to_image(detail['mapLogo'])
     round_logo = await draw_pic_with_ring(logo, 50)
     img.paste(round_logo, (10, 10), round_logo)
-    
-    await paste_img(img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0))
+
+    await paste_img(
+        img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0)
+    )
     await paste_img(img, detail['endTime'], 20, (70, 50))
 
     await paste_img(img, detail['mapName'], 30, (250, 0))
     await paste_img(img, f"{detail['mode']}", 20, (250, 50))
 
     await paste_img(img, f"RT: {detail['rating']}", 30, (400, 0))
-    await paste_img(img, f"{detail['kill']}/{detail['death']}/{detail['assist']}", 20, (400, 50))    
+    await paste_img(
+        img,
+        f"{detail['kill']}/{detail['death']}/{detail['assist']}",
+        20,
+        (400, 50),
+    )
     await paste_img(img, f"WE: {detail['we']}", 30, (550, 0))
 
     await paste_img(img, f"分{detail['pvpScore']}", 30, (680, 0))
@@ -86,7 +98,10 @@ async def create_one_match_img(detail: Match) -> Image.Image:
 
     return img
 
-async def draw_csgo_match_img(detail: List[Match], name: str, avatar: str, uid: str, match_type: str) -> bytes | str:
+
+async def draw_csgo_match_img(
+    detail: List[Match], name: str, avatar: str, uid: str, match_type: str
+) -> bytes | str:
     if not detail:
         return "token已过期"
 
@@ -107,7 +122,7 @@ async def draw_csgo_match_img(detail: List[Match], name: str, avatar: str, uid: 
 
     await paste_img(img, f"昵称：  {name}", 40, (300, 300), is_mid=True)
     await paste_img(img, f"uid：  {uid}", 20, (330, 350), is_mid=True)
-    
+
     await paste_img(img, match_type, 28, (50, 300))
 
     for i in range(12):
@@ -116,7 +131,7 @@ async def draw_csgo_match_img(detail: List[Match], name: str, avatar: str, uid: 
         one_img = await create_one_match_img(detail[i])
         img.paste(one_img, (50, 400 + 120 * i), one_img)
         if detail[i]['greenMatch']:
-            
+
             img.paste(green_logo, (20, 400 + 120 * i), green_logo)
-        
+
     return await convert_img(await add_detail(img))

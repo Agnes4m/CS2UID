@@ -98,5 +98,6 @@ poetry run core
 + 本项目仅供学习使用，请勿用于商业用途
 + 喜欢可以点个star，欢迎大佬pr支持本项目
 + [常见问题](question.md)
++ [个人讨论交流群](https://jq.qq.com/?_wv=1027&k=HdjoCcAe), 如果iss没回复可以群里找
 + 头像和图片来自完美平台CS虚拟主播[永恒娘](https://b23.tv/DKblgCH)，侵删
 + [GPL-3.0 License](https://github.com/qwerdvd/StarRailUID/blob/master/LICENSE)
