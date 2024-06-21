@@ -262,7 +262,7 @@ class UserDetailData(TypedDict):
 class UserDetailRequest(TypedDict):
     """detail返回数据"""
 
-    statusCode: int
+    statusCode: str
     errorMessage: str
     data: UserDetailData
 
