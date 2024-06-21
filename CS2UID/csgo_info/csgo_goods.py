@@ -9,7 +9,7 @@ from gsuid_core.utils.image.utils import download_pic_to_image
 from ..utils.csgo_api import pf_api
 from ..utils.api.models import SteamGet
 from ..utils.error_reply import get_error
-from .utils import paste_img, resize_image_to_percentage
+from .utils import paste_img, add_detail, resize_image_to_percentage
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -129,16 +129,4 @@ async def draw_csgo_goods_img(detail: SteamGet) -> bytes | str:
             logger.info(f"已读取{index}件物品")
     logger.info(f"{totalCount}件物品已读取完毕，准备输出")
 
-    Create = 'Create by GsCore'
-    Power = 'Power by CS2UID'
-    Design = 'Design by Agnes Digital'
-    Data = 'Data by Perfect World'
-
-    await paste_img(
-        img,
-        f"{Create} & {Power} & {Design} & {Data}",
-        20,
-        (0, 1970),
-    )
-
-    return await convert_img(img)
+    return await convert_img(await add_detail(img))

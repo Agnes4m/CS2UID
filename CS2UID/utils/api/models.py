@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 
 class UsrInfo(TypedDict):
@@ -535,6 +535,7 @@ class UserHomedetailRequest(TypedDict):
 
 class UserFall(TypedDict):
     """官匹箱子刷新"""
+
     curLevel: int
     """当前等级"""
     levelUpProgress: int
@@ -553,3 +554,70 @@ class UserFallRequest(TypedDict):
     code: int
     message: str
     result: UserFall
+
+
+class Match(TypedDict):
+    matchId: str
+    """完美匹配id"""
+    playerId: str
+    """玩家id"""
+    honor: Optional[str]
+    k4: int
+    k5: int
+    matchScore: int
+    mapUrl: str
+    mapLogo: str
+    mapName: str
+    """地图中文名"""
+    steamName: Optional[str]
+    steamAvatar: Optional[str]
+    team: int
+    winTeam: int
+    score1: int
+    score2: int
+    rating: float
+    pwRating: float
+    startTime: str
+    """2024-06-13 21:10:39"""
+    endTime: str
+    timeStamp: int
+    pageTimeStamp: int
+    kill: int
+    death: int
+    assist: int
+    duration: int
+    """游戏分钟"""
+    dataSource: int
+    """3是完美平台，1是国服官匹"""
+    mode: str
+    """天梯普通对局"""
+    pvpMvp: bool
+    """是否是MVP"""
+    greenMatch: bool
+    pvpScore: int
+    """匹配结束分数"""
+    pvpScoreChange: int
+    """分数变化"""
+    pvpScoreChangeType: int
+    """未知，0"""
+    pvpStars: int
+    """星级"""
+    group: bool
+    """是否组队"""
+    rank: int
+    oldrank: int
+    pvpGrading: int
+    we: float
+    """we评分"""
+    status: int
+
+
+class UserMatch(TypedDict):
+    dataPublic: bool
+    matchList: List[Match]
+
+
+class UserMatchRequest(TypedDict):
+    statusCode: int
+    errorMessage: str
+    data: UserMatch

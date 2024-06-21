@@ -1,29 +1,30 @@
-import json as js
 import random
+import json as js
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Dict, List, Union, Literal, Optional, cast
 
-from gsuid_core.logger import logger
 from httpx import AsyncClient
+from gsuid_core.logger import logger
 
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
-    UserDetailAPI,
     UserHomeApi,
-    UserHomematchApi,
     UserInfoAPI,
-    UserSeasonScoreAPI,
+    UserDetailAPI,
+    UserHomematchApi,
     UserSteamPreview,
+    UserSeasonScoreAPI,
 )
 from .models import (
-    SteamGetRequest,
-    UserDetailRequest,
-    UserFallRequest,
-    UserHomedetailRequest,
-    UserHomeRequest,
     UserInfo,
+    SteamGetRequest,
+    UserFallRequest,
+    UserHomeRequest,
     UserSeasonScore,
+    UserMatchRequest,
+    UserDetailRequest,
+    UserHomedetailRequest,
 )
 
 
@@ -210,6 +211,37 @@ class PerfectWorldApi:
             return data
         return cast(UserHomeRequest, data)
 
+    async def get_csgopfmatch(self, uid: str, csgoSeasonId: int, type: int):
+        """完美对战信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        header['token'] = uid_token[-1]
+        data = await self._pf_request(
+            UserHomematchApi,
+            header=header,
+            method='POST',
+            json={
+                'toSteamId': uid,
+                'mySteamId': uid_token[0],
+                'csgoSeasonId': 'recent',
+                'pvpType': type,
+                # -1全部, 41pro, 12/0天梯, 20巅峰赛, 27周末联赛, 14自定义
+                'page': 1,
+                'pageSize': 50,
+                'dataSource': csgoSeasonId,
+                # 1是官匹，3是完美
+            },
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserMatchRequest, data)
+
     async def get_csgohomedetail(self, uid: str, search_number: int = 11):
         """国服个人信息"""
         uid_token = await self.get_token()
@@ -234,7 +266,6 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
         return cast(UserHomedetailRequest, data)
-
 
     async def get_fall(self, uid: str):
         """获取掉落箱子信息"""

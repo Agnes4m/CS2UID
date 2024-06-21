@@ -57,8 +57,16 @@
       },
       {
         "name": "csgo库存",
-        "desc": "查询steam里csgo库存，可以带数字，默认显示20个",
-        "eg": "csgo库存20",
+        "desc": "查询steam里csgo库存，最多显示20个",
+        "eg": "csgo库存",
+        "need_ck": true,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "csgo对局记录",
+        "desc": "查询对局记录，可以带关键词官匹，天梯等等，不带默认完美平台记录",
+        "eg": "csgo对局记录天梯",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false

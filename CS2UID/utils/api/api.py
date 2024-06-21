@@ -9,7 +9,7 @@ DailyStatsAPI = f'{HOST}/user-info/daily-stats'
 
 # post
 UserDetailAPI = f'{APIHOST}/api/csgo/home/pvp/detailStats'
-UserHomematchApi = f"{DailyStatsAPI}/api/csgo/home/match/list"
+UserHomematchApi = f"{APIHOST}/api/csgo/home/match/list"
 UserHomeApi = f"{APIHOST}/api/csgo/home/official/detailStats"
 
 # get

@@ -43,6 +43,8 @@ poetry run core
 
 绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</
 
+帮助 - 命令: csgo帮助
+
 <details><summary>查询基本信息 - 命令: csgo查询</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test1.jpg"><img src="./img/test1.png" width="360" height="800" alt="CS2lUID_查询"></a>
 </p></details>
@@ -56,6 +58,10 @@ poetry run core
 </p></details>
 
 查询好友码 - 命令: csgo好友码
+
+<details><summary>查询对局记录信息 - 命令: csgo对局记录</summary><p>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_库存"></a>
+</p></details>
 
 ### 管理员功能
 
@@ -80,20 +86,12 @@ poetry run core
    2. 发送`csgo绑定uid`
    3. 可以进行查询，使用`csgo查询`进行查询即可
 
-## 丨获取uid的方法（为啥这么多玩cs的都不知道steam id）
 
-方法1. steam打开个人资料，右击复制url，最后的一长串数字就是uid
-方法2. pc完美对战平台个人资料，steam64位id
-方法3. 手机app完美对战平台，左上三横线-设置-我的账号-steam账号-64位id
-方法4. 抓包
 
 ## 丨待做功能
 
-1. 搜索steam/完美平台用户昵称获取uid
-2. 获取对战记录详情数据
-3. 优化图片
-4. 获取5e对~~转~~站平台战绩
-5. 其他想不到了
+1. 获取5e对~~转~~站平台战绩,如果我玩的话
+2. 其他想不到了
 
 ## 丨其他
 
