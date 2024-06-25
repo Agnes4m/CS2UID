@@ -4,7 +4,7 @@
   <a href="https://github.com/Agnes4m/CS2UID"><img src="https://github.com/Agnes4m/CS2UID/blob/main/img/logo.jpg" width="256" height="256" alt="CS2lUID"></a>
 </p>
 <h1 align = "center">CS2UID 0.1</h1>
-<h4 align = "center">🚧支持QQ群/频道、OneBot、微信、KOOK、Tg、飞书、DoDo、~~米游社~~、Discord的CS2 bot插件🚧</h4>
+<h4 align = "center">🚧支持QQ群/频道、OneBot、微信、KOOK、Tg、飞书、DoDo、米游社、Discord的CS2 bot插件🚧</h4>
 <div align = "center">
         <a href="http://docs.gsuid.gbots.work/#/" target="_blank">安装文档</a>
 </div>
@@ -15,8 +15,8 @@
 > **注意：该插件为[早柚核心(gsuid_core)](https://github.com/Genshin-bots/gsuid_core)的扩展，具体安装方式可参考[GenshinUID](https://github.com/KimigaiiWuyi/GenshinUID)**
 >
 > 支持NoneBot2 & HoshinoBot & ZeroBot & YunzaiBot & Koishi的CS2(原名CSGO)游戏Bot插件
->
-> 🚧暂时功能不全，等待施工中...🚧
+
++ [常见问题](question.md)
 
 ## 丨安装方式
 
@@ -97,7 +97,6 @@ poetry run core
 
 + 本项目仅供学习使用，请勿用于商业用途
 + 喜欢可以点个star，欢迎大佬pr支持本项目
-+ [常见问题](question.md)
 + [个人讨论交流群](https://jq.qq.com/?_wv=1027&k=HdjoCcAe), 如果iss没回复可以群里找
 + 头像和图片来自完美平台CS虚拟主播[永恒娘](https://b23.tv/DKblgCH)，侵删
 + [GPL-3.0 License](https://github.com/qwerdvd/StarRailUID/blob/master/LICENSE)

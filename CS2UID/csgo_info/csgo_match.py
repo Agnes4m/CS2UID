@@ -20,7 +20,7 @@ async def get_csgo_match_img(
     uid: str, tag: int, _type: int
 ) -> Union[str, bytes]:
     detail = await pf_api.get_csgopfmatch(uid, tag, _type)
-    print(detail)
+    # print(detail)
     if tag == 1:
         msg = await pf_api.get_csgohomedetail(uid)
         if isinstance(msg, int):

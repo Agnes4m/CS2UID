@@ -17,7 +17,7 @@ FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 
 async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
     detail = await pf_api.get_steamgoods(uid)
-    print(detail)
+    # print(detail)
 
     if isinstance(detail, int):
         return get_error(detail)

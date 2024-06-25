@@ -2,18 +2,18 @@ import datetime
 from pathlib import Path
 from typing import Union
 
-from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.image_tools import draw_pic_with_ring
-from gsuid_core.utils.image.utils import download_pic_to_image
 from PIL import Image
+from gsuid_core.utils.image.convert import convert_img
+from gsuid_core.utils.image.utils import download_pic_to_image
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
-from ..utils.api.models import UserDetailData
 from ..utils.csgo_api import pf_api
-from ..utils.error_reply import get_error, not_msg
+from ..utils.api.models import UserDetailData
+from ..utils.error_reply import not_msg, get_error
 from .utils import (
+    paste_img,
     add_detail,
     assign_rank,
-    paste_img,
     resize_image_to_percentage,
 )
 
@@ -23,7 +23,7 @@ FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 
 async def get_csgo_info_img(uid: str) -> Union[str, bytes]:
     detail = await pf_api.get_userdetail(uid)
-    
+
     # print(detail)
     # logger.info(season_scoce)
     # logger.info(user_info)
@@ -31,7 +31,7 @@ async def get_csgo_info_img(uid: str) -> Union[str, bytes]:
         return get_error(detail)
     if not detail['statusCode'].isdigit():
         return "数据过期，请尝试重启吧"
-    
+
     if len(detail['data']['scoreList']) == 0:
         return not_msg
     return await draw_csgo_info_img(detail['data'])

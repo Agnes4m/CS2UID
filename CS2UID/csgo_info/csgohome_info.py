@@ -28,7 +28,7 @@ async def get_csgohome_info_img(uid: str, friend: bool = False):
         return detail['data']["friendCode"]
     if len(detail['data']['hotMaps']) == 0:
         return not_msg
-    print(fall)
+    # print(fall)
     return await draw_csgohome_info_img(detail['data'], fall["result"])
 
 
