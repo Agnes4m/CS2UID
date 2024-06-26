@@ -83,6 +83,14 @@
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
+      },
+      {
+        "name": "csgo道具",
+        "desc": "查询道具攻略",
+        "eg": "csgo道具沙2 匪家 A大 过点烟",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
       }
     ]
   }
