@@ -2,22 +2,22 @@ import re
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
-from PIL import Image
-from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
-from gsuid_core.models import Event
 from gsuid_core.data_store import get_res_path
+from gsuid_core.models import Event
+from gsuid_core.sv import SV
 from gsuid_core.utils.image.convert import convert_img
+from PIL import Image
 
 from .message import (
+    build_map_pattern,
+    custom_sort_key,
+    find_map_key,
+    find_possible_items,
     map_list,
     tag_list,
     tag_list_1,
     tag_list_2,
-    find_map_key,
-    custom_sort_key,
-    build_map_pattern,
-    find_possible_items,
 )
 
 res_img_path = get_res_path("CS2UID")
@@ -55,7 +55,7 @@ async def csgo_item_all(bot: Bot, ev: Event):
     # 沙2 匪口 b门 烟
     # 沙2 A大 警家 烟
     tag_list = texts.split()
-    print(tag_list)
+    print("关键词", tag_list)
     if len(tag_list) == 3:
         tag_list = [tag_list[0], tag_list[1], tag_list[1], tag_list[2]]
 
@@ -65,8 +65,8 @@ async def csgo_item_all(bot: Bot, ev: Event):
         )
         return
     # 地图
-    tag_list[1] = tag_list[1].replace("a","A").replace("b","B")
-    tag_list[2] = tag_list[2].replace("a","A").replace("b","B")
+    tag_list[1] = tag_list[1].replace("a", "A").replace("b", "B")
+    tag_list[2] = tag_list[2].replace("a", "A").replace("b", "B")
     tag_map = await find_map_key(tag_list[0])
 
     img_map_path = res_img_path / "res" / tag_map
@@ -81,47 +81,59 @@ async def csgo_item_all(bot: Bot, ev: Event):
         return await bot.send("暂时还没有该点位道具呢")
 
     tag_pos_2_list: List[str] = []
-    print(img_map_path / tag_pos_1)
+
     for item in Path(img_map_path / tag_pos_1).iterdir():
         if tag_list[2] == item.name:
             tag_pos_2_list = [item.name]
             break
         if tag_list[2] in item.name:
             tag_pos_2_list.append(item.name)
-    print(tag_pos_2_list)
+    print("待选图片", tag_pos_2_list)
     if not tag_pos_2_list:
         return await bot.send("暂时还没有该目的点位道具呢")
-    
+
     # 同目的点位多方式分类
-    grouped_tags: Dict[str,List[str]] = {}  
-    for tag in tag_pos_2_list:  
-        prefix, _ = tag.split('_', 1) 
-        if prefix not in grouped_tags:  
-            grouped_tags[prefix] = []  
-        grouped_tags[prefix].append(tag)  
-    
-    # 将字典的值（即分类后的列表）转换为列表的列表  
-    grouped_lists = list(grouped_tags.values()) 
-    
+    grouped_tags: Dict[str, List[str]] = {}
+    for tag in tag_pos_2_list:
+        prefix, _ = tag.split('_', 1)
+        if prefix not in grouped_tags:
+            grouped_tags[prefix] = []
+        grouped_tags[prefix].append(tag)
+
+    # 将字典的值（即分类后的列表）转换为列表的列表
+    grouped_lists: List[List[str]] = list(grouped_tags.values())
+
     # 道具
-    item_list:List[List[str]] = []
+    item_list: List[List[str]] = []
     max_number = 0
-    for i, one_group in enumerate(grouped_lists, start=1):
-        tag_item_list: List[str] = []
-        for one in one_group:
-            if tag_list[3] in one:
-                tag_item_list.append(one)
-        print(tag_item_list)
-        x = len(tag_item_list)
-        if x <= 0:
-            break
-        if max_number < x:
-            max_number = x
-        tag_pos_2_list = sorted(tag_item_list, key=custom_sort_key)
-        item_list.append(tag_pos_2_list)
-        
+    filter_keyword = tag_list[3]
+
+    for one_group in grouped_lists:
+
+        if filter_keyword == "快烟":
+            # 如果关键词是"快烟"，则保留含有"快烟"的项
+            filtered_group = [one for one in one_group if "快烟" in one]
+        else:
+            # 如果关键词不是"快烟"，则排除含有"快烟"的项，同时保留包含filter_keyword的项
+            filtered_group = [
+                one
+                for one in one_group
+                if "快烟" not in one and filter_keyword in one
+            ]
+
+        print("fil", len(filtered_group))
+        # 如果filtered_group非空，则添加到item_list中
+        if filtered_group:
+            filtered_group = sorted(filtered_group, key=custom_sort_key)
+            item_list.append(filtered_group)
+
+        if len(filtered_group) > max_number:
+            max_number = len(filtered_group)
+
+    print(item_list)
     # 生成图片
-    img_out = Image.new("RGB", (672*len(item_list), 375 * max_number))
+    img_out = Image.new("RGB", (672 * len(item_list), 375 * max_number))
+    print(f"生成{len(item_list) + 1} * {(max_number + 1)}")
     for i, one_list in enumerate(item_list):
         for index, one_path in enumerate(one_list):
             img_path = Path(
@@ -132,10 +144,12 @@ async def csgo_item_all(bot: Bot, ev: Event):
                 one_path,
             )
             print(img_path)
-            paste_img = Image.open(img_path).resize((672, 375))
-            img_out.paste(paste_img, (i*672, index * 375))
+            if img_path.exists():
+                paste_img = Image.open(img_path).resize((672, 375))
 
-    if img_path.exists():
+                img_out.paste(paste_img, (i * 672, index * 375))
+
+    if img_out:
         await bot.send(await convert_img(img_out))
     else:
         await bot.send("暂时还没有该攻略呢")
@@ -167,7 +181,7 @@ async def re_match(texts: str, bot: Bot):
 
         if map_name:
             # A大 警家 烟
-            remaining_text = texts[map_match.end() :].strip()
+            remaining_text = texts[map_match.end():].strip()
             print("点位参数", remaining_text)
 
             single_matches = tag_pattern.findall(remaining_text)[:2]
