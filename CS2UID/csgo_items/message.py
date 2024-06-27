@@ -106,13 +106,15 @@ async def build_map_pattern():
 
 
 async def find_map_key(alias: str):
-    if alias in map_list:
-        return alias
-
-    for key, aliases in map_list.items():
-        if alias.lower() in [alias.lower() for alias in aliases]:
-            return key
-
+    alias_lower = alias.lower()
+    if alias_lower in [
+        alias_l.lower()
+        for map_name, aliases in map_list.items()
+        for alias_l in aliases
+    ]:
+        for map_name, aliases in map_list.items():
+            if alias_lower in [a.lower() for a in aliases]:
+                return map_name
     return alias
 
 
@@ -135,3 +137,17 @@ async def find_possible_items(text):
             possible_items.append(item)
 
     return list(set(possible_items))
+
+
+def custom_sort_key(filename):
+    index = filename.rfind('_')
+    if index != -1 and index < len(filename) - 1:
+        digit_char = filename[index + 1]
+        try:
+            num = int(digit_char)
+        except ValueError:
+            return filename
+        else:
+            return (filename[:index], num)
+    else:
+        return (filename, 0)
