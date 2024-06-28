@@ -21,8 +21,11 @@ async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
 
     if isinstance(detail, int):
         return get_error(detail)
-
-    return await draw_csgo_goods_img(detail['result'])
+    try:
+        return await draw_csgo_goods_img(detail['result'])
+    except Exception as e:
+        logger.error(e)
+        return "出现意外错误，请重启core正常使用该功能"
 
 
 async def draw_csgo_goods_img(detail: SteamGet) -> bytes | str:

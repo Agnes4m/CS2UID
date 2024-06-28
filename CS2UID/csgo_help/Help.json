@@ -73,6 +73,19 @@
       }
     ]
   },
+  "攻略服务": {
+    "desc": "游戏攻略相关查询",
+    "data": [
+      {
+        "name": "csgo下载全部资源",
+        "desc": "下载全部道具资源",
+        "eg": "csgo下载全部资源",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": true
+      }
+    ]
+  },
   "其他服务": {
     "desc": "一些杂项服务",
     "data": [
@@ -86,6 +99,14 @@
       },
       {
         "name": "csgo道具",
+        "desc": "查询道具攻略",
+        "eg": "csgo道具沙2 匪家 A大 过点烟",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "csgo下载全部资源",
         "desc": "查询道具攻略",
         "eg": "csgo道具沙2 匪家 A大 过点烟",
         "need_ck": false,

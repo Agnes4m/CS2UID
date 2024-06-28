@@ -176,6 +176,7 @@ class PerfectWorldApi:
         header["User-Agent"] = "okhttp/4.11.0"
         header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
+        print(header)
         data = await self._pf_request(
             UserSteamPreview,
             header=header,

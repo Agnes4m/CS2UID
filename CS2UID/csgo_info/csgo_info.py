@@ -25,12 +25,11 @@ async def get_csgo_info_img(uid: str) -> Union[str, bytes]:
     detail = await pf_api.get_userdetail(uid)
 
     # print(detail)
-    # logger.info(season_scoce)
-    # logger.info(user_info)
     if isinstance(detail, int):
         return get_error(detail)
-    if not detail['statusCode'].isdigit():
-        return "数据过期，请尝试重启吧"
+    # print(detail['statusCode'])
+    # if detail['statusCode'] != 0:
+    #     return f"数据过期，错误代码为{detail['statusCode']}"
 
     if len(detail['data']['scoreList']) == 0:
         return not_msg
@@ -139,12 +138,15 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             20,
             (site_x, site_y + 90),
         )
-        await paste_img(
-            img,
-            f"爆头率：{usr_weapon['headshotRate']*100:.2f}%",
-            20,
-            (site_x, site_y + 120),
-        )
+        try:
+            await paste_img(
+                img,
+                f"爆头率：{usr_weapon['headshotRate']*100:.2f}%",
+                20,
+                (site_x, site_y + 120),
+            )
+        except Exception:
+            pass
 
     """地图战绩"""
     print(f"地图种数{len(detail['hotMaps'])}")

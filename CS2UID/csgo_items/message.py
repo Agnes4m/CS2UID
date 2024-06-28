@@ -1,7 +1,7 @@
 import re
 from typing import List
 
-map_list = {
+map_dict = {
     "dust2": [
         "沙2",
         "炙热沙城2",
@@ -21,7 +21,7 @@ tag_list_1 = [
 ]
 tag_list_2 = ["大", "小", "1", "2", "门", "点", "包点", "死点", "狙位", "通"]
 
-tag_list = [
+tag_lists = [
     "匪口",
     "匪家",
     "警家",
@@ -99,7 +99,7 @@ async def build_map_pattern():
     # 将所有地图的别名转义并合并成一个大的选择组
     escaped_aliases = [
         '(?:{})'.format(re.escape(alias))
-        for aliases in map_list.values()
+        for aliases in map_dict.values()
         for alias in aliases
     ]
     return re.compile(f'^({"|".join(escaped_aliases)})', re.IGNORECASE)
@@ -107,14 +107,9 @@ async def build_map_pattern():
 
 async def find_map_key(alias: str):
     alias_lower = alias.lower()
-    if alias_lower in [
-        alias_l.lower()
-        for map_name, aliases in map_list.items()
-        for alias_l in aliases
-    ]:
-        for map_name, aliases in map_list.items():
-            if alias_lower in [a.lower() for a in aliases]:
-                return map_name
+    for map_name, aliases in map_dict.items():
+        if alias_lower in [a.lower() for a in aliases]:
+            return map_name
     return alias
 
 

@@ -60,7 +60,17 @@ poetry run core
 查询好友码 - 命令: csgo好友码
 
 <details><summary>查询对局记录信息 - 命令: csgo对局记录</summary><p>
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_库存"></a>
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_对局信息"></a>
+</p></details>
+
+<details><summary>查询地图道具点位 - 命令: csgo道具</summary><p>
+- 参数以空格间隔，参数数量为0-4
+- 如果参数为0，返回地图
+- 如果参数为1，地图存在返回地图开始点位
+- 如果参数为2，地图存在返回地图目的点位
+- 如果参数为3且最后一个参数是道具(火/烟/闪/雷),则默认开始点位和目的点位一致
+- 如果参数为4，则正常输出攻略
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test5.jpg"><img src="./img/test4.png"  alt="CS2lUID_道具"></a>
 </p></details>
 
 ### 管理员功能
@@ -88,10 +98,18 @@ poetry run core
 
 
 
-## 丨待做功能
+## 丨当前进度
 
-1. 获取5e对~~转~~站平台战绩,如果我玩的话
-2. 其他想不到了
+[x] 查询完美基本信息
+[x] 查询官匹基本信息
+[x] 查询steam饰品库存
+[x] 查询好友码
+[x] 查询完美平台对局记录
+[x] 查询官匹对局记录
+[ ] 查询道具点位（目前完成沙2，米垃圾，遗迹三个地图）
+[ ] gs站资源图片下载
+[ ] 查询图片优化
+
 
 ## 丨其他
 
