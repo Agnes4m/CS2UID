@@ -88,7 +88,9 @@ class PerfectWorldApi:
                     raw_data = {
                         'result': {'error_code': -999, 'data': _raw_data}
                     }
-            logger.debug(raw_data)
+            if not raw_data['result']:
+                return raw_data
+            logger.info(raw_data)
             if (
                 'result' in raw_data
                 and 'error_code' in raw_data['result']

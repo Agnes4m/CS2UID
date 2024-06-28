@@ -1,5 +1,5 @@
-import json
 import sys
+import json
 from pathlib import Path
 from typing import Dict, List
 
@@ -15,8 +15,10 @@ with open(Path(__file__).parent / 'item.json') as fp:
 NEW_DICT = {
     f'res/{map_name}/{section}': RESOURCE_PATH / f'res/{map_name}/{section}'
     for map_name, sections in ITEM_DICT.items()
-    for section, points in sections.items() if points
+    for section, points in sections.items()
+    if points
 }
+
 
 async def check_use():
     await download_all_file('CS2UID', NEW_DICT)

@@ -21,6 +21,8 @@ async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
 
     if isinstance(detail, int):
         return get_error(detail)
+    if detail['result'] is None:
+        return "该用户设置了steam隐私，无法查看"
     try:
         return await draw_csgo_goods_img(detail['result'])
     except Exception as e:

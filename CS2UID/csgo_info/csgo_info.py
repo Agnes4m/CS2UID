@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Union
 
 from PIL import Image
+from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
@@ -27,9 +28,12 @@ async def get_csgo_info_img(uid: str) -> Union[str, bytes]:
     # print(detail)
     if isinstance(detail, int):
         return get_error(detail)
-    # print(detail['statusCode'])
-    # if detail['statusCode'] != 0:
-    #     return f"数据过期，错误代码为{detail['statusCode']}"
+
+    try:
+        if detail['statusCode'] != 0:
+            return f"数据过期，错误代码为{detail['statusCode']}"
+    except Exception:
+        logger.warning("获取用户详情失败！")
 
     if len(detail['data']['scoreList']) == 0:
         return not_msg
