@@ -44,7 +44,8 @@ async def build_directory_index():
         for second_dir in first_dir.iterdir():
             if not second_dir.is_dir():
                 continue
-
+            if not any(second_dir.glob('*')):
+                continue
             index_set = set()
 
             for file in second_dir.glob('*'):
@@ -55,7 +56,10 @@ async def build_directory_index():
                         else file.name
                     )
                     index_set.add(prefix)
-                index[first_dir.name][second_dir.name] = list(index_set)
+                if index_set:
+                    index[first_dir.name][second_dir.name] = sorted(
+                        list(index_set)
+                    )  # noqa: E501
 
     for first_level, second_levels in index.items():
         for second_level, prefixes in second_levels.items():

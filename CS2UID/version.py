@@ -1,1 +1,1 @@
-CS2UID_version = '0.0.1'
+CS2UID_version = '0.1.0'

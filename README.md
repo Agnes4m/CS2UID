@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Agnes4m/CS2UID"><img src="https://github.com/Agnes4m/CS2UID/blob/main/img/logo.jpg" width="256" height="256" alt="CS2lUID"></a>
 </p>
-<h1 align = "center">CS2UID 0.1</h1>
+<h1 align = "center">CS2UID 0.1.0</h1>
 <h4 align = "center">🚧支持QQ群/频道、OneBot、微信、KOOK、Tg、飞书、DoDo、米游社、Discord的CS2 bot插件🚧</h4>
 <div align = "center">
         <a href="http://docs.gsuid.gbots.work/#/" target="_blank">安装文档</a>
@@ -106,8 +106,8 @@ poetry run core
 [x] 查询好友码
 [x] 查询完美平台对局记录
 [x] 查询官匹对局记录
-[ ] 查询道具点位（目前完成沙2，米垃圾，遗迹三个地图）
-[ ] gs站资源图片下载
+[ ] 查询道具点位（目前完成7个地图，未完成地图包括小镇、新两图，以及改版后小镇和大厦点位）
+[x] gs站资源图片下载
 [ ] 查询图片优化
 
 

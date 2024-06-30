@@ -12,11 +12,14 @@ RESOURCE_PATH = MAIN_PATH / 'res'
 
 with open(Path(__file__).parent / 'item.json') as fp:
     ITEM_DICT: Dict[str, Dict[str, List[str]]] = json.loads(fp.read())
+# 去除空值
+ITEM_DICT = {k: v for k, v in ITEM_DICT.items() if v}
+
 NEW_DICT = {
-    f'res/{map_name}/{section}': RESOURCE_PATH / f'res/{map_name}/{section}'
+    f'res/{map_name}/{section}': RESOURCE_PATH / f'{map_name}/{section}'
     for map_name, sections in ITEM_DICT.items()
     for section, points in sections.items()
-    if points
+    if points  # 如果 points 非空（即它包含至少一个元素）
 }
 
 

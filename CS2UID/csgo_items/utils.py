@@ -1,9 +1,11 @@
 import re
+import json
 from pathlib import Path
 from typing import Dict, List, Union
 
 from PIL import Image
 from gsuid_core.bot import Bot
+from gsuid_core.logger import logger
 from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.image.convert import convert_img
 
@@ -19,6 +21,7 @@ from .message import (
 )
 
 res_img_path = get_res_path("CS2UID")
+config_item_path = res_img_path / "item.json"
 
 
 async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
@@ -135,7 +138,7 @@ async def re_match(texts: str, bot: Bot):
 
         if map_name:
             # A大 警家 烟
-            remaining_text = texts[map_match.end() :].strip()
+            remaining_text = texts[map_match.end() :].strip()  # noqa: E203
             print("点位参数", remaining_text)
 
             single_matches = tag_pattern.findall(remaining_text)[:2]
@@ -198,3 +201,43 @@ async def re_match(texts: str, bot: Bot):
             return
         await bot.send("参数不正确,没有地图信息")
         return None
+
+
+async def start_json():
+    """初始化道具索引"""
+    index: Dict[str, Dict[str, List[str]]] = {}
+
+    for first_dir in Path(res_img_path / "res").iterdir():
+
+        if not first_dir.is_dir():
+            continue
+
+        index[first_dir.name] = {}
+
+        for second_dir in first_dir.iterdir():
+            if not second_dir.is_dir():
+                continue
+            if not any(second_dir.glob('*')):
+                continue
+            index_set = set()
+
+            for file in second_dir.glob('*'):
+                if file.is_file():
+                    prefix = (
+                        file.name.split('_')[0]
+                        if '_' in file.name
+                        else file.name
+                    )
+                    index_set.add(prefix)
+                if index_set:
+                    index[first_dir.name][second_dir.name] = sorted(
+                        list(index_set)
+                    )
+
+    for first_level, second_levels in index.items():
+        for second_level, prefixes in second_levels.items():
+            index[first_level][second_level] = sorted(list(prefixes))
+
+    with config_item_path.open('w', encoding='utf-8') as f:
+        json.dump(index, f, ensure_ascii=False, indent=4)
+    logger.success("已生成道具索引")
