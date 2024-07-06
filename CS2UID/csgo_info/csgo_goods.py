@@ -1,18 +1,20 @@
 from pathlib import Path
 from typing import Dict, Union
 
-from PIL import Image
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.utils import download_pic_to_image
 
+from .config import TEXTURE
 from ..utils.csgo_api import pf_api
 from ..utils.api.models import SteamGet
 from ..utils.error_reply import get_error
-from .utils import paste_img, add_detail, resize_image_to_percentage
-
-TEXTURE = Path(__file__).parent / "texture2d"
-FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
+from .utils import (
+    paste_img,
+    add_detail,
+    load_groudback,
+    resize_image_to_percentage,
+)
 
 
 async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
@@ -39,7 +41,7 @@ async def draw_csgo_goods_img(detail: SteamGet) -> bytes | str:
     totalPrice = detail["totalPrice"]
 
     # 背景图
-    img = Image.open(TEXTURE / "bg" / "3.jpg")
+    img = await load_groudback(Path(TEXTURE / "bg" / "3.jpg"))
 
     await paste_img(img, "steam库存信息", 40, (100, 100))
     await paste_img(img, f"总物品数量：{totalCount}", 40, (100, 150))

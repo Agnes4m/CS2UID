@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from PIL import Image
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
@@ -8,7 +7,12 @@ from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 from ..utils.csgo_api import pf_api
 from ..utils.error_reply import not_msg, get_error
 from ..utils.api.models import UserFall, UserHomedetailData
-from .utils import paste_img, add_detail, resize_image_to_percentage
+from .utils import (
+    paste_img,
+    add_detail,
+    load_groudback,
+    resize_image_to_percentage,
+)
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -43,7 +47,7 @@ async def draw_csgohome_info_img(
     avatar = detail["avatar"]
 
     # 背景图
-    img = Image.open(TEXTURE / "bg" / "2.jpg")
+    img = await load_groudback(Path(TEXTURE / "bg" / "2.jpg"))
 
     # 头像
     if img.mode == 'RGB':

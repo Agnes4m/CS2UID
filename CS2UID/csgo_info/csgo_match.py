@@ -8,8 +8,8 @@ from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
 from ..utils.csgo_api import pf_api
 from ..utils.api.models import Match
-from .utils import paste_img, add_detail
 from ..utils.error_reply import get_error
+from .utils import paste_img, add_detail, load_groudback
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -108,10 +108,7 @@ async def draw_csgo_match_img(
     uid = uid[:4] + "********" + uid[12:]
 
     # 背景图
-    # ex = ['.jpg', '.png', '.jpeg']
-    # bg_path = TEXTURE / "bg"
-    # bg_list = [p for p in bg_path.glob('**/*') if p.suffix.lower() in ex]
-    img = Image.open(TEXTURE / "bg" / "4.jpg")
+    img = await load_groudback(Path(TEXTURE / "bg" / "4.jpg"))
 
     # 头像
     if img.mode == 'RGB':
