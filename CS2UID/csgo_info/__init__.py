@@ -18,11 +18,24 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
         return await bot.send(UID_HINT)
-
+    s = ""
+    if 'S' or 's' in ev.text:
+        after_s = ev.text.lower().split("s")[-1]
+        if (
+            after_s.isdigit()
+            or after_s.startswith(('+', '-'))
+            and after_s[1:].isdigit()
+        ):
+            s = after_s
+        else:
+            i = 0
+            while i < len(after_s) and after_s[i].isdigit():
+                i += 1
+            s = after_s[:i] if i > 0 else ""
     if '官匹' in ev.text:
         await bot.send(await get_csgohome_info_img(uid))
     else:
-        await bot.send(await get_csgo_info_img(uid))
+        await bot.send(await get_csgo_info_img(uid, s))
 
 
 @csgo_user_info.on_command(('库存'), block=True)

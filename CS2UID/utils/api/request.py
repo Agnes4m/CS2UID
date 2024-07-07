@@ -146,7 +146,7 @@ class PerfectWorldApi:
             return data
         return cast(UserInfo, data)
 
-    async def get_userdetail(self, uid: str):
+    async def get_userdetail(self, uid: str, season: str = ""):
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
@@ -162,7 +162,7 @@ class PerfectWorldApi:
             method='POST',
             json={
                 'toSteamId': uid,
-                'csgoSeasonId': "",
+                'csgoSeasonId': season,
                 'mySteamId': uid_token[0],
                 'accessToken': uid_token[-1],
             },

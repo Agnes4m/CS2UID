@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Tuple, Union, Optional
 
 from gsuid_core.logger import logger
 from PIL import Image, ImageDraw, ImageFont
@@ -50,7 +50,7 @@ async def paste_img(
     is_mid: bool = False,
     fonts: Optional[str] = None,
     long: Tuple[int, int] = (0, 900),
-    color: Tuple[int, int, int, int] = (0, 0, 0, 255),
+    color: Union[Tuple[int, int, int, int], str] = (0, 0, 0, 255),
     is_white: bool = True,
 ):
     """贴文字"""
@@ -98,7 +98,7 @@ async def simple_paste_img(
     site: Tuple[int, int],
     size: int = 20,
     fonts: Optional[str] = None,
-    color: Tuple[int, int, int, int] = (0, 0, 0, 255),
+    color: Union[Tuple[int, int, int, int], str] = (0, 0, 0, 255),
     max_length: int = 1000,
     center: bool = False,
     line_space: Optional[float] = None,
@@ -129,27 +129,29 @@ async def simple_paste_img(
     )
 
 
-async def assign_rank(rank_score: int) -> str:
+async def assign_rank(rank_score: int, is_rank: bool = True):
+    if not is_rank:
+        return "未定级", 0
     if rank_score < 1000:
-        return 'D'
+        return 'D', rank_score / 1000
     elif 1000 <= rank_score < 1200:
-        return 'D+'
+        return 'D+', (rank_score - 1000) / 200
     elif 1200 <= rank_score < 1400:
-        return 'C'
+        return 'C', (rank_score - 1200) / 200
     elif 1400 <= rank_score < 1600:
-        return 'C+'
+        return 'C+', (rank_score - 1400) / 200
     elif 1600 <= rank_score < 1800:
-        return 'B'
+        return 'B', (rank_score - 1600) / 200
     elif 1800 <= rank_score < 2000:
-        return 'B+'
+        return 'B+', (rank_score - 1800) / 200
     elif 2000 <= rank_score < 2200:
-        return 'A'
+        return 'A', (rank_score - 2000) / 200
     elif 2200 <= rank_score < 2400:
-        return 'A+'
+        return 'A+', (rank_score - 2200) / 200
     elif rank_score > 2400:
-        return 'S'
+        return 'S', (rank_score - 2400) / 200
     else:
-        return 'D'
+        return "未定级", 0
 
 
 async def resize_image_to_percentage(img: Image.Image, percentage: float):
@@ -228,7 +230,6 @@ async def new_para_img(map_url: str, logo_url: str):
     img = Image.new("RGBA", (200, 600), (0, 0, 0, 255))
 
     img.paste(map_img.resize((300, 192)))
-    img.paste(logo_img.resize((60, 60)), (70, 50), logo_img.resize((60, 60)))
 
     # 改成四边形形状
     mask = Image.new('L', img.size, 255)
@@ -247,6 +248,7 @@ async def new_para_img(map_url: str, logo_url: str):
 
     bg = Image.open(ICON_PATH / "main2.png")
     img.paste(bg, (0, 0), bg)
+    img.paste(logo_img.resize((60, 60)), (70, 35), logo_img.resize((60, 60)))
 
     return img
 
@@ -267,7 +269,7 @@ async def make_head_img(uid: str, name: str, avatar: str):
 
     head = await download_pic_to_image(avatar)
     round_head = await draw_pic_with_ring(head, 200)
-    head_img.paste(round_head, (600, 80), round_head)
+    head_img.paste(round_head, (620, 70), round_head)
 
     return head_img
 
@@ -279,36 +281,85 @@ async def make_weapen_img(usr_weapon: UserDetailhotWeapons2):
     weap = await save_img(usr_weapon['image'], "weapen")
     weap_out = await resize_image_to_percentage(weap, 14)
     # weap_out = await draw_pic_with_ring(weap_out, 5)
-    out_img.paste(weap_out, (40, 40), weap_out)
+    out_img.paste(weap_out, (40, 25), weap_out)
 
     await simple_paste_img(
         out_img,
         f"{usr_weapon['nameZh']}",
-        (10, 90),
+        (10, 70),
         size=30,
     )
     sa = usr_weapon['sprayAccuracy']
     sa_out = f"{(sa*100):.2f}%" if sa else sa
     hs = usr_weapon['headshotRate']
     hs_out = f"{(hs*100):.2f}%" if hs else hs
+    fs = usr_weapon['firstShotAccuracy']
+    fs_out = f"{(fs*100):.2f}%" if fs else fs
     print_msg = [
-        f"使用：{usr_weapon['matchNum']}",
-        f"首发命中率：{usr_weapon['firstShotAccuracy']*100:.2f}%",
+        f"击杀数：{usr_weapon['killNum']}",
+        f"首发命中率：{fs_out}",
         f"击杀时间：{usr_weapon['avgTimeToKill']}ms",
         f"扫射精准率：{sa_out}",
         f"爆头率：{hs_out}",
     ]
+    color_msg = [
+        usr_weapon['levelAvgKillNum'],
+        usr_weapon['levelAccuracy'],
+        usr_weapon['levelAvgTimeToKill'],
+        usr_weapon['levelAvgDamage'],
+        usr_weapon['levelHeadshotRate'],
+    ]
 
     index = 0
-    for one_msg in print_msg:
+    for i, one_msg in enumerate(print_msg):
         try:
             await simple_paste_img(
                 out_img,
                 one_msg,
-                (10, 140 + index * 30),
+                (10, 120 + index * 30),
+                color=await rank_to_color(color_msg[i]),
             )
             index += 1
         except Exception as E:
             print(E)
 
     return out_img
+
+
+async def rank_to_color(
+    rank: str, green: str = "A", blue: str = "B", red: str = "C"
+):
+    if rank.upper() == green:
+        return "green"
+    if rank.upper() == blue:
+        return "blue"
+    if rank.upper() == red:
+        return "red"
+    return "black"
+
+
+async def scoce_to_color(
+    rank: float, green: float, blue: float, red: float = 0
+):
+    if rank >= green:
+        return "green"
+    if rank >= blue:
+        return "blue"
+    if rank > red:
+        return "red"
+    return "black"
+
+
+async def percent_to_img(percent: float, size: tuple = (211, 46)):
+    """由半分比转化为图"""
+    # 31*46
+    img_none = Image.open(ICON_PATH / "none.png")
+    img_yellow = Image.open(ICON_PATH / "yellow.png")
+    img_out = Image.new("RGBA", (211, 46), (0, 0, 0, 0))
+    for i in range(10):
+        if percent > 0:
+            img_out.paste(img_yellow, (i * 20, 0), img_yellow)
+        else:
+            img_out.paste(img_none, (i * 20, 0), img_none)
+        percent -= 0.1
+    return img_out.resize(size)
