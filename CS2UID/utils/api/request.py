@@ -67,7 +67,7 @@ class PerfectWorldApi:
 
         if json:
             method = 'POST'
-
+        print(header)
         async with AsyncClient(verify=self.ssl_verify) as client:
             resp = await client.request(
                 method,

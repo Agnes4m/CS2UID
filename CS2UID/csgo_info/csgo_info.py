@@ -167,7 +167,6 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     img.paste(main_img, (50, 300), main_img)
 
     """武器"""
-    print(detail['hotWeapons2'])
     for i in range(min(8, len(detail['hotWeapons2']))):
         site_x = 20
         site_y = 720

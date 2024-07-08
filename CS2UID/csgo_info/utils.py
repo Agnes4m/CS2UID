@@ -11,13 +11,15 @@ from gsuid_core.utils.image.image_tools import (
 )
 
 from .config import HEAD_FONT, ICON_PATH, MAIN_FONT
-from ..utils.api.models import UserDetailhotWeapons2
+from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
 
 font_head = ImageFont.truetype(str(HEAD_FONT), 20)
 font_main = ImageFont.truetype(str(MAIN_FONT), 20)
 
 
-async def save_img(img_url: str, img_type: str):
+async def save_img(
+    img_url: str, img_type: str, size: Optional[Tuple[int, int]] = None
+):
     """下载图片并缓存以读取"""
     img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
     if not Path(img_path).exists():
@@ -39,6 +41,8 @@ async def save_img(img_url: str, img_type: str):
         map_img = Image.open(img_path)
         if map_img.mode != 'RGBA':
             map_img = map_img.convert('RGBA')
+    if size:
+        map_img.resize(size)
     return map_img
 
 
@@ -277,7 +281,6 @@ async def make_head_img(uid: str, name: str, avatar: str):
 async def make_weapen_img(usr_weapon: UserDetailhotWeapons2):
     """武器图片制作"""
     out_img = Image.open(ICON_PATH / "main1.png").resize((200, 300))
-
     weap = await save_img(usr_weapon['image'], "weapen")
     weap_out = await resize_image_to_percentage(weap, 14)
     # weap_out = await draw_pic_with_ring(weap_out, 5)
@@ -323,6 +326,43 @@ async def make_weapen_img(usr_weapon: UserDetailhotWeapons2):
         except Exception as E:
             print(E)
 
+    return out_img
+
+
+async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
+    out_img = Image.open(ICON_PATH / "main1.png").resize((200, 300))
+    weap = await save_img(usr_weapon['weaponImage'], "weapen")
+    weap_out = await resize_image_to_percentage(weap, 14)
+    # weap_out = await draw_pic_with_ring(weap_out, 5)
+    out_img.paste(weap_out, (40, 25), weap_out)
+
+    await simple_paste_img(
+        out_img,
+        f"{usr_weapon['weaponName']}",
+        (10, 70),
+        size=30,
+    )
+    avkill = usr_weapon['weaponKill'] / usr_weapon['totalMatch']
+    hs = usr_weapon['weaponHeadShot'] / usr_weapon['weaponKill']
+    hs_out = f"{(hs*100):.2f}%" if hs else hs
+    print_msg = [
+        f"使用场次：{usr_weapon['totalMatch']}次",
+        f"击杀数：{usr_weapon['weaponKill']}",
+        f"场均击杀：{avkill}",
+        f"爆头率：{hs_out}",
+    ]
+
+    index = 0
+    for i, one_msg in enumerate(print_msg):
+        try:
+            await simple_paste_img(
+                out_img,
+                one_msg,
+                (10, 120 + index * 30),
+            )
+            index += 1
+        except Exception as E:
+            print(E)
     return out_img
 
 
