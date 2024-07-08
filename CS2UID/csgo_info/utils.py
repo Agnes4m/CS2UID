@@ -347,7 +347,7 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
     print_msg = [
         f"使用场次：{usr_weapon['totalMatch']}次",
         f"击杀数：{usr_weapon['weaponKill']}",
-        f"场均击杀：{avkill}",
+        f"场均击杀：{avkill:.2f}",
         f"爆头率：{hs_out}",
     ]
 

@@ -621,3 +621,26 @@ class UserMatchRequest(TypedDict):
     statusCode: int
     errorMessage: str
     data: UserMatch
+
+
+class UserSearch(TypedDict):
+    steamId: str
+    """64位steamid"""
+    pvpNickName: str
+    """完美名称"""
+    pvpAvatar: str
+    """头像"""
+    steamNickName: str
+    """null"""
+    steamAvatar: str
+    """null"""
+    appNickName: str
+    """手机端名称"""
+    userId: int
+    ladderType: int
+
+
+class UserSearchRequest(TypedDict):
+    code: int
+    message: str
+    result: List[UserSearch]

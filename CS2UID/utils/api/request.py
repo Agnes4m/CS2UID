@@ -12,6 +12,7 @@ from .api import (
     UserHomeApi,
     UserInfoAPI,
     UserDetailAPI,
+    UserSearchApi,
     UserHomematchApi,
     UserSteamPreview,
     UserSeasonScoreAPI,
@@ -92,7 +93,6 @@ class PerfectWorldApi:
                     return raw_data
             except Exception:
                 return raw_data
-            logger.info(raw_data)
             if (
                 'result' in raw_data
                 and 'error_code' in raw_data['result']
@@ -149,7 +149,9 @@ class PerfectWorldApi:
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
-
+        if season:
+            season = "S" + season
+            print("赛季", season)
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
@@ -285,6 +287,30 @@ class PerfectWorldApi:
             CsgoFall,
             header=header,
             params={'steamId': uid, 'token': uid_token[-1]},
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserFallRequest, data)
+
+    async def search_player(self, keyword: str):
+        """搜索玩家信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header["User-Agent"] = "okhttp/4.11.0"
+        header['Content-Type'] = 'application/json;charset=UTF-8'
+        header['token'] = uid_token[-1]
+        data = await self._pf_request(
+            UserSearchApi,
+            header=header,
+            method='POST',
+            json={
+                'keyword': keyword,
+                'page': 1,
+            },
         )
         if isinstance(data, int):
             return data

@@ -61,7 +61,7 @@ async def draw_csgohome_info_img(
     img.paste(head_img, (0, 0), head_img)
 
     # 等级箱子
-    level_img = Image.open(ICON_PATH / "main1.png").resize((700, 350))
+    level_img = Image.open(ICON_PATH / "main1.png").resize((700, 400))
 
     if fall['levelTitle']:
         logo = await save_img(fall['levelIcon'], "logo")
@@ -79,7 +79,7 @@ async def draw_csgohome_info_img(
         rank_img = await percent_to_img(fall['levelUpProgress'] / 100)
         level_img.paste(rank_img, (350, 95), rank_img)
     else:
-        await simple_paste_img(level_img, fall['statusDesc'], (100, 100), 30)
+        await simple_paste_img(level_img, fall['statusDesc'], (100, 50), 40)
 
     await simple_paste_img(
         level_img,

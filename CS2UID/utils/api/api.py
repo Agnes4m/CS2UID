@@ -11,6 +11,7 @@ DailyStatsAPI = f'{HOST}/user-info/daily-stats'
 UserDetailAPI = f'{APIHOST}/api/csgo/home/pvp/detailStats'
 UserHomematchApi = f"{APIHOST}/api/csgo/home/match/list"
 UserHomeApi = f"{APIHOST}/api/csgo/home/official/detailStats"
+UserSearchApi = "https://appengine.wmpvp.com/steamcn/app/search/user"
 
 # get
 u1 = "appdecoration/steamcn/csgo/decoration/getSteamInventoryPreview"
