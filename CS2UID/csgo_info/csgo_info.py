@@ -183,7 +183,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
 
     """地图战绩"""
     map_msg_list = detail['hotMaps']
-    print(f"地图种数{len(map_msg_list)}")
+    # logger.info(f"地图种数{len(map_msg_list)}")
 
     if map_msg_list is None:
         pass
@@ -255,31 +255,5 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             (site_x + 10, site_y + 520),
             color=(255, 255, 255, 255),
         )
-    """最近战绩"""
-    # await paste_img(img, "最近战绩", 20, (60, 1350))
-    # print(f"交战记录{len(detail['scoreList'])}")
-    # if len(detail['scoreList']) < 20:
-    #     x = len(detail['scoreList'])
-    # else:
-    #     x = 20
-    # for i in range(x):
-    #     s = i
-    #     site_x = 60
-    #     site_y = 1400
-    #     if s >= 10:
-    #         site_x += 400
-    #         s -= 10
-    #     while s > 0:
-    #         s -= 1
-    #         site_y += 30
-
-    #     match = detail['scoreList'][i]
-    #     real_time = datetime.datetime.fromtimestamp(match['time'])
-    #     if match['score'] == 0:
-    #         msg = f"{i+1}. 无段位 . 时间{real_time}"
-    #     else:
-    #         msg = f"{i+1}. 得分{match['score']} . 时间{real_time}"
-
-    #     await paste_img(img, msg, 20, (site_x, site_y))
 
     return await convert_img(await add_detail(img))

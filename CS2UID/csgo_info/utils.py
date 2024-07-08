@@ -70,7 +70,6 @@ async def paste_img(
     aa, ab, ba, bb = font.getbbox(msg)
     if is_mid:
         site_x = round((long[1] - long[0] - ba + aa) / 2)
-        # print(f"横坐标{site_x}")
     else:
         site_x = site[0]
 
@@ -324,7 +323,7 @@ async def make_weapen_img(usr_weapon: UserDetailhotWeapons2):
             )
             index += 1
         except Exception as E:
-            print(E)
+            logger.warning(E)
 
     return out_img
 
@@ -362,7 +361,7 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
             )
             index += 1
         except Exception as E:
-            print(E)
+            logger.warning(E)
     return out_img
 
 

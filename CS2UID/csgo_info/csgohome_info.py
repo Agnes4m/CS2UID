@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from PIL import Image
+from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 
 from .config import ICON_PATH
@@ -126,7 +127,7 @@ async def draw_csgohome_info_img(
 
     """地图战绩"""
     map_msg_list = detail['hotMaps']
-    print(f"地图种数{len(map_msg_list)}")
+    logger.info(f"地图种数{len(map_msg_list)}")
 
     if map_msg_list is None:
         pass

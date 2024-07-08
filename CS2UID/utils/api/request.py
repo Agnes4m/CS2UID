@@ -67,7 +67,6 @@ class PerfectWorldApi:
 
         if json:
             method = 'POST'
-        print(header)
         async with AsyncClient(verify=self.ssl_verify) as client:
             resp = await client.request(
                 method,
@@ -153,7 +152,6 @@ class PerfectWorldApi:
 
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
-        header["HOST"] = "api.wmpvp.com"
         header["User-Agent"] = "okhttp/4.11.0"
         header['Content-Type'] = 'application/json;charset=UTF-8'
         data = await self._pf_request(
@@ -181,7 +179,6 @@ class PerfectWorldApi:
         header["User-Agent"] = "okhttp/4.11.0"
         header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
-        print(header)
         data = await self._pf_request(
             UserSteamPreview,
             header=header,
