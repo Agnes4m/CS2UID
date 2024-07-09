@@ -59,24 +59,29 @@ poetry run core
 
 查询好友码 - 命令: csgo好友码
 
+搜索用户 - 命令: csgo搜索 + name
+
 <details><summary>查询对局记录信息 - 命令: csgo对局记录</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_对局信息"></a>
 </p></details>
 
 <details><summary>查询地图道具点位 - 命令: csgo道具</summary><p>
+
 - 参数以空格间隔，参数数量为0-4
 - 如果参数为0，返回地图
 - 如果参数为1，地图存在返回地图开始点位
 - 如果参数为2，地图存在返回地图目的点位
 - 如果参数为3且最后一个参数是道具(火/烟/闪/雷),则默认开始点位和目的点位一致
 - 如果参数为4，则正常输出攻略
-<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test5.jpg"><img src="./img/test4.png"  alt="CS2lUID_道具"></a>
+
+<a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test5.jpg"><img src="./img/test5.png"  alt="CS2lUID_道具"></a>
 </p></details>
 
 ### 管理员功能
 
 - 添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid
 
+- 下载拓展资源 - 命令: csgo下载全部资源
 
 ## 丨使用方式
 
@@ -92,8 +97,8 @@ poetry run core
    3. 如果不添加则无法使用csgo指令查询
 
 5. 可以正常使用Bot了！
-   1. 首先需要知道自己的uid，也就是steam64位id,上述抓包的**pwasteamid**就是当前账户uid，也可以通过steam或者完美平台个人信息自行查询
-   2. 发送`csgo绑定uid`
+   1. 使用`csgo搜索`查询自己的64位steamid，也可以通过steam或者完美平台个人信息自行查询
+   2. 发送`csgo绑定uid + name`
    3. 可以进行查询，使用`csgo查询`进行查询即可
 
 
@@ -106,9 +111,10 @@ poetry run core
 + [x] 查询好友码
 + [x] 查询完美平台对局记录
 + [x] 查询官匹对局记录
++ [x] 通过名称搜索用户
 + [ ] 查询道具点位（目前完成7个地图，未完成地图包括小镇、新两图，以及改版后小镇和大厦点位）
 + [x] gs站资源图片下载
-+ [ ] 查询图片优化(正在进行)
++ [ ] 查询图片优化(80%)
 + [ ] 5e b5等其他平台战绩查询(我身边没人玩，先摆了)
 
 

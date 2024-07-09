@@ -3,8 +3,8 @@ import json as js
 from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
+# from gsuid_core.logger import logger
 from httpx import AsyncClient
-from gsuid_core.logger import logger
 
 from ..database.models import CS2User
 from .api import (
@@ -25,6 +25,7 @@ from .models import (
     UserSeasonScore,
     UserMatchRequest,
     UserDetailRequest,
+    UserSearchRequest,
     UserHomedetailRequest,
 )
 
@@ -314,4 +315,4 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
-        return cast(UserFallRequest, data)
+        return cast(UserSearchRequest, data)

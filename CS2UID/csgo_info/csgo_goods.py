@@ -157,20 +157,30 @@ async def draw_csgo_goods_img(
         else:
             msg1 = name_out[0].replace("（StatTrak™）", "")
             msg2 = name_out[-1]
-            if tag_data["类型"] == "音乐盒":
+            if tag_data["类型"] in ["音乐盒", "武器箱"]:
                 msg1, msg2 = msg2, msg1
 
             deta = str(one_get['description'])
+            head_x = 12
             if tag_data['类别'] == "StatTrak™":
                 if "该物品记录已认证杀敌数" in deta:
                     pass
+                elif tag_data["类型"] == "音乐盒":
+                    st_nub2 = deta.split("官方竞技MVP次数：")
+                    st_nub3 = st_nub2[-1]
+                    st_nub1 = st_nub3.strip().split("</p >")[0].strip()
+                    await simple_paste_img(
+                        good_img, f"{st_nub1}个", (33, 5), color="red", size=13
+                    )
+                    head_x += len(st_nub1 * 14)
                 else:
                     st_nub2 = deta.split("已认证杀敌数：")
                     st_nub3 = st_nub2[-1]
                     st_nub1 = st_nub3.strip().split("</p >")[0].strip()
                     await simple_paste_img(
-                        good_img, st_nub1, (33, 5), color=qua_color, size=13
+                        good_img, f"{st_nub1}个", (33, 5), color="red", size=13
                     )
+                    head_x += len(st_nub1 * 13)
             await simple_paste_img(
                 good_img,
                 msg1,
@@ -178,7 +188,7 @@ async def draw_csgo_goods_img(
                 color=qua_color,
             )
             await simple_paste_img(
-                good_img, f"{msg2}", (20, 25), color="Purple", size=15
+                good_img, f"{msg2}", (20, 25), color="Purple"
             )
 
         # st + 磨损
@@ -189,9 +199,7 @@ async def draw_csgo_goods_img(
                 await simple_paste_img(
                     good_img, st, (10, 7), size=10, color="Purple"
                 )
-                x, y = 60, 7
-            else:
-                x, y = 12, 7
+                head_x += 24
             try:
                 mosun = tag_data['外观']
                 if mosun == "崭新出厂":
@@ -199,7 +207,7 @@ async def draw_csgo_goods_img(
                 elif mosun == "略有磨损":
                     mo_color = "green"
                 elif mosun == "久经沙场":
-                    mo_color = "Gold"
+                    mo_color = "Olive"
                 elif mosun == "破损不堪":
                     mo_color = "Red"
                 elif mosun == "战痕累累":
@@ -210,7 +218,7 @@ async def draw_csgo_goods_img(
                 await simple_paste_img(
                     good_img,
                     f"{tag_data['外观']}",
-                    (x, y),
+                    (head_x, 6),
                     size=13,
                     color=mo_color,
                 )

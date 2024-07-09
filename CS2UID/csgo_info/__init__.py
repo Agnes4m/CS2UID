@@ -8,6 +8,7 @@ from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
 from ..utils.database.models import CS2Bind
+from .csgo_search import get_search_players
 from .csgohome_info import get_csgohome_info_img
 
 csgo_user_info = SV('CS2用户信息查询')
@@ -81,3 +82,9 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
         type_i = -1
 
     await bot.send(await get_csgo_match_img(uid, tag, type_i))
+
+
+@csgo_user_info.on_command(('搜索'), block=True)
+async def send_csgo_search(bot: Bot, ev: Event):
+    name = ev.text.strip()
+    await bot.send(await get_search_players(name))

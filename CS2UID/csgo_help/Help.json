@@ -106,12 +106,25 @@
         "need_admin": false
       },
       {
-        "name": "csgo下载全部资源",
-        "desc": "查询道具攻略",
-        "eg": "csgo道具沙2 匪家 A大 过点烟",
+        "name": "csgo搜索",
+        "desc": "通过完美平台名字或steamid搜索用户",
+        "eg": "csgo搜索爱丽数码",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
+      }
+    ]
+  },
+  "管理员功能": {
+    "desc": "游戏攻略相关查询",
+    "data": [
+      {
+        "name": "csgo下载全部资源",
+        "desc": "下载完整资源(非必要)",
+        "eg": "csgo下载全部资源",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": true
       }
     ]
   }

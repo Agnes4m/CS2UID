@@ -18,3 +18,4 @@ def get_error(retcode: Union[int, str]) -> str:
 
 
 not_msg = "本赛季完美平台未有匹配记录"
+not_player = "查无此人"
