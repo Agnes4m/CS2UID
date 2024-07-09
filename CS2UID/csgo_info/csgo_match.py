@@ -40,17 +40,17 @@ async def get_csgo_match_img(
     if tag == 1:
         match_type = "国服竞技"
     else:
-        if type == -1:
+        if tag == -1:
             match_type = "完美平台对战"
-        elif type == 12:
+        elif tag == 12:
             match_type = "完美普通天梯"
-        elif type == 41:
+        elif tag == 41:
             match_type = "完美官匹Pro"
-        elif type == 20:
+        elif tag == 20:
             match_type = "完美巅峰赏金"
-        elif type == 27:
+        elif tag == 27:
             match_type = "完美周末联赛"
-        elif type == 14:
+        elif tag == 14:
             match_type = "完美自定义"
         else:
             match_type = "完美平台对战"

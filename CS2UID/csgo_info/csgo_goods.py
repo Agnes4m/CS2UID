@@ -124,11 +124,7 @@ async def draw_csgo_goods_img(
         good_img.paste(good_logo, (130, 20), good_logo)
 
         tag = one_get["decorationTags"]
-
-        # 初始化 tag_data 字典
         tag_data: Dict[str, str] = {}
-
-        # 特殊类型，这些类型会清空“武器”、“收藏品”和“外观”字段
         special_types = ["音乐盒", "收藏品", "武器箱", "涂鸦"]
 
         # 遍历标签
@@ -190,24 +186,24 @@ async def draw_csgo_goods_img(
                     head_x += len(st_nub1 * 13)
             await simple_paste_img(
                 good_img,
-                msg1,
+                msg1[::8],
                 (20, 60),
                 color=qua_color,
             )
             await simple_paste_img(
-                good_img, f"{msg2}", (20, 25), color="Purple"
+                good_img, msg2[::8], (20, 25), color="Purple"
             )
 
         # st + 磨损
 
         if tag_data["类型"] in ["音乐盒", "收藏品", "武器箱", "涂鸦"]:
-            await simple_paste_img(good_img, tag_data['类别'], (20, 100))
+            pass
         else:
             if tag_data['类别'] != "普通":
                 await simple_paste_img(
                     good_img, st, (10, 7), size=10, color="Purple"
                 )
-                head_x += 24
+                head_x += 25
 
             mosun = tag_data.get('外观', "_default")
             mo_color = wear_color_mapping.get(

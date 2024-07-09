@@ -39,7 +39,7 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
         await bot.send(await get_csgo_info_img(uid, s))
 
 
-@csgo_user_info.on_command(('库存'), block=True)
+@csgo_user_info.on_command(('库存', '仓库', '饰品'), block=True)
 async def send_csgo_goods_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
@@ -57,7 +57,7 @@ async def send_csgo_friend_msg(bot: Bot, ev: Event):
     await bot.send(await get_csgohome_info_img(uid, True))
 
 
-@csgo_user_info.on_command(('对局记录'), block=True)
+@csgo_user_info.on_command(('对局记录', '对局信息', '对局查询'), block=True)
 async def send_csgo_match_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
