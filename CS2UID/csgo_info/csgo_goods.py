@@ -18,6 +18,38 @@ from .utils import (
     resize_image_to_percentage,
 )
 
+quality_mapping = {
+    "高级": ("blue", None),
+    "奇异": ("hotpink", None),
+    "卓越": ("purple", None),
+    "非凡": ("hotpink", "☆"),
+    "工业级": ("royalblue", ""),
+    "军规级": ("MediumBlue", ""),
+    "受限": ("mediumorchid", ""),
+    "保密": ("fuchsia", ""),
+    "隐秘": ("red", ""),
+    "违禁": ("yellow", ""),
+    "_default": ("black", None),
+}
+
+wear_color_mapping = {
+    "崭新出厂": "DarkGreen",
+    "略有磨损": "green",
+    "久经沙场": "Olive",
+    "破损不堪": "Red",
+    "战痕累累": "FireBrick",
+    "_default": "black",
+}
+
+category_to_key = {
+    "Type": "类型",
+    "Quality": "类别",
+    "Rarity": "品质",
+    "Weapon": "武器",
+    "ItemSet": "收藏品",
+    "Exterior": "外观",
+}
+
 
 async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
     detail = await pf_api.get_steamgoods(uid)
@@ -93,60 +125,35 @@ async def draw_csgo_goods_img(
 
         tag = one_get["decorationTags"]
 
+        # 初始化 tag_data 字典
         tag_data: Dict[str, str] = {}
-        for one in tag:
-            if one["category"] == "Type":
-                """装备，音乐盒，微型冲锋枪"""
-                tag_data["类型"] = one["name"]
-            if one["category"] == "Quality":
-                tag_data["类别"] = one["name"]
-            if one["category"] == "Rarity":
-                tag_data["品质"] = one["name"]
-            if tag_data["类型"] != "音乐盒":
-                if one["category"] == "Weapon":
-                    tag_data["武器"] = one["name"]
-                if one["category"] == "ItemSet":
-                    tag_data["收藏品"] = one["name"]
-                if one["category"] == "Exterior":
-                    tag_data["外观"] = one["name"]
 
-            if tag_data["类型"] in ["音乐盒", "收藏品", "武器箱", "涂鸦"]:
+        # 特殊类型，这些类型会清空“武器”、“收藏品”和“外观”字段
+        special_types = ["音乐盒", "收藏品", "武器箱", "涂鸦"]
+
+        # 遍历标签
+        for item in tag:
+            key = category_to_key.get(item["category"])
+            if key:
+                tag_data[key] = item["name"]
+
+            if tag_data.get("类型") in special_types:
                 tag_data["武器"] = ""
                 tag_data["收藏品"] = ""
                 tag_data["外观"] = ""
 
+        if tag_data.get("类型") in special_types:
+            tag_data["武器"] = ""
+            tag_data["收藏品"] = ""
+            tag_data["外观"] = ""
+
         # 品质
         name_out = one_get["name"].split("|")
-        if tag_data["品质"] == "高级":
-            qua_color = "blue"
-        elif tag_data["品质"] == "奇异":
-            qua_color = "hotpink"
-        elif tag_data["品质"] == "卓越":
-            qua_color = "purple"
-        elif tag_data["品质"] == "非凡":
-            tag_data["品质"] = "☆"
-            qua_color = "hotpink"
-        elif tag_data["品质"] == "工业级":
-            tag_data["品质"] = ""
-            qua_color = "royalblue"
-        elif tag_data["品质"] == "军规级":
-            tag_data["品质"] = ""
-            qua_color = "MediumBlue"
-        elif tag_data["品质"] == "受限":
-            tag_data["品质"] = ""
-            qua_color = "mediumorchid"
-        elif tag_data["品质"] == "保密":
-            tag_data["品质"] = ""
-            qua_color = "fuchsia"
-        elif tag_data["品质"] == "隐秘":
-            tag_data["品质"] = ""
-            qua_color = "red"
-        elif tag_data["品质"] == "违禁":
-            tag_data["品质"] = ""
-            qua_color = "yellow"
-        else:
-            qua_color = "black"
-
+        qua_color, qua_text_replacement = quality_mapping.get(
+            tag_data["品质"], quality_mapping["_default"]
+        )
+        if qua_text_replacement is not None:
+            tag_data["品质"] = qua_text_replacement
         img_qua = Image.new("RGB", (5, 15), color=qua_color)
         good_img.paste(img_qua, (4, 6))
 
@@ -192,38 +199,27 @@ async def draw_csgo_goods_img(
             )
 
         # st + 磨损
-        if tag_data["类型"] == ["音乐盒", "收藏品", "武器箱", "涂鸦"]:
-            await simple_paste_img(good_img, f"{tag_data['类别']}", (20, 100))
+
+        if tag_data["类型"] in ["音乐盒", "收藏品", "武器箱", "涂鸦"]:
+            await simple_paste_img(good_img, tag_data['类别'], (20, 100))
         else:
             if tag_data['类别'] != "普通":
                 await simple_paste_img(
                     good_img, st, (10, 7), size=10, color="Purple"
                 )
                 head_x += 24
-            try:
-                mosun = tag_data['外观']
-                if mosun == "崭新出厂":
-                    mo_color = "DarkGreen"
-                elif mosun == "略有磨损":
-                    mo_color = "green"
-                elif mosun == "久经沙场":
-                    mo_color = "Olive"
-                elif mosun == "破损不堪":
-                    mo_color = "Red"
-                elif mosun == "战痕累累":
-                    mo_color = "FireBrick"
-                else:
-                    mo_color = "black"
 
+            mosun = tag_data.get('外观', "_default")
+            mo_color = wear_color_mapping.get(
+                mosun, wear_color_mapping["_default"]
+            )
+
+            try:
                 await simple_paste_img(
-                    good_img,
-                    f"{tag_data['外观']}",
-                    (head_x, 6),
-                    size=13,
-                    color=mo_color,
+                    good_img, mosun, (head_x, 6), size=13, color=mo_color
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Error pasting wear condition: {e}")
 
         # 价格
         await simple_paste_img(

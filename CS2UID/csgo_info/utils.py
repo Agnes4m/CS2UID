@@ -11,7 +11,7 @@ from gsuid_core.utils.image.image_tools import (
 )
 
 from .config import HEAD_FONT, ICON_PATH, MAIN_FONT
-from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
+from ..utils.api.models import UserDetailhotWeapons2
 
 font_head = ImageFont.truetype(str(HEAD_FONT), 20)
 font_main = ImageFont.truetype(str(MAIN_FONT), 20)
@@ -270,7 +270,7 @@ async def make_head_img(uid: str, name: str, avatar: str):
     await simple_paste_img(head_img, name, (35, 130), size=40, fonts="head")
     await simple_paste_img(head_img, uid, (20, 205), size=35, fonts="head")
 
-    head = await download_pic_to_image(avatar)
+    head = await save_img(avatar, "map")
     round_head = await draw_pic_with_ring(head, 200)
     head_img.paste(round_head, (620, 70), round_head)
 
@@ -328,7 +328,7 @@ async def make_weapen_img(usr_weapon: UserDetailhotWeapons2):
     return out_img
 
 
-async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
+async def make_homeweapen_img(usr_weapon: dict):
     out_img = Image.open(ICON_PATH / "main1.png").resize((200, 300))
     weap = await save_img(usr_weapon['weaponImage'], "weapen")
     weap_out = await resize_image_to_percentage(weap, 14)
@@ -336,14 +336,17 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
     out_img.paste(weap_out, (40, 25), weap_out)
 
     await simple_paste_img(
-        out_img,
-        f"{usr_weapon['weaponName']}",
-        (10, 70),
-        size=30,
+        out_img, usr_weapon['weaponName'], (10, 70), size=30
     )
+
     avkill = usr_weapon['weaponKill'] / usr_weapon['totalMatch']
-    hs = usr_weapon['weaponHeadShot'] / usr_weapon['weaponKill']
-    hs_out = f"{(hs*100):.2f}%" if hs else hs
+    hs = (
+        usr_weapon['weaponHeadShot'] / usr_weapon['weaponKill']
+        if usr_weapon['weaponKill']
+        else 0
+    )
+    hs_out = f"{(hs*100):.2f}%" if hs else "0%"
+
     print_msg = [
         f"使用场次：{usr_weapon['totalMatch']}次",
         f"击杀数：{usr_weapon['weaponKill']}",
@@ -351,17 +354,12 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
         f"爆头率：{hs_out}",
     ]
 
-    index = 0
-    for i, one_msg in enumerate(print_msg):
+    for index, one_msg in enumerate(print_msg):
         try:
-            await simple_paste_img(
-                out_img,
-                one_msg,
-                (10, 120 + index * 30),
-            )
-            index += 1
+            await simple_paste_img(out_img, one_msg, (10, 120 + index * 30))
         except Exception as E:
-            logger.warning(E)
+            logger.warning(f"Error pasting text to image: {E}")
+
     return out_img
 
 
