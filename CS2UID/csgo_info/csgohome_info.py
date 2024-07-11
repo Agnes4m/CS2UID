@@ -1,23 +1,23 @@
 from pathlib import Path
 
-from PIL import Image
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
+from PIL import Image
 
-from .config import ICON_PATH
-from ..utils.csgo_api import pf_api
-from ..utils.error_reply import not_msg, get_error
 from ..utils.api.models import UserFall, UserHomedetailData
+from ..utils.csgo_api import pf_api
+from ..utils.error_reply import get_error, not_msg
+from .config import ICON_PATH
 from .utils import (
-    save_img,
     add_detail,
-    new_para_img,
-    make_head_img,
     load_groudback,
-    percent_to_img,
-    simple_paste_img,
+    make_head_img,
     make_homeweapen_img,
+    new_para_img,
+    percent_to_img,
     resize_image_to_percentage,
+    save_img,
+    simple_paste_img,
 )
 
 TEXTURE = Path(__file__).parent / "texture2d"
@@ -25,21 +25,19 @@ FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 
 
 async def get_csgohome_info_img(uid: str, friend: bool = False):
-
-    detail = await pf_api.get_csgohomedetail(uid)
+    data = await pf_api.get_csgohomedetail(uid)
     fall = await pf_api.get_fall(uid)
-    # print(detail)
 
-    if isinstance(detail, int):
-        return get_error(detail)
-    if isinstance(fall, int):
-        return get_error(fall)
+    if isinstance(data, int) or isinstance(fall, int):
+        return get_error(data if isinstance(data, int) else fall)
+
     if friend:
-        return detail['data']["friendCode"]
-    if len(detail['data']['hotMaps']) == 0:
+        return data['data']["friendCode"]
+
+    if len(data['data']['hotMaps']) == 0:
         return not_msg
-    # print(fall)
-    return await draw_csgohome_info_img(detail['data'], fall["result"])
+
+    return await draw_csgohome_info_img(data['data'], fall["result"])
 
 
 async def draw_csgohome_info_img(
@@ -61,26 +59,32 @@ async def draw_csgohome_info_img(
     img.paste(head_img, (0, 0), head_img)
 
     # 等级箱子
-    level_img = Image.open(ICON_PATH / "main1.png").resize((700, 400))
+    IMG_X = 700
+    IMG_Y = 400
+
+    level_img = Image.open(ICON_PATH / "main1.png").resize((IMG_X, IMG_Y))
 
     if fall['levelTitle']:
         logo = await save_img(fall['levelIcon'], "logo")
-        logo = await resize_image_to_percentage(logo, 50)
+        LOGO_SIZE = 50
+        logo = await resize_image_to_percentage(logo, LOGO_SIZE)
         level_img.paste(logo, (40, 30), logo)
 
-        msg = (
-            f"{fall['levelTitle']}-{fall['curLevel']}级  {fall['statusDesc']}"
-        )
+        LEVEL_TITLE = fall['levelTitle']
+        CUR_LEVEL = fall['curLevel']
+        STATUS_DESC = fall['statusDesc']
+        msg = f"{LEVEL_TITLE}-{CUR_LEVEL}级  {STATUS_DESC}"
         await simple_paste_img(level_img, msg, (100, 30), 30)
 
+        LEVEL_UP_PROGRESS = fall['levelUpProgress']
         await simple_paste_img(
-            level_img, f"当前经验值{fall['levelUpProgress']}%", (100, 100), 30
+            level_img, f"当前经验值{LEVEL_UP_PROGRESS}%", (100, 100), 30
         )
-        rank_img = await percent_to_img(fall['levelUpProgress'] / 100)
-        level_img.paste(rank_img, (350, 95), rank_img)
+        RANK_IMG = await percent_to_img(LEVEL_UP_PROGRESS / 100)
+        level_img.paste(RANK_IMG, (350, 95), RANK_IMG)
     else:
-        await simple_paste_img(level_img, fall['statusDesc'], (100, 50), 40)
-
+        STATUS_DESC = fall['statusDesc']
+        await simple_paste_img(level_img, STATUS_DESC, (100, 50), 40)
     await simple_paste_img(
         level_img,
         f"胜场/场次：{detail['historyWinCount']} / {detail['cnt']}",

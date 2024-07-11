@@ -1,23 +1,23 @@
 from pathlib import Path
 from typing import Union
 
-from PIL import Image
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
+from PIL import Image
 
-from ..utils.csgo_api import pf_api
-from .config import TEXTURE, ICON_PATH
 from ..utils.api.models import UserDetailData
-from ..utils.error_reply import not_msg, get_error
+from ..utils.csgo_api import pf_api
+from ..utils.error_reply import get_error, not_msg
+from .config import ICON_PATH, TEXTURE
 from .utils import (
     add_detail,
     assign_rank,
-    new_para_img,
-    make_head_img,
     load_groudback,
+    make_head_img,
+    make_weapen_img,
+    new_para_img,
     percent_to_img,
     scoce_to_color,
-    make_weapen_img,
     simple_paste_img,
 )
 
@@ -68,7 +68,6 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             msg=f"天梯段位:{rank[0]}  天梯段位分:{rank_scoce}  星数:{detail['stars']}",
             site=(50, 90),
             size=30,
-            fonts="head",
         )
     else:
         await simple_paste_img(

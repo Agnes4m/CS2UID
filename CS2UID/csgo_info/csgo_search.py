@@ -15,8 +15,7 @@ async def get_search_players(name: str) -> Union[str, bytes]:
 
     players_msg = detail['result']
     out_msg = ""
-    for i, one_player in enumerate(players_msg):
-
+    for one_player in players_msg:
         info_msg = f"玩家:{one_player['pvpNickName'].strip()}"
         info_msg += f"({one_player['appNickName']})\n"
         info_msg += f"【ID:{one_player['steamId']}】\n"

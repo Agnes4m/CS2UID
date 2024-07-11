@@ -1,17 +1,17 @@
 from pathlib import Path
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
-from gsuid_core.logger import logger
-from PIL import Image, ImageDraw, ImageFont
 from gsuid_core.data_store import get_res_path
-from gsuid_core.utils.image.utils import download_pic_to_image
+from gsuid_core.logger import logger
 from gsuid_core.utils.image.image_tools import (
-    draw_text_by_line,
     draw_pic_with_ring,
+    draw_text_by_line,
 )
+from gsuid_core.utils.image.utils import download_pic_to_image
+from PIL import Image, ImageDraw, ImageFont
 
+from ..utils.api.models import UserDetailhotWeapons2, UserhomeWeapon
 from .config import HEAD_FONT, ICON_PATH, MAIN_FONT
-from ..utils.api.models import UserDetailhotWeapons2
 
 font_head = ImageFont.truetype(str(HEAD_FONT), 20)
 font_main = ImageFont.truetype(str(MAIN_FONT), 20)
@@ -328,7 +328,7 @@ async def make_weapen_img(usr_weapon: UserDetailhotWeapons2):
     return out_img
 
 
-async def make_homeweapen_img(usr_weapon: dict):
+async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
     out_img = Image.open(ICON_PATH / "main1.png").resize((200, 300))
     weap = await save_img(usr_weapon['weaponImage'], "weapen")
     weap_out = await resize_image_to_percentage(weap, 14)
@@ -378,13 +378,8 @@ async def rank_to_color(
 async def scoce_to_color(
     rank: float, green: float, blue: float, red: float = 0
 ):
-    if rank >= green:
-        return "green"
-    if rank >= blue:
-        return "blue"
-    if rank > red:
-        return "red"
-    return "black"
+    switch = {green: "green", blue: "blue", red: "red"}
+    return switch.get(rank, "black")
 
 
 async def percent_to_img(percent: float, size: tuple = (211, 46)):
