@@ -1,23 +1,23 @@
 from pathlib import Path
 
+from PIL import Image
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
-from PIL import Image
 
-from ..utils.api.models import UserFall, UserHomedetailData
-from ..utils.csgo_api import pf_api
-from ..utils.error_reply import get_error, not_msg
 from .config import ICON_PATH
+from ..utils.csgo_api import pf_api
+from ..utils.error_reply import not_msg, get_error
+from ..utils.api.models import UserFall, UserHomedetailData
 from .utils import (
-    add_detail,
-    load_groudback,
-    make_head_img,
-    make_homeweapen_img,
-    new_para_img,
-    percent_to_img,
-    resize_image_to_percentage,
     save_img,
+    add_detail,
+    new_para_img,
+    make_head_img,
+    load_groudback,
+    percent_to_img,
     simple_paste_img,
+    make_homeweapen_img,
+    resize_image_to_percentage,
 )
 
 TEXTURE = Path(__file__).parent / "texture2d"

@@ -186,13 +186,11 @@ async def draw_csgo_goods_img(
                     head_x += len(st_nub1 * 13)
             await simple_paste_img(
                 good_img,
-                msg1[::8],
+                msg1,
                 (20, 60),
                 color=qua_color,
             )
-            await simple_paste_img(
-                good_img, msg2[::8], (20, 25), color="Purple"
-            )
+            await simple_paste_img(good_img, msg2, (20, 25), color="Purple")
 
         # st + 磨损
 

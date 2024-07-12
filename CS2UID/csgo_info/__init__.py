@@ -3,13 +3,13 @@ from gsuid_core.bot import Bot
 from gsuid_core.models import Event
 from gsuid_core.utils.database.api import get_uid
 
-from ..utils.error_reply import UID_HINT
 from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
 from ..utils.database.models import CS2Bind
 from .csgo_search import get_search_players
 from .csgohome_info import get_csgohome_info_img
+from ..utils.error_reply import UID_HINT, try_send
 
 csgo_user_info = SV('CS2用户信息查询')
 
@@ -18,7 +18,7 @@ csgo_user_info = SV('CS2用户信息查询')
 async def send_csgo_info_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
-        return await bot.send(UID_HINT)
+        return await try_send(bot, UID_HINT)
     s = ""
     if 'S' or 's' in ev.text:
         after_s = ev.text.lower().split("s")[-1]
@@ -34,34 +34,34 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
                 i += 1
             s = after_s[:i] if i > 0 else ""
     if '官匹' in ev.text:
-        await bot.send(await get_csgohome_info_img(uid))
+        await try_send(bot, await get_csgohome_info_img(uid))
     else:
-        await bot.send(await get_csgo_info_img(uid, s))
+        await try_send(bot, await get_csgo_info_img(uid, s))
 
 
 @csgo_user_info.on_command(('库存', '仓库', '饰品'), block=True)
 async def send_csgo_goods_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
-        return await bot.send(UID_HINT)
+        return await try_send(bot, UID_HINT)
 
-    await bot.send(await get_csgo_goods_img(uid))
+    await try_send(bot, await get_csgo_goods_img(uid))
 
 
 @csgo_user_info.on_command(('好友码'), block=True)
 async def send_csgo_friend_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
-        return await bot.send(UID_HINT)
+        return await try_send(bot, UID_HINT)
 
-    await bot.send(await get_csgohome_info_img(uid, True))
+    await try_send(bot, await get_csgohome_info_img(uid, True))
 
 
 @csgo_user_info.on_command(('对局记录', '对局信息', '对局查询'), block=True)
 async def send_csgo_match_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
-        return await bot.send(UID_HINT)
+        return await try_send(bot, UID_HINT)
 
     if "官匹" in ev.text:
         tag = 1
@@ -81,10 +81,10 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
     else:
         type_i = -1
 
-    await bot.send(await get_csgo_match_img(uid, tag, type_i))
+    await try_send(bot, await get_csgo_match_img(uid, tag, type_i))
 
 
 @csgo_user_info.on_command(('搜索'), block=True)
 async def send_csgo_search(bot: Bot, ev: Event):
     name = ev.text.strip()
-    await bot.send(await get_search_players(name))
+    await try_send(bot, await get_search_players(name))

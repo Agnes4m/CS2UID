@@ -22,7 +22,7 @@ class CS2Bindadmin(GsAdminModel):
     )  # type: ignore
 
     # 配置管理模型
-    model = CS2User
+    model = CS2Bind
 
 
 @site.register_admin

@@ -1,17 +1,17 @@
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Tuple, Union, Optional
 
-from gsuid_core.data_store import get_res_path
 from gsuid_core.logger import logger
-from gsuid_core.utils.image.image_tools import (
-    draw_pic_with_ring,
-    draw_text_by_line,
-)
-from gsuid_core.utils.image.utils import download_pic_to_image
 from PIL import Image, ImageDraw, ImageFont
+from gsuid_core.data_store import get_res_path
+from gsuid_core.utils.image.utils import download_pic_to_image
+from gsuid_core.utils.image.image_tools import (
+    draw_text_by_line,
+    draw_pic_with_ring,
+)
 
-from ..utils.api.models import UserDetailhotWeapons2, UserhomeWeapon
 from .config import HEAD_FONT, ICON_PATH, MAIN_FONT
+from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
 
 font_head = ImageFont.truetype(str(HEAD_FONT), 20)
 font_main = ImageFont.truetype(str(MAIN_FONT), 20)
