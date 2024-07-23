@@ -9,6 +9,7 @@ CK_HINT = '[csgo] 你还没有添加可用TOKEN，请先使用[csgo添加tk]命�
 error_dict = {
     -51: UID_HINT,
     -511: CK_HINT,
+    4001: '4001 - 登录已失效，请重新添加sk',
     8000102: '8000102 - auth check failed!\n该tk失效或不正确, 请检查错误tk!',
 }
 

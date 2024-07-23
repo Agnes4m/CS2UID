@@ -16,6 +16,10 @@
 >
 > 支持NoneBot2 & HoshinoBot & ZeroBot & YunzaiBot & Koishi的CS2(原名CSGO)游戏Bot插件
 
+## 注意
+
+**现已将指令`csgo`改为`cs`**
+
 + [常见问题](question.md)
 
 ## 丨安装方式

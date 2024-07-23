@@ -54,7 +54,7 @@ category_to_key = {
 async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
     detail = await pf_api.get_steamgoods(uid)
     base = await pf_api.get_csgohomedetail(uid)
-    # print(detail)
+    logger.debug(detail)
 
     if isinstance(detail, int):
         return get_error(detail)

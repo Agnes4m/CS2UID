@@ -27,14 +27,15 @@ FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 async def get_csgohome_info_img(uid: str, friend: bool = False):
     data = await pf_api.get_csgohomedetail(uid)
     fall = await pf_api.get_fall(uid)
-
+    logger.debug(fall)
+    logger.debug(data)
     if isinstance(data, int) or isinstance(fall, int):
         return get_error(data if isinstance(data, int) else fall)
 
     if friend:
         return data['data']["friendCode"]
 
-    if len(data['data']['hotMaps']) == 0:
+    if data['data']['hotMaps'] is None or len(data['data']['hotMaps']) == 0:
         return not_msg
 
     return await draw_csgohome_info_img(data['data'], fall["result"])

@@ -25,7 +25,7 @@ from .utils import (
 async def get_csgo_info_img(uid: str, season: str = "") -> Union[str, bytes]:
     detail = await pf_api.get_userdetail(uid, season)
 
-    # print(detail)
+    logger.debug(detail)
     if isinstance(detail, int):
         return get_error(detail)
 

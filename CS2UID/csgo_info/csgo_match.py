@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List, Union
 
 from PIL import Image
+from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
@@ -20,7 +21,9 @@ async def get_csgo_match_img(
     uid: str, tag: int, _type: int
 ) -> Union[str, bytes]:
     detail = await pf_api.get_csgopfmatch(uid, tag, _type)
-    # print(detail)
+    logger.debug(detail)
+    if isinstance(detail, dict) and detail['data'] is None:
+        return detail['errorMessage']
     if tag == 1:
         msg = await pf_api.get_csgohomedetail(uid)
         if isinstance(msg, int):
@@ -131,4 +134,5 @@ async def draw_csgo_match_img(
 
             img.paste(green_logo, (20, 400 + 120 * i), green_logo)
 
+    return await convert_img(await add_detail(img))
     return await convert_img(await add_detail(img))
