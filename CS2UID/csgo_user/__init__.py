@@ -4,10 +4,9 @@
 from gsuid_core.sv import SV, Bot, Event
 from gsuid_core.utils.message import send_diff_msg
 
-from ..utils.database.models import CS2Bind
-
 # from ..utils.error_reply import get_error
-from .add_ck import add_token, add_uid
+from .add_ck import add_uid, add_token
+from ..utils.database.models import CS2Bind
 
 csgo_user_bind = SV('CS2用户绑定')
 csgo_add_tk = SV('CS2添加TK', area='DIRECT')
