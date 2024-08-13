@@ -1,4 +1,7 @@
+from os import kill
 from typing import List, Optional, TypedDict
+
+from sqlalchemy.sql.functions import rank
 
 
 class UsrInfo(TypedDict):
@@ -644,3 +647,235 @@ class UserSearchRequest(TypedDict):
     code: int
     message: str
     result: List[UserSearch]
+
+
+class MatchTitelSats(TypedDict):
+    statsDesc: str
+    """统计描述"""
+    dataDesc: str
+    """数据描述"""
+    type: int
+    """描述类型
+    1:好兄弟
+    2:铁哥们
+    11:输出机器
+    """
+    
+
+class MatchTitel(TypedDict):
+    steamid: str
+    """MVP的steamid"""
+    greenType: int
+    """是否是绿色"""
+    nickName: str
+    """MVP的昵称"""
+    avatar: str
+    """MVP的头像"""
+    kill: int
+    """击杀数"""
+    death: int
+    """死亡数"""
+    weSeason: bool
+    """是否是天梯"""
+    isVip: bool
+    """是否是vip"""
+    avatarFrame: str
+    """头像框，空是null"""
+    rating: float
+    """评分"""
+    pwRating: float
+    """完美平台评分"""
+    adpr: float
+    """平均伤害"""
+    rws: float
+    """RWS"""
+    we: float
+    """WE评分"""
+    pvpScore: int
+    """对局分段"""
+    map: str
+    """地图名称"""
+    mapZh: str
+    """地图中文名称"""
+    mapUrl: str
+    """地图url"""
+    mapLogo: str
+    """地图logo url"""
+    startTime: str
+    """开始时间"""
+    endTime: str
+    """结束时间"""
+    duration: int
+    """游戏时间,单位分钟"""
+    mode: str
+    """模式：天梯普通对局"""
+    gameMode: int
+    """1"""
+    mvpCnt: int
+    """mvp数量"""
+    statsDesc: str
+    """统计描述"""
+    dataDesc: str
+    """数据描述"""
+    type: int
+    """描述类型"""
+    
+class MatchPlayer(TypedDict):
+    playerId: str
+    """玩家id"""
+    highlightsData: str
+    """未知，我的数据是null"""
+    nickName: str
+    """玩家昵称"""
+    avatar: str
+    """玩家头像"""
+    vac: bool
+    """是否被vac封禁"""
+    team: int
+    """队伍,1或者2"""
+    kill: int
+    """击杀数"""
+    botKill: int
+    """机器人击杀数"""
+    negKill: int
+    """击杀数"""
+    entryKill: int
+    """首杀数"""
+    death: int
+    """死亡数"""
+    entryDeath: int
+    """首死数"""
+    assist: int
+    """助攻数"""
+    headShot: int
+    """爆头数"""
+    headShotRatio: float
+    """爆头率"""
+    rating: float
+    """评分"""
+    pwRating: float
+    """完美平台评分"""
+    damage: int
+    itemThrow: int
+    flash: int
+    flashTeammate: int
+    """闪白队友数"""
+    flashSuccess: int
+    """闪白数"""
+    endGame: int
+    mvpValue: int
+    """mvp回合数"""
+    score:int
+    userForbidDTO: str
+    """null"""
+    banType:int
+    """未知，我的数据是0"""
+    twoKill: int
+    """回合2杀数量"""
+    threeKill: int
+    """回合3杀数量"""
+    fourKill: int
+    """回合4杀数量"""
+    fiveKill: int
+    """回合5杀数量"""
+    multiKills: int
+    """残局连杀数量"""
+    vs1: int
+    """残局1v1数量"""
+    vs2: int
+    """残局1v2数量"""
+    vs3: int
+    """残局1v3数量"""
+    vs4: int
+    """残局1v4数量"""
+    vs5: int
+    """残局1v5数量"""
+    headShotCount: int
+    """爆头数"""
+    dmgArmor: int
+    """甲伤"""
+    dmgHealth: int
+    """血伤"""
+    adpr: int
+    """平均回合伤害"""
+    fireCount: int
+    """可能是火伤"""
+    hitCount: int
+    """可能射击命中次数"""
+    rws: float
+    """RWS胜利贡献"""
+    pvpTeam: int
+    """完美平台队伍id"""
+    honor: str
+    """未知，我的数据是1,4,2"""
+    pvpScore: int
+    """完美平台段位分"""
+    pvpScoreChange: int
+    """完美平台段位分变化"""
+    matchScore: float
+    """0.0"""
+    we: float
+    """we评分"""
+    weapons: str
+    """null"""
+    throwsCnt: int
+    """投掷数"""
+    isVip: bool
+    """是否是vip"""
+    avatarFrame: str
+    """头像框，空是null"""
+    teamId: int
+    """队伍id"""
+    pvpNormalRank: str
+    snipeNum: int
+    """狙杀数"""
+    firstDeath: int
+    """首死数"""
+    mvp: bool
+    """是否是mvp"""
+    
+    
+class MatchDetail(TypedDict):
+    matchId: str
+    """完美匹配id"""
+    map: str
+    """地图名称"""
+    mapEn: str
+    """地图英文名称"""
+    mapUrl: str
+    """地图url"""
+    matchType: str
+    """不知道是啥，反正我这是null"""
+    mapLogo: str
+    """地图logo url"""
+    startTime: str
+    """开始时间"""
+    endTime: str
+    """结束时间"""
+    duration: int
+    """游戏时间,单位分钟"""
+    winTeam: int
+    """胜利队伍"""
+    score1: int
+    """胜利队伍1回合"""
+    score2: int
+    """胜利队伍2回合"""
+    halfScore1: int
+    """半场队伍1胜利回合"""
+    halfScore2: int
+    """半场队伍2胜利回合"""
+    extraScore1: int
+    """加时赛队伍1胜利回合"""
+    extraScore2: int
+    """加时赛队伍2胜利回合"""
+    team1PvpId: int
+    """队伍1完美平台id"""
+    team2PvpId: int
+    """队伍2完美平台id"""
+    pvpLadder: bool
+    """是否是完美平台天梯"""
+    halfCamp1: int
+    """未知，我的数据是3"""
+    greenMatch: bool
+    """是否是绿色对局"""
+    matchplayers: List[MatchPlayer]

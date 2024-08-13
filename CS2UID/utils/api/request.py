@@ -1,7 +1,7 @@
-import random
 import json as js
+import random
 from copy import deepcopy
-from typing import Any, Dict, List, Union, Literal, Optional, cast
+from typing import Any, Dict, List, Literal, Optional, Union, cast
 
 # from gsuid_core.logger import logger
 from httpx import AsyncClient
@@ -9,24 +9,28 @@ from httpx import AsyncClient
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
-    UserHomeApi,
-    UserInfoAPI,
+    MatchDetailAPI,
+    MatchTitelAPI,
     UserDetailAPI,
-    UserSearchApi,
+    UserHomeApi,
     UserHomematchApi,
-    UserSteamPreview,
+    UserInfoAPI,
+    UserSearchApi,
     UserSeasonScoreAPI,
+    UserSteamPreview,
 )
 from .models import (
-    UserInfo,
+    MatchDetail,
+    MatchTitel,
     SteamGetRequest,
-    UserFallRequest,
-    UserHomeRequest,
-    UserSeasonScore,
-    UserMatchRequest,
     UserDetailRequest,
-    UserSearchRequest,
+    UserFallRequest,
     UserHomedetailRequest,
+    UserHomeRequest,
+    UserInfo,
+    UserMatchRequest,
+    UserSearchRequest,
+    UserSeasonScore,
 )
 
 
@@ -37,7 +41,8 @@ class PerfectWorldApi:
         '(KHTML, like Gecko) perfectworldarena/1.0.24060811   '
         'Chrome/80.0.3987.163'
         'Electron/8.5.5'
-        'Safari/537.36'
+        'Safari/537.36',
+        'Content-Type': 'application/json;charset=UTF-8'
     }
 
     async def get_token(self) -> Optional[List[str]]:
@@ -128,7 +133,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['pwasteamid'] = uid
         header['Accept'] = 'application/json, text/plain, */*'
-        header['Content-Type'] = 'application/x-www-form-urlencoded'
         data = await self._pf_request(
             UserInfoAPI,
             header=header,
@@ -156,7 +160,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         data = await self._pf_request(
             UserDetailAPI,
             header=header,
@@ -180,7 +183,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
         data = await self._pf_request(
             UserSteamPreview,
@@ -200,7 +202,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
         data = await self._pf_request(
             UserHomematchApi,
@@ -226,7 +227,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
         data = await self._pf_request(
             UserHomematchApi,
@@ -257,7 +257,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
         data = await self._pf_request(
             UserHomeApi,
@@ -282,7 +281,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
         data = await self._pf_request(
             CsgoFall,
@@ -302,7 +300,6 @@ class PerfectWorldApi:
         header = self._HEADER
         header['appversion'] = '3.3.7.154'
         header["User-Agent"] = "okhttp/4.11.0"
-        header['Content-Type'] = 'application/json;charset=UTF-8'
         header['token'] = uid_token[-1]
         data = await self._pf_request(
             UserSearchApi,
@@ -316,3 +313,47 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
         return cast(UserSearchRequest, data)
+
+    async def get_match_mvp(self, matchid: str):
+        """搜索对局MVP信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header['accesstoken'] = uid_token[-1]
+        data = await self._pf_request(
+            MatchTitelAPI,
+            header=header,
+            params={'matchId': matchid},
+        )
+        if isinstance(data, int):
+            return data
+        elif data['statusCode'] != 0 :
+            return data['data']
+        return cast(MatchTitel, data['data'])
+
+    async def get_match_detail(self, matchid: str):
+        """搜索对局详情信息"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header['appversion'] = '3.3.7.154'
+        header['accesstoken'] = uid_token[-1]
+        data = await self._pf_request(
+            MatchDetailAPI,
+            header=header,
+            json={
+                'matchId': f"PVP@{matchid}",
+                "platform": "admin",
+                "dataSource": 3,
+                },
+        )
+        if isinstance(data, int):
+            return data
+        elif data['statusCode'] != 0 :
+            return data['data']
+        return cast(MatchDetail, data['data'])
