@@ -1,7 +1,7 @@
-import json as js
 import random
+import json as js
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 # from gsuid_core.logger import logger
 from httpx import AsyncClient
@@ -9,28 +9,28 @@ from httpx import AsyncClient
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
-    MatchDetailAPI,
+    UserHomeApi,
+    UserInfoAPI,
     MatchTitelAPI,
     UserDetailAPI,
-    UserHomeApi,
-    UserHomematchApi,
-    UserInfoAPI,
     UserSearchApi,
-    UserSeasonScoreAPI,
+    MatchDetailAPI,
+    UserHomematchApi,
     UserSteamPreview,
+    UserSeasonScoreAPI,
 )
 from .models import (
-    MatchDetail,
-    MatchTitel,
-    SteamGetRequest,
-    UserDetailRequest,
-    UserFallRequest,
-    UserHomedetailRequest,
-    UserHomeRequest,
     UserInfo,
-    UserMatchRequest,
-    UserSearchRequest,
+    MatchTitel,
+    MatchDetail,
+    SteamGetRequest,
+    UserFallRequest,
+    UserHomeRequest,
     UserSeasonScore,
+    UserMatchRequest,
+    UserDetailRequest,
+    UserSearchRequest,
+    UserHomedetailRequest,
 )
 
 
@@ -42,7 +42,7 @@ class PerfectWorldApi:
         'Chrome/80.0.3987.163'
         'Electron/8.5.5'
         'Safari/537.36',
-        'Content-Type': 'application/json;charset=UTF-8'
+        'Content-Type': 'application/json;charset=UTF-8',
     }
 
     async def get_token(self) -> Optional[List[str]]:
@@ -330,7 +330,7 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
-        elif data['statusCode'] != 0 :
+        elif data['statusCode'] != 0:
             return data['data']
         return cast(MatchTitel, data['data'])
 
@@ -350,10 +350,10 @@ class PerfectWorldApi:
                 'matchId': f"PVP@{matchid}",
                 "platform": "admin",
                 "dataSource": 3,
-                },
+            },
         )
         if isinstance(data, int):
             return data
-        elif data['statusCode'] != 0 :
-            return data['data']
+        elif data['statusCode'] != 0:
+            return cast(str, data['data'])
         return cast(MatchDetail, data['data'])

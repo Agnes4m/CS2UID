@@ -1,7 +1,4 @@
-from os import kill
 from typing import List, Optional, TypedDict
-
-from sqlalchemy.sql.functions import rank
 
 
 class UsrInfo(TypedDict):
@@ -15,17 +12,17 @@ class UsrInfo(TypedDict):
     avatar: str
     """头像url"""
     lastLoginTime: str
-    '''最后登录时间'''
+    """最后登录时间"""
     identity: int
     last_game_time: str
     is_green: int
     pwLevel: int
-    '''完美平台等级'''
+    """完美平台等级"""
     pre_rank: bool
     score: int
     grade: int
     ladderGrade: str
-    '''魔王C+'''
+    """魔王C+"""
 
 
 class UserInfo(TypedDict):
@@ -660,7 +657,7 @@ class MatchTitelSats(TypedDict):
     2:铁哥们
     11:输出机器
     """
-    
+
 
 class MatchTitel(TypedDict):
     steamid: str
@@ -719,7 +716,8 @@ class MatchTitel(TypedDict):
     """数据描述"""
     type: int
     """描述类型"""
-    
+
+
 class MatchPlayer(TypedDict):
     playerId: str
     """玩家id"""
@@ -765,10 +763,10 @@ class MatchPlayer(TypedDict):
     endGame: int
     mvpValue: int
     """mvp回合数"""
-    score:int
+    score: int
     userForbidDTO: str
     """null"""
-    banType:int
+    banType: int
     """未知，我的数据是0"""
     twoKill: int
     """回合2杀数量"""
@@ -833,8 +831,8 @@ class MatchPlayer(TypedDict):
     """首死数"""
     mvp: bool
     """是否是mvp"""
-    
-    
+
+
 class MatchDetail(TypedDict):
     matchId: str
     """完美匹配id"""

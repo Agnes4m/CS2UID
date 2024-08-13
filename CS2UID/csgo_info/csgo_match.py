@@ -1,43 +1,51 @@
+import json
 from pathlib import Path
 from typing import List, Union
 
 from PIL import Image
+
+from gsuid_core.data_store import get_res_path
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
+from gsuid_core.utils.image.utils import download_pic_to_image
 
-from ..utils.csgo_api import pf_api
 from ..utils.api.models import Match
+from ..utils.csgo_api import pf_api
 from ..utils.error_reply import get_error
-from .utils import paste_img, add_detail, load_groudback
+from .utils import add_detail, load_groudback, paste_img
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
-green_logo = Image.open(TEXTURE / 'green.png')
+green_logo = Image.open(TEXTURE / "green.png")
 
 
 async def get_csgo_match_img(
-    uid: str, tag: int, _type: int
+    user_id, uid: str, tag: int, _type: int
 ) -> Union[str, bytes]:
     detail = await pf_api.get_csgopfmatch(uid, tag, _type)
     logger.debug(detail)
-    if isinstance(detail, dict) and detail['data'] is None:
-        return detail['errorMessage']
+    if isinstance(detail, dict) and detail["data"] is None:
+        return detail["errorMessage"]
     if tag == 1:
         msg = await pf_api.get_csgohomedetail(uid)
         if isinstance(msg, int):
             return get_error(msg)
-        name = msg['data']['nickName']
-        avatar = msg['data']['avatar']
+        name = msg["data"]["nickName"]
+        avatar = msg["data"]["avatar"]
     else:
         msg = await pf_api.get_userdetail(uid)
         if isinstance(msg, int):
             return get_error(msg)
-        name = msg['data']['name']
-        avatar = msg['data']['avatar']
+        name = msg["data"]["name"]
+        avatar = msg["data"]["avatar"]
     if isinstance(detail, int):
         return get_error(detail)
+    detail_path: Path = get_res_path("CS2UID") / "match" / user_id / "match.json"
+    detail_path.parent.mkdir(parents=True, exist_ok=True)
+    print(detail_path)
+    with detail_path.open("w", encoding="utf-8") as f:
+        json.dump(detail, f, ensure_ascii=False, indent=4)
 
     # 类型
     if tag == 1:
@@ -59,29 +67,27 @@ async def get_csgo_match_img(
             match_type = "完美平台对战"
 
     return await draw_csgo_match_img(
-        detail['data']['matchList'], name, avatar, uid, match_type
+        detail["data"]["matchList"], name, avatar, uid, match_type
     )
 
 
 async def create_one_match_img(detail: Match) -> Image.Image:
-    if detail['score1'] == detail['score2']:
+    if detail["score1"] == detail["score2"]:
         color = (128, 128, 128, 128)
-    elif detail['team'] == detail['winTeam']:
+    elif detail["team"] == detail["winTeam"]:
         color = (0, 255, 0, 128)
     else:
         color = (255, 0, 0, 128)
 
     img = Image.new("RGBA", (800, 80), color=color)
-    logo = await download_pic_to_image(detail['mapLogo'])
+    logo = await download_pic_to_image(detail["mapLogo"])
     round_logo = await draw_pic_with_ring(logo, 50)
     img.paste(round_logo, (10, 10), round_logo)
 
-    await paste_img(
-        img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0)
-    )
-    await paste_img(img, detail['endTime'], 20, (70, 50))
+    await paste_img(img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0))
+    await paste_img(img, detail["endTime"], 20, (70, 50))
 
-    await paste_img(img, detail['mapName'], 30, (250, 0))
+    await paste_img(img, detail["mapName"], 30, (250, 0))
     await paste_img(img, f"{detail['mode']}", 20, (250, 50))
 
     await paste_img(img, f"RT: {detail['rating']}", 30, (400, 0))
@@ -94,7 +100,7 @@ async def create_one_match_img(detail: Match) -> Image.Image:
     await paste_img(img, f"WE: {detail['we']}", 30, (550, 0))
 
     await paste_img(img, f"分{detail['pvpScore']}", 30, (680, 0))
-    if detail['pvpScoreChange']:
+    if detail["pvpScoreChange"]:
         await paste_img(img, f"变化{detail['pvpScoreChange']}", 20, (700, 50))
     else:
         await paste_img(img, "-", 20, (700, 50))
@@ -114,8 +120,8 @@ async def draw_csgo_match_img(
     img = await load_groudback(Path(TEXTURE / "bg" / "4.jpg"))
 
     # 头像
-    if img.mode == 'RGB':
-        img = img.convert('RGBA')
+    if img.mode == "RGB":
+        img = img.convert("RGBA")
     head = await download_pic_to_image(avatar)
     round_head = await draw_pic_with_ring(head, 200)
     img.paste(round_head, (350, 50), round_head)
@@ -130,8 +136,7 @@ async def draw_csgo_match_img(
             break
         one_img = await create_one_match_img(detail[i])
         img.paste(one_img, (50, 400 + 120 * i), one_img)
-        if detail[i]['greenMatch']:
-
+        if detail[i]["greenMatch"]:
             img.paste(green_logo, (20, 400 + 120 * i), green_logo)
 
     return await convert_img(await add_detail(img))
