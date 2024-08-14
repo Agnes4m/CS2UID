@@ -876,4 +876,8 @@ class MatchDetail(TypedDict):
     """未知，我的数据是3"""
     greenMatch: bool
     """是否是绿色对局"""
-    matchplayers: List[MatchPlayer]
+
+
+class MatchTotal(TypedDict):
+    base: MatchDetail
+    players: List[MatchPlayer]

@@ -1,8 +1,4 @@
 {
-  "recommendations": [
-    "ms-python.python",
-    "ms-python.vscode-pylance",
-    "ms-python.isort",
-    "ms-python.black-formatter"
-  ]
+  "recommendations": ["detachhead.basedpyright"],
+  "unwantedRecommendations": ["ms-python.vscode-pylance"]
 }

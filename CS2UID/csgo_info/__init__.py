@@ -106,15 +106,14 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
 
 @csgo_user_info.on_command(("对局详情"), block=True)
 async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
-    user_id = ev.user_id
-    index = cast(int, user_id)
-    if not user_id.isdigit() or not ev.text:
+    index = ev.text
+    if not index.isdigit() or not index:
         resp = await bot.receive_resp("请输入对局序号查询详情")
         if resp is None or not resp.text.isdigit():
             await try_send(bot, "序号错误")
             return
         index = resp.text
-
+    index = cast(int, int(index) - 1)
     detail_path = get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
     if not detail_path.is_file():
         await try_send(bot, "没有对局缓存，请使用指令 cs对局记录 生成数据")
@@ -122,6 +121,7 @@ async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
         f.seek(0)
         match_detail = cast(UserMatchRequest, json.load(f))
     match_id = match_detail["data"]["matchList"][int(index) - 1]["matchId"]
+    print(match_id)
     match_detail_out = await get_csgo_match_detail_img(match_id)
     await try_send(bot, match_detail_out)
 
