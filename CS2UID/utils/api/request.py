@@ -18,6 +18,7 @@ from .api import (
     UserSearchApi,
     UserSeasonScoreAPI,
     UserSteamPreview,
+    MatchAdvanceAPI,
 )
 from .models import (
     MatchTitel,
@@ -31,6 +32,7 @@ from .models import (
     UserMatchRequest,
     UserSearchRequest,
     UserSeasonScore,
+    MatchAdvance
 )
 
 
@@ -355,3 +357,23 @@ class PerfectWorldApi:
         elif data["statusCode"] != 0:
             return cast(str, data["data"])
         return cast(MatchTotal, data["data"])
+
+    async def get_match_advance(self, matchid: str):
+        """搜索对局其他数据"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return -1
+
+        header = self._HEADER
+        header["appversion"] = "3.3.7.154"
+        header["accesstoken"] = uid_token[-1]
+        data = await self._pf_request(
+            MatchAdvanceAPI,
+            header=header,
+            params={"matchId": matchid.replace("PVP@", "")},
+        )
+        if isinstance(data, int):
+            return data
+        elif data["statusCode"] != 0:
+            return cast(str, data["data"])
+        return cast(MatchAdvance, data["data"])

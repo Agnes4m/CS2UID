@@ -24,5 +24,3 @@ async def get_search_players(name: str) -> Union[str, bytes]:
         out_msg += f"{info_msg}"
     out_msg += "请输入【csgo绑定uid xxx】来绑定信息"
     return out_msg
-    out_msg += "请输入【csgo绑定uid xxx】来绑定信息"
-    return out_msg

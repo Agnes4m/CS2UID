@@ -22,7 +22,9 @@ async def save_img(
 ):
     """下载图片并缓存以读取"""
     img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
-    if not Path(img_path).exists():
+    img_path.parent.mkdir(parents=True, exist_ok=True)
+    print(img_path)
+    if not img_path.is_file():
         for i in range(3):
             try:
                 map_img = await download_pic_to_image(img_url)
@@ -38,6 +40,7 @@ async def save_img(
                 continue
 
     else:
+        
         map_img = Image.open(img_path)
         if map_img.mode != 'RGBA':
             map_img = map_img.convert('RGBA')
@@ -184,13 +187,15 @@ async def add_detail(img: Image.Image):
     return img
 
 
-async def load_groudback(bg_img_path: Path, alpha_percent: float = 0.5):
+async def load_groudback(bg_img_path: Path|Image.Image, alpha_percent: float = 0.5):
     """加载背景图
     透明一半"""
-    first_img = Image.open(bg_img_path)
-    if first_img.mode != 'RGBA':
-        first_img = first_img.convert('RGBA')
-
+    if isinstance(bg_img_path, Path):
+        first_img = Image.open(bg_img_path)
+        if first_img.mode != 'RGBA':
+            first_img = first_img.convert('RGBA')
+    else:
+        first_img = bg_img_path
     transparent_img = Image.new(
         'RGBA', first_img.size, (255, 255, 255, int(255 * alpha_percent))
     )

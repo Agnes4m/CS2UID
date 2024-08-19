@@ -881,3 +881,16 @@ class MatchDetail(TypedDict):
 class MatchTotal(TypedDict):
     base: MatchDetail
     players: List[MatchPlayer]
+
+class MatchAdvance(TypedDict):
+    """其他数据"""
+    steamId: str
+    """64位steamid"""
+    hitRate: float
+    """扫射率"""
+    scramRate: float
+    """急停率"""
+    tradeRate: float
+    """拉枪率"""
+    tradeFragRate: float
+    """补枪率"""
