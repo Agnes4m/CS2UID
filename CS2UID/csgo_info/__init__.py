@@ -2,21 +2,21 @@
 import json
 from typing import cast
 
-from gsuid_core.bot import Bot
-from gsuid_core.data_store import get_res_path
-from gsuid_core.models import Event
 from gsuid_core.sv import SV
+from gsuid_core.bot import Bot
+from gsuid_core.models import Event
+from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.database.api import get_uid
 
-from ..utils.api.models import UserMatchRequest
-from ..utils.database.models import CS2Bind
-from ..utils.error_reply import UID_HINT, try_send
-from .csgo_goods import get_csgo_goods_img
 from .csgo_info import get_csgo_info_img
+from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
-from .csgo_matchdetail import get_csgo_match_detail_img
+from ..utils.database.models import CS2Bind
 from .csgo_search import get_search_players
+from ..utils.api.models import UserMatchRequest
 from .csgohome_info import get_csgohome_info_img
+from ..utils.error_reply import UID_HINT, try_send
+from .csgo_matchdetail import get_csgo_match_detail_img
 
 csgo_user_info = SV("CS2用户信息查询")
 
@@ -94,7 +94,9 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
         index = resp.text
         if not index.isdigit():
             return
-        detail_path = get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
+        detail_path = (
+            get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
+        )
         if not detail_path.is_file():
             await try_send(bot, "没有对局缓存，请使用指令 cs对局记录 生成数据")
         with detail_path.open("r", encoding="utf-8") as f:
@@ -115,12 +117,15 @@ async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
         index = resp.text
     index = cast(int, int(index) - 1)
     detail_path = get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
+    print(detail_path)
     if not detail_path.is_file():
         await try_send(bot, "没有对局缓存，请使用指令 cs对局记录 生成数据")
     with detail_path.open("r", encoding="utf-8") as f:
         f.seek(0)
         match_detail = cast(UserMatchRequest, json.load(f))
-    match_id = match_detail["data"]["matchList"][int(index) - 1]["matchId"]
+    print(match_detail["data"]["matchList"])
+    print(int(index))
+    match_id = match_detail["data"]["matchList"][int(index)]["matchId"]
     print(match_id)
     match_detail_out = await get_csgo_match_detail_img(match_id)
     await try_send(bot, match_detail_out)

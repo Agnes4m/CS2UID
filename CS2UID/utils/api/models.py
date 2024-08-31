@@ -66,7 +66,7 @@ class UserDetailMap(TypedDict):
     rank: None
     """排名(大概)"""
     ratingSum: float
-    """胜方评分"""
+    """评分"""
     rwsSum: float
     """胜方RWS"""
     deathNum: int
@@ -882,8 +882,10 @@ class MatchTotal(TypedDict):
     base: MatchDetail
     players: List[MatchPlayer]
 
+
 class MatchAdvance(TypedDict):
     """其他数据"""
+
     steamId: str
     """64位steamid"""
     hitRate: float

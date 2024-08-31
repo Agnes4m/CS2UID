@@ -1,7 +1,7 @@
-import json as js
 import random
+import json as js
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 # from gsuid_core.logger import logger
 from httpx import AsyncClient
@@ -9,30 +9,30 @@ from httpx import AsyncClient
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
-    MatchDetailAPI,
+    UserHomeApi,
+    UserInfoAPI,
     MatchTitelAPI,
     UserDetailAPI,
-    UserHomeApi,
-    UserHomematchApi,
-    UserInfoAPI,
     UserSearchApi,
-    UserSeasonScoreAPI,
-    UserSteamPreview,
+    MatchDetailAPI,
     MatchAdvanceAPI,
+    UserHomematchApi,
+    UserSteamPreview,
+    UserSeasonScoreAPI,
 )
 from .models import (
+    UserInfo,
     MatchTitel,
     MatchTotal,
+    MatchAdvance,
     SteamGetRequest,
-    UserDetailRequest,
     UserFallRequest,
-    UserHomedetailRequest,
     UserHomeRequest,
-    UserInfo,
-    UserMatchRequest,
-    UserSearchRequest,
     UserSeasonScore,
-    MatchAdvance
+    UserMatchRequest,
+    UserDetailRequest,
+    UserSearchRequest,
+    UserHomedetailRequest,
 )
 
 
@@ -93,7 +93,9 @@ class PerfectWorldApi:
                 try:
                     raw_data = js.loads(_raw_data)
                 except:  # noqa: E722
-                    raw_data = {"result": {"error_code": -999, "data": _raw_data}}
+                    raw_data = {
+                        "result": {"error_code": -999, "data": _raw_data}
+                    }
             try:
                 if not raw_data["result"]:
                     return raw_data

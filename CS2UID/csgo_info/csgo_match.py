@@ -3,17 +3,16 @@ from pathlib import Path
 from typing import List, Union
 
 from PIL import Image
-
-from gsuid_core.data_store import get_res_path
 from gsuid_core.logger import logger
+from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 from gsuid_core.utils.image.utils import download_pic_to_image
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
-from ..utils.api.models import Match
 from ..utils.csgo_api import pf_api
+from ..utils.api.models import Match
 from ..utils.error_reply import get_error
-from .utils import add_detail, load_groudback, paste_img
+from .utils import paste_img, add_detail, load_groudback
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -41,7 +40,9 @@ async def get_csgo_match_img(
         avatar = msg["data"]["avatar"]
     if isinstance(detail, int):
         return get_error(detail)
-    detail_path: Path = get_res_path("CS2UID") / "match" / user_id / "match.json"
+    detail_path: Path = (
+        get_res_path("CS2UID") / "match" / user_id / "match.json"
+    )
     detail_path.parent.mkdir(parents=True, exist_ok=True)
     print(detail_path)
     with detail_path.open("w", encoding="utf-8") as f:
@@ -84,7 +85,9 @@ async def create_one_match_img(detail: Match) -> Image.Image:
     round_logo = await draw_pic_with_ring(logo, 50)
     img.paste(round_logo, (10, 10), round_logo)
 
-    await paste_img(img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0))
+    await paste_img(
+        img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0)
+    )
     await paste_img(img, detail["endTime"], 20, (70, 50))
 
     await paste_img(img, detail["mapName"], 30, (250, 0))

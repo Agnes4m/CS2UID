@@ -40,7 +40,7 @@ async def save_img(
                 continue
 
     else:
-        
+
         map_img = Image.open(img_path)
         if map_img.mode != 'RGBA':
             map_img = map_img.convert('RGBA')
@@ -53,7 +53,7 @@ async def paste_img(
     img: Image.Image,
     msg: str,
     size: int,
-    site: Tuple[int, int],
+    site: Tuple[int, int] = (0, 0),
     is_mid: bool = False,
     fonts: Optional[str] = None,
     long: Tuple[int, int] = (0, 900),
@@ -89,12 +89,12 @@ async def paste_img(
         site[1] + bb + 7,
     )
     mask = Image.new(
-        'RGBA', (int(ba - aa + 10), int(bb - ab + 10)), (255, 255, 255, s)
+        'RGBA', (int(ba - aa + 5), int(bb - ab + 5)), (255, 255, 255, s)
     )
     draw_mask = ImageDraw.Draw(mask)
     draw_mask.rectangle(site_white, fill=rect_color)
 
-    draw_mask.text(xy=(5, 5), text=msg, font=font, fill=color)
+    draw_mask.text(xy=(0, 0), text=msg, font=font, fill=color)
     img.paste(mask, site, mask)
 
 
@@ -187,7 +187,9 @@ async def add_detail(img: Image.Image):
     return img
 
 
-async def load_groudback(bg_img_path: Path|Image.Image, alpha_percent: float = 0.5):
+async def load_groudback(
+    bg_img_path: Path | Image.Image, alpha_percent: float = 0.5
+):
     """加载背景图
     透明一半"""
     if isinstance(bg_img_path, Path):
