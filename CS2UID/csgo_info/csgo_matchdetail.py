@@ -10,10 +10,10 @@ from ..utils.api.models import MatchTotal
 from ..utils.error_reply import get_error
 from .utils import (
     save_img,
+    paste_img,
     add_detail,
     load_groudback,
     simple_paste_img,
-    paste_img,
 )
 
 TEXTURE = Path(__file__).parent / "texture2d"
@@ -52,16 +52,24 @@ async def draw_csgo_match_img(detail: MatchTotal) -> bytes | str:
         team1 = "grey"
         team2 = "green"
     await paste_img(
-        map_img, str(base["score1"]), size=70, site=(200, 150),color=team1
+        map_img, str(base["score1"]), size=70, site=(200, 150), color=team1
     )
     await paste_img(
-        map_img, str(base["score2"]),size=70, site=(500, 150),  color=team2
+        map_img, str(base["score2"]), size=70, site=(500, 150), color=team2
     )
     await paste_img(
-        map_img, str(base["halfScore1"]),size=40, site=(350, 150),  color="gold"
+        map_img,
+        str(base["halfScore1"]),
+        size=40,
+        site=(350, 150),
+        color="gold",
     )
     await paste_img(
-        map_img, str(base["halfScore2"]),size=40, site=(400, 150),  color="blue"
+        map_img,
+        str(base["halfScore2"]),
+        size=40,
+        site=(400, 150),
+        color="blue",
     )
     await paste_img(
         map_img,
@@ -124,16 +132,20 @@ async def draw_csgo_match_img(detail: MatchTotal) -> bytes | str:
             (380, 60),
         )
         await simple_paste_img(play_bg, "爆头率", (470, 20))
-        await simple_paste_img(play_bg, f"{player['headShotRatio']:.2f}%", (470, 60))
+        await simple_paste_img(
+            play_bg, f"{player['headShotRatio']:.2f}%", (470, 60)
+        )
         await simple_paste_img(play_bg, "WE", (550, 20))
         await simple_paste_img(play_bg, f"{player['we']:.2f}", (550, 60))
         await simple_paste_img(play_bg, "RT", (630, 20))
         await simple_paste_img(play_bg, f"{player['rating']:.2f}", (630, 60))
-        
-        if index >=5:
+
+        if index >= 5:
             ex_spwan = 100
         else:
             ex_spwan = 0
-        img_bg.paste(play_bg, (100, 400 + index * 110 + ex_spwan), mask=play_bg)
+        img_bg.paste(
+            play_bg, (100, 400 + index * 110 + ex_spwan), mask=play_bg
+        )
 
     return await convert_img(await add_detail(img_bg))

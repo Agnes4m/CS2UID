@@ -4,8 +4,8 @@ from PIL import Image
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 
-from .csgo_path import TEXTURE, ICON_PATH
 from ..utils.csgo_api import pf_api
+from .csgo_path import TEXTURE, ICON_PATH
 from ..utils.error_reply import not_msg, get_error
 from ..utils.api.models import UserFall, UserHomedetailData
 from .utils import (

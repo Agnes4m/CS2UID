@@ -6,8 +6,8 @@ from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 
 from ..utils.csgo_api import pf_api
-from .csgo_path import TEXTURE, ICON_PATH
 from ..utils.error_reply import get_error
+from .csgo_path import TEXTURE, ICON_PATH
 from ..utils.api.models import SteamGet, UserHomedetailData
 from .utils import (
     save_img,

@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from PIL import ImageFont
 
 FONT_MAIN_PATH = Path(__file__).parent / 'fonts/loli.ttf'
