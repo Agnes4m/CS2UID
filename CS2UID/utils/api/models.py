@@ -244,7 +244,9 @@ class UserDetailData(TypedDict):
     snipe: float
     prop: float
     vs1WinRate: float
+    """1v1胜率"""
     summary: str
+    """评价文字"""
     hotWeapons: List[UserDetailhotWeapons]
     avgWe: float
     """WE 制胜评价"""

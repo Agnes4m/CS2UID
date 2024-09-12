@@ -10,11 +10,13 @@ from gsuid_core.utils.image.image_tools import (
     draw_pic_with_ring,
 )
 
-from .config import HEAD_FONT, ICON_PATH, MAIN_FONT
+from ..utils.csgo_font import FONT_TIELE_PATH, FONT_MAIN_PATH
 from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
 
-font_head = ImageFont.truetype(str(HEAD_FONT), 20)
-font_main = ImageFont.truetype(str(MAIN_FONT), 20)
+
+ICON_PATH = Path(__file__).parent / 'texture2d/icon'
+font_head = ImageFont.truetype(str(FONT_TIELE_PATH), 20)
+font_main = ImageFont.truetype(str(FONT_MAIN_PATH), 20)
 
 
 async def save_img(
@@ -23,7 +25,6 @@ async def save_img(
     """下载图片并缓存以读取"""
     img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
     img_path.parent.mkdir(parents=True, exist_ok=True)
-    print(img_path)
     if not img_path.is_file():
         for i in range(3):
             try:
@@ -65,9 +66,9 @@ async def paste_img(
 
     # 字体
     if fonts == "head":
-        font = ImageFont.truetype(str(HEAD_FONT), size)
+        font = ImageFont.truetype(str(FONT_TIELE_PATH), size)
     else:
-        font = ImageFont.truetype(str(MAIN_FONT), size)
+        font = ImageFont.truetype(str(FONT_MAIN_PATH), size)
 
     # 行数
     aa, ab, ba, bb = font.getbbox(msg)
@@ -117,9 +118,9 @@ async def simple_paste_img(
             font = font_main
     else:
         if fonts == "head":
-            font = ImageFont.truetype(str(HEAD_FONT), size)
+            font = ImageFont.truetype(str(FONT_TIELE_PATH), size)
         else:
-            font = ImageFont.truetype(str(MAIN_FONT), size)
+            font = ImageFont.truetype(str(FONT_MAIN_PATH), size)
     draw = ImageDraw.Draw(img)
     draw.text(site, msg, fill=color, font=font)
     # 以后替换

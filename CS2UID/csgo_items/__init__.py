@@ -33,7 +33,7 @@ class CSGOItem(NamedTuple):
 async def build_directory_index():
     """初始化道具索引"""
     index: Dict[str, Dict[str, List[str]]] = {}
-
+    Path(res_img_path / "res").mkdir(parents=True, exist_ok=True)
     for first_dir in Path(res_img_path / "res").iterdir():
 
         if not first_dir.is_dir():
