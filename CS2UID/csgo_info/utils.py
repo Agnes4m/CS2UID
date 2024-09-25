@@ -10,9 +10,8 @@ from gsuid_core.utils.image.image_tools import (
     draw_pic_with_ring,
 )
 
-from ..utils.csgo_font import FONT_TIELE_PATH, FONT_MAIN_PATH
+from ..utils.csgo_font import FONT_MAIN_PATH, FONT_TIELE_PATH
 from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
-
 
 ICON_PATH = Path(__file__).parent / 'texture2d/icon'
 font_head = ImageFont.truetype(str(FONT_TIELE_PATH), 20)

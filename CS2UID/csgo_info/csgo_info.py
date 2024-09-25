@@ -1,22 +1,18 @@
+import math
 from pathlib import Path
 from typing import Union
-import math
-from PIL import Image, ImageDraw
 
+from PIL import Image, ImageDraw
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
-from ..utils.csgo_api import pf_api
 from .csgo_path import TEXTURE
+from ..utils.csgo_api import pf_api
+from .utils import save_img, assign_rank
 from ..utils.api.models import UserDetailData
 from ..utils.error_reply import not_msg, get_error
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
-from .utils import (
-    save_img,
-    assign_rank,
-
-)
 
 
 async def get_csgo_info_img(uid: str, season: str = "") -> Union[str, bytes]:
@@ -61,14 +57,15 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     head_draw = ImageDraw.Draw(titel_img)
     head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
-    head_draw.line([(250,150), (550,150)], fill='white', width=2)
+    head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
     # 颜色小标识
     pj_img = Image.open(TEXTURE / "base" / "blue.png")
     pj_text = detail['summary']
     pj_draw = ImageDraw.Draw(pj_img)
-    pj_draw.text((118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm")
+    pj_draw.text(
+        (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm"
+    )
     titel_img.paste(pj_img, (235, 170), pj_img)
-    
 
     rank_scoce = detail["pvpScore"]
     rank = await assign_rank(rank_scoce)
@@ -323,15 +320,12 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     score_list = detail['historyScores']
     if len(score_list) > 0:
         score_list = score_list[:10]
-        # 获取最大值和最小值
         max_score = max(score_list)
         min_score = min(score_list)
 
-        # 向下取整和向上取整到十的倍数
         y_start = (min_score // 10) * 10  # 向下取整
         y_end = ((max_score // 10) + 1) * 10  # 向上取整
 
-        # 图像设置
         width = 700
         height = 480
         padding = 100
@@ -339,33 +333,47 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         draw = ImageDraw.Draw(img_line)
         scale = (height - 2 * padding) / (y_end - y_start)
 
-        # 绘制坐标轴
-        draw.line([(padding, height - padding), (width - padding, height - padding)], fill='black')
-        draw.line([(padding, padding), (padding, height - padding)], fill='black')
+        draw.line(
+            [(padding, height - padding), (width - padding, height - padding)],
+            fill='black',
+        )
+        draw.line(
+            [(padding, padding), (padding, height - padding)], fill='black'
+        )
 
-        # 标注 Y 轴
         for i in range(y_start, y_end + 1, 10):
             y = height - padding - (i - y_start) * scale
             draw.line([(padding - 5, y), (padding, y)], fill='black')
-            draw.text((padding - 50, y - 15), str(i), fill='white', font=csgo_font_20)
+            draw.text(
+                (padding - 50, y - 15), str(i), fill='white', font=csgo_font_20
+            )
 
-        # 标注 X 轴
         for i in range(len(score_list)):
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
-            draw.line([(x, height - padding), (x, height - padding + 5)], fill='black')
-            draw.text((x - 10, height - padding + 10), str(i), fill='white', font=csgo_font_20)
+            draw.line(
+                [(x, height - padding), (x, height - padding + 5)],
+                fill='black',
+            )
+            draw.text(
+                (x - 10, height - padding + 10),
+                str(i),
+                fill='white',
+                font=csgo_font_20,
+            )
 
-        # 绘制折线和数据点
         points = []
         for i, score in enumerate(reversed(score_list)):
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
             y = height - padding - (score - y_start) * scale
             points.append((x, y))
-            
-            draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill='blue')  # 使用蓝色圆形点
-            draw.text((x - 15, y - 30), str(score), fill='white', font=csgo_font_20)
 
-        # 绘制折线
+            draw.ellipse(
+                (x - 6, y - 6, x + 6, y + 6), fill='blue'
+            )
+            draw.text(
+                (x - 15, y - 30), str(score), fill='white', font=csgo_font_20
+            )
+
         draw.line(points, fill='yellow', width=3)
         img.paste(img_line, (0, 1900), img_line)
 
@@ -377,70 +385,68 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         "victory": "致胜",
         "breach": "突破",
         "snipe": "狙杀",
-        "prop": "道具"
+        "prop": "道具",
     }
-    filtered_data = {selected_keys[key]: filter_data[key] for key in selected_keys}
-    # 图像设置
+    filtered_data = {
+        selected_keys[key]: filter_data[key] for key in selected_keys
+    }
     width = 400
     height = 400
     padding = 50
     center = (width // 2, height // 2)
     radius = 100  # 半径
 
-    # 创建图像
     five_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
     draw = ImageDraw.Draw(five_img)
 
-    # 计算五边形的点
     num_vars = len(filtered_data)
     angle = 2 * math.pi / num_vars
     points = []
 
-    # 计算实际数据的点
     for i, (label, value) in enumerate(filtered_data.items()):
-        # 计算每个点的坐标
-        x = center[0] + radius * (value / 10) * math.cos(i * angle - math.pi / 2)
-        y = center[1] + radius * (value / 10) * math.sin(i * angle - math.pi / 2)
+        x = center[0] + radius * (value / 10) * math.cos(
+            i * angle - math.pi / 2
+        )
+        y = center[1] + radius * (value / 10) * math.sin(
+            i * angle - math.pi / 2
+        )
         points.append((x, y))
-        
-        # 绘制从中心到每个点的线
-        draw.line([center, (x, y)], fill='black', width=2)  # 线条颜色加深
 
-    # 绘制底部模板的五边形
+        draw.line([center, (x, y)], fill='black', width=2)
+
     template_points = []
     for i in range(num_vars):
         x = center[0] + radius * math.cos(i * angle - math.pi / 2)
         y = center[1] + radius * math.sin(i * angle - math.pi / 2)
         template_points.append((x, y))
 
-    draw.polygon(template_points, fill=(200, 200, 200, 255), outline='black')  # 不透明灰色填充
+    draw.polygon(
+        template_points, fill=(200, 200, 200, 255), outline='black'
+    )
 
-    # 绘制实际数据的五边形
-    draw.polygon(points, fill=(135, 206, 250, 128), outline='blue')  # 半透明蓝色填充
+    draw.polygon(
+        points, fill=(135, 206, 250, 128), outline='blue'
+    )
 
-    # 绘制边界线
     draw.line(points + [points[0]], fill='blue', width=2)
 
-    # 标注每个特性
     for i, (label, value) in enumerate(filtered_data.items()):
-        # 计算文本位置
         x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
         y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
-        
-        # 生成文本内容
+
         text = f"{value:.2f}\n{label}"
-        
+
         text_size = draw.textbbox((0, 0), text, font=csgo_font_20)
         text_width = text_size[2] - text_size[0]
         text_height = text_size[3] - text_size[1]
-        
-        # 调整文本位置
+
         text_x = x - text_width / 2
         text_y = y - text_height / 2
-        
-        draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)  # 保留两位小数
+
+        draw.text(
+            (text_x, text_y), text, fill='white', font=csgo_font_20
+        )
     img.paste(five_img, (600, 1950), five_img)
-        
 
     # 底
     img_up = Image.open(TEXTURE / "base" / "footer.png")
