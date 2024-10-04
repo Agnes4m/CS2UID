@@ -1,7 +1,9 @@
 # coding:utf-8
 import json
+from math import e
 from typing import cast
 
+from loguru import logger
 from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.models import Event
@@ -24,8 +26,18 @@ csgo_user_info = SV("CS2用户信息查询")
 @csgo_user_info.on_command(("查询"), block=True)
 async def send_csgo_info_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
+    arg = ev.text.strip()
     if uid is None:
         return await try_send(bot, UID_HINT)
+    try:
+        paltform = await CS2Bind.get_paltform(ev.user_id)
+    except Exception as E:
+        logger.warning(f"{E}\n获取CS2Bind数据失败，将使用默认值：pf")
+        paltform = "pf"
+    if paltform is None:
+        logger.warning("平台是空，默认使用pf")
+        paltform = "pf"
+    logger.info("当前平台是：" + paltform)
     s = ""
     if "S" or "s" in ev.text:
         after_s = ev.text.lower().split("s")[-1]
@@ -40,9 +52,11 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
             while i < len(after_s) and after_s[i].isdigit():
                 i += 1
             s = after_s[:i] if i > 0 else ""
-    if "官匹" in ev.text:
+    if arg:
+        paltform = arg
+    if paltform in ["官匹", "gp", "gf"]:
         await try_send(bot, await get_csgohome_info_img(uid))
-    else:
+    elif paltform in ["pf", "完美"]:
         await try_send(bot, await get_csgo_info_img(uid, s))
 
 

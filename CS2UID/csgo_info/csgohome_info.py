@@ -1,6 +1,5 @@
 import math
 from pathlib import Path
-from typing import Union
 
 from PIL import Image, ImageDraw
 from gsuid_core.logger import logger
@@ -8,22 +7,11 @@ from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
 from ..utils.csgo_api import pf_api
+from .utils import save_img, assign_rank
 from .csgo_path import TEXTURE, ICON_PATH
 from ..utils.error_reply import not_msg, get_error
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
 from ..utils.api.models import UserFall, UserDetailData, UserHomedetailData
-from .utils import (
-    save_img,
-    add_detail,
-    assign_rank,
-    new_para_img,
-    make_head_img,
-    load_groudback,
-    percent_to_img,
-    simple_paste_img,
-    make_homeweapen_img,
-    resize_image_to_percentage,
-)
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -58,7 +46,6 @@ async def draw_csgohome_info_img(
     uid = uid[:4] + "********" + uid[12:]
     avatar = detail["avatar"]
 
-
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
     img_bg = Image.open(Path(TEXTURE / "bg" / "2.jpg")).resize((1000, 2400))
@@ -75,14 +62,13 @@ async def draw_csgohome_info_img(
     head_draw = ImageDraw.Draw(titel_img)
     head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
-    head_draw.line([(250,150), (550,150)], fill='white', width=2)
+    head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
     # 颜色小标识
     # pj_img = Image.open(TEXTURE / "base" / "blue.png")
     # pj_text = detail['summary']
     # pj_draw = ImageDraw.Draw(pj_img)
     # pj_draw.text((118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm")
     # titel_img.paste(pj_img, (235, 170), pj_img)
-    
 
     rank_scoce = detail["rank"]
     rank = await assign_rank(rank_scoce)
@@ -97,26 +83,17 @@ async def draw_csgohome_info_img(
     img.paste(main1_img, (0, 350), main1_img)
 
     # 主信息
-    main2_img = Image.open(TEXTURE / "base" / "base_bg.png")
-
-    rank_img = (
-        Image.open(TEXTURE / "base" / "rank_logo.png")
-        .convert("RGBA")
-        .resize((100, 120))
-    )
-    rank_draw = ImageDraw.Draw(rank_img)
-    rank_draw.text((54, 58), rank[0], (255, 255, 255, 255), csgo_font_30, "mm")
-    easy_paste(main2_img, rank_img, (100, 100), "cc")
+    main2_img = Image.open(TEXTURE / "base" / "basehome_bg.png")
 
     main2_draw = ImageDraw.Draw(main2_img)
 
-    # main2_draw.text(
-    #     (260, 80),
-    #     f"{detail['avgWe']:.1f}",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # )
+    main2_draw.text(
+        (260, 80),
+        f"{detail['hours']:.1f}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
     main2_draw.text(
         (415, 80),
         f"{detail['rating']:.2f}",
@@ -176,13 +153,13 @@ async def draw_csgohome_info_img(
         csgo_font_42,
         "mm",
     )
-    # main2_draw.text(
-    #     (880, 230),
-    #     f"{detail['mvpCount']}",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # )
+    main2_draw.text(
+        (880, 230),
+        f"{detail['awpKillRatio']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
 
     img.paste(main2_img, (0, 410), main2_img)
 
@@ -354,20 +331,35 @@ async def draw_csgohome_info_img(
         scale = (height - 2 * padding) / (y_end - y_start)
 
         # 绘制坐标轴
-        draw.line([(padding, height - padding), (width - padding, height - padding)], fill='black')
-        draw.line([(padding, padding), (padding, height - padding)], fill='black')
+        draw.line(
+            [(padding, height - padding), (width - padding, height - padding)],
+            fill='black',
+        )
+        draw.line(
+            [(padding, padding), (padding, height - padding)], fill='black'
+        )
 
         # 标注 Y 轴
         for i in range(math.ceil(y_start), math.ceil(y_end) + 1, 10):
             y = height - padding - (i - y_start) * scale
             draw.line([(padding - 5, y), (padding, y)], fill='black')
-            draw.text((padding - 50, y - 15), str(i), fill='white', font=csgo_font_20)
+            draw.text(
+                (padding - 50, y - 15), str(i), fill='white', font=csgo_font_20
+            )
 
         # 标注 X 轴
         for i in range(len(score_list)):
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
-            draw.line([(x, height - padding), (x, height - padding + 5)], fill='black')
-            draw.text((x - 10, height - padding + 10), str(i), fill='white', font=csgo_font_20)
+            draw.line(
+                [(x, height - padding), (x, height - padding + 5)],
+                fill='black',
+            )
+            draw.text(
+                (x - 10, height - padding + 10),
+                str(i),
+                fill='white',
+                font=csgo_font_20,
+            )
 
         # 绘制折线和数据点
         points = []
@@ -375,9 +367,13 @@ async def draw_csgohome_info_img(
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
             y = height - padding - (score - y_start) * scale
             points.append((x, y))
-            
-            draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill='blue')  # 使用蓝色圆形点
-            draw.text((x - 15, y - 30), str(score), fill='white', font=csgo_font_20)
+
+            draw.ellipse(
+                (x - 6, y - 6, x + 6, y + 6), fill='blue'
+            )  # 使用蓝色圆形点
+            draw.text(
+                (x - 15, y - 30), str(score), fill='white', font=csgo_font_20
+            )
 
         # 绘制折线
         draw.line(points, fill='yellow', width=3)
@@ -416,7 +412,7 @@ async def draw_csgohome_info_img(
     #     x = center[0] + radius * (value / 10) * math.cos(i * angle - math.pi / 2)
     #     y = center[1] + radius * (value / 10) * math.sin(i * angle - math.pi / 2)
     #     points.append((x, y))
-        
+
     #     # 绘制从中心到每个点的线
     #     draw.line([center, (x, y)], fill='black', width=2)  # 线条颜色加深
 
@@ -440,28 +436,27 @@ async def draw_csgohome_info_img(
     #     # 计算文本位置
     #     x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
     #     y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
-        
+
     #     # 生成文本内容
     #     text = f"{value:.2f}\n{label}"
-        
+
     #     text_size = draw.textbbox((0, 0), text, font=csgo_font_20)
     #     text_width = text_size[2] - text_size[0]
     #     text_height = text_size[3] - text_size[1]
-        
+
     #     # 调整文本位置
     #     text_x = x - text_width / 2
     #     text_y = y - text_height / 2
-        
+
     #     draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)  # 保留两位小数
     # img.paste(five_img, (600, 1950), five_img)
-        
 
     # 底
     img_up = Image.open(TEXTURE / "base" / "footer.png")
     img.paste(img_up, (0, 2340), img_up)
 
     return await convert_img(img)
-    
+
     """背景图
     img = await load_groudback(Path(TEXTURE / "bg" / "2.jpg"))
 

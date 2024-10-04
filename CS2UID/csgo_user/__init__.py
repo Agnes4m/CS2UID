@@ -1,6 +1,7 @@
 # from typing import Dict
 
 # from gsuid_core.message_models import Button
+from gsuid_core.logger import logger
 from gsuid_core.sv import SV, Bot, Event
 from gsuid_core.utils.message import send_diff_msg
 
@@ -11,6 +12,7 @@ from ..utils.database.models import CS2Bind
 csgo_user_bind = SV('CS2用户绑定')
 csgo_add_tk = SV('CS2添加TK', area='DIRECT')
 csgo_add_uids = SV('CS2添加UID', area='DIRECT')
+csgo_switch_paltform = SV('CS2切换平台', area='DIRECT')
 
 
 @csgo_add_tk.on_prefix(('添加TK', '添加tk'))
@@ -32,7 +34,6 @@ async def send_csgo_add_uid_msg(bot: Bot, ev: Event):
         '绑定',
         '切换uid',
         '切换UID',
-        '切换',
         '删除uid',
         '删除UID',
     ),
@@ -85,3 +86,32 @@ async def send_csgo_bind_uid_msg(bot: Bot, ev: Event):
                 -1: f'[CS2] 该UID{uid}不在已绑定列表中！',
             },
         )
+
+
+@csgo_switch_paltform.on_command(
+    ('切换平台',),
+    block=True,
+)
+async def send_csgo_switch_paltform_msg(bot: Bot, ev: Event):
+    paltform = ev.text.strip()
+    logger.info(paltform)
+    bot_id = ev.bot_id
+    group_id = ev.group_id
+    logger.info('[CS2] 开始执行[切换平台]')
+    qid = ev.user_id
+    logger.info('[CS2] [切换平台]UserID: {} - {}'.format(qid, paltform))
+
+    if "pf" in paltform or "完美" in paltform:
+        await CS2Bind.switch_paltform(qid, bot_id, "pf")
+        return await bot.send('[CS2] 切换完美平台成功！')
+    elif "5e" in paltform:
+        await CS2Bind.switch_paltform(qid, bot_id, "5e")
+        return await bot.send('[CS2] 切换5e平台成功！')
+    elif "b5" in paltform:
+        await CS2Bind.switch_paltform(qid, bot_id, "b5")
+        return await bot.send('[CS2] 切换b5平台成功！')
+    elif "官匹" in paltform or "国服" in paltform:
+        await CS2Bind.switch_paltform(qid, bot_id, "gf")
+        return await bot.send('[CS2] 切换国服官匹平台成功！')
+    else:
+        return await bot.send('[CS2] 平台错误！')

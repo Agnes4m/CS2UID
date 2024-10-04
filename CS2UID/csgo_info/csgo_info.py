@@ -18,7 +18,7 @@ from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
 async def get_csgo_info_img(uid: str, season: str = "") -> Union[str, bytes]:
     detail = await pf_api.get_userdetail(uid, season)
 
-    logger.info(detail)
+    # logger.info(detail)
     if isinstance(detail, int):
         return get_error(detail)
 
@@ -367,9 +367,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             y = height - padding - (score - y_start) * scale
             points.append((x, y))
 
-            draw.ellipse(
-                (x - 6, y - 6, x + 6, y + 6), fill='blue'
-            )
+            draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill='blue')
             draw.text(
                 (x - 15, y - 30), str(score), fill='white', font=csgo_font_20
             )
@@ -420,13 +418,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         y = center[1] + radius * math.sin(i * angle - math.pi / 2)
         template_points.append((x, y))
 
-    draw.polygon(
-        template_points, fill=(200, 200, 200, 255), outline='black'
-    )
+    draw.polygon(template_points, fill=(200, 200, 200, 255), outline='black')
 
-    draw.polygon(
-        points, fill=(135, 206, 250, 128), outline='blue'
-    )
+    draw.polygon(points, fill=(135, 206, 250, 128), outline='blue')
 
     draw.line(points + [points[0]], fill='blue', width=2)
 
@@ -443,9 +437,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         text_x = x - text_width / 2
         text_y = y - text_height / 2
 
-        draw.text(
-            (text_x, text_y), text, fill='white', font=csgo_font_20
-        )
+        draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)
     img.paste(five_img, (600, 1950), five_img)
 
     # 底
