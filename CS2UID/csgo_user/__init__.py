@@ -96,7 +96,6 @@ async def send_csgo_switch_paltform_msg(bot: Bot, ev: Event):
     paltform = ev.text.strip()
     logger.info(paltform)
     bot_id = ev.bot_id
-    group_id = ev.group_id
     logger.info('[CS2] 开始执行[切换平台]')
     qid = ev.user_id
     logger.info('[CS2] [切换平台]UserID: {} - {}'.format(qid, paltform))

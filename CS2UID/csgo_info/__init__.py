@@ -1,6 +1,5 @@
 # coding:utf-8
 import json
-from math import e
 from typing import cast
 
 from loguru import logger

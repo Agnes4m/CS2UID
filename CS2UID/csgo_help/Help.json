@@ -3,25 +3,25 @@
     "desc": "需要先绑定uid",
     "data": [
       {
-        "name": "cs绑定uid",
+        "name": "绑定uid",
         "desc": "绑定你的steam UID",
-        "eg": "cs绑定uid 123456",
+        "eg": "绑定uid 123456",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs删除uid",
+        "name": "删除uid",
         "desc": "删除你的steam UID",
-        "eg": "cs删除uid 123456",
+        "eg": "删除uid 123456",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs切换uid",
+        "name": "切换uid",
         "desc": "切换你的steam UID",
-        "eg": "cs切换uid123456",
+        "eg": "切换uid123456",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
@@ -32,41 +32,41 @@
     "desc": "默认查完美绑定战绩，也可以后带uid",
     "data": [
       {
-        "name": "cs查询",
+        "name": "查询",
         "desc": "查询cs完美平台数据一览",
-        "eg": "cs查询",
+        "eg": "查询",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs查询官匹",
+        "name": "查询官匹",
         "desc": "查询cs官匹数据一览",
-        "eg": "cs查询官匹",
+        "eg": "查询官匹",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs好友码",
+        "name": "好友码",
         "desc": "查询cs官匹好友码",
-        "eg": "cs好友码",
+        "eg": "好友码",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs库存",
+        "name": "库存",
         "desc": "查询steam里cs库存，最多显示20个",
-        "eg": "cs库存",
+        "eg": "库存",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs对局记录",
+        "name": "对局记录",
         "desc": "查询对局记录，可以带关键词官匹，天梯等等，不带默认完美平台记录",
-        "eg": "cs对局记录天梯",
+        "eg": "对局记录天梯",
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
@@ -77,12 +77,12 @@
     "desc": "游戏攻略相关查询",
     "data": [
       {
-        "name": "cs下载全部资源",
-        "desc": "下载全部道具资源",
-        "eg": "cs下载全部资源",
+        "name": "道具",
+        "desc": "查询道具攻略",
+        "eg": "道具沙2 匪家 A大 过点烟",
         "need_ck": false,
         "need_sk": false,
-        "need_admin": true
+        "need_admin": false
       }
     ]
   },
@@ -90,25 +90,17 @@
     "desc": "一些杂项服务",
     "data": [
       {
-        "name": "cs帮助",
+        "name": "帮助",
         "desc": "呼出该帮助界面",
-        "eg": "cs帮助",
+        "eg": "帮助",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
       },
       {
-        "name": "cs道具",
-        "desc": "查询道具攻略",
-        "eg": "cs道具沙2 匪家 A大 过点烟",
-        "need_ck": false,
-        "need_sk": false,
-        "need_admin": false
-      },
-      {
-        "name": "cs搜索",
+        "name": "搜索",
         "desc": "通过完美平台名字或steamid搜索用户",
-        "eg": "cs搜索爱丽数码",
+        "eg": "搜索爱丽数码",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
@@ -119,7 +111,7 @@
     "desc": "游戏攻略相关查询",
     "data": [
       {
-        "name": "cs下载全部资源",
+        "name": "下载全部资源",
         "desc": "下载完整资源(非必要)",
         "eg": "cs下载全部资源",
         "need_ck": false,

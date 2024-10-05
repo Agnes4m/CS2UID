@@ -1,7 +1,6 @@
 from typing import Optional
 
 from sqlmodel import Field
-from gsuid_core.logger import logger
 from gsuid_core.utils.database.startup import exec_list
 from gsuid_core.utils.database.base_models import Bind, User, with_session
 from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site

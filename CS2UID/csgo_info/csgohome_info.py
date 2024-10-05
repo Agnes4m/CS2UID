@@ -6,14 +6,14 @@ from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
+from .utils import save_img
+from .csgo_path import TEXTURE
 from ..utils.csgo_api import pf_api
-from .utils import save_img, assign_rank
-from .csgo_path import TEXTURE, ICON_PATH
 from ..utils.error_reply import not_msg, get_error
+from ..utils.api.models import UserFall, UserHomedetailData
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
-from ..utils.api.models import UserFall, UserDetailData, UserHomedetailData
 
-TEXTURE = Path(__file__).parent / "texture2d"
+# TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 
 
@@ -63,15 +63,9 @@ async def draw_csgohome_info_img(
     head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
     head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
-    # 颜色小标识
-    # pj_img = Image.open(TEXTURE / "base" / "blue.png")
-    # pj_text = detail['summary']
-    # pj_draw = ImageDraw.Draw(pj_img)
-    # pj_draw.text((118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm")
-    # titel_img.paste(pj_img, (235, 170), pj_img)
 
     rank_scoce = detail["rank"]
-    rank = await assign_rank(rank_scoce)
+    # rank = await assign_rank(rank_scoce)
 
     img.paste(titel_img, (0, 55), titel_img)
 
@@ -213,16 +207,16 @@ async def draw_csgohome_info_img(
         map_draw.text(
             (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
         )
+        avg_rat = usr_map['ratingSum'] / usr_map['totalMatch']
+        avg_map_adr = usr_map['totalAdr'] / usr_map['totalMatch']
         map_draw.text(
             (380, 80),
-            f"{usr_map['ratingSum']/ usr_map['totalMatch']:.2f} / {usr_map['totalAdr']/ usr_map['totalMatch']:.0f}",
+            f"{avg_rat:.2f} / {avg_map_adr:.0f}",
             (255, 255, 255, 255),
             csgo_font_30,
             "mm",
         )
-        map_draw.text(
-            (380, 120), "RT/ADR", (255, 255, 255, 255), csgo_font_20, "mm"
-        )
+        map_draw.text((380, 120), "RT/ADR", "white", csgo_font_20, "mm")
         if i % 2 == 0:
             site_x = 20
         else:
@@ -289,14 +283,13 @@ async def draw_csgohome_info_img(
         #         csgo_font_20,
         #         "mm",
         #     )
+        avg_heat = usr_weapon['weaponHeadShot'] / usr_weapon['weaponKill']
         hdr = (
-            f"{(usr_weapon['weaponHeadShot']/usr_weapon['weaponKill'])* 100:.2f}"
+            f"{avg_heat* 100:.2f}"
             if usr_weapon['weaponKill'] is not None
             else 0
         )
-        weapon_draw.text(
-            (430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm"
-        )
+        weapon_draw.text((430, 31), f"{hdr}", "white", csgo_font_20, "mm")
 
         if i % 2 == 0:
             site_x = 0
@@ -305,7 +298,7 @@ async def draw_csgohome_info_img(
         site_y = 1510 + 120 * (i // 2 - 1)
         img.paste(base_img, (site_x, site_y), base_img)
 
-    ## 天梯段位
+    # 天梯段位
     main4_img = Image.open(TEXTURE / "base" / "banner.png")
     main4_draw = ImageDraw.Draw(main4_img)
     main4_draw.text((50, 10), "分数曲线", (255, 255, 255, 255), csgo_font_42)
@@ -379,79 +372,6 @@ async def draw_csgohome_info_img(
         draw.line(points, fill='yellow', width=3)
         img.paste(img_line, (0, 1900), img_line)
 
-    # 五数据图
-    # selected_keys = ["shot", "victory", "breach", "snipe", "prop"]
-    # filter_data = {key: detail[key] for key in selected_keys}
-    # selected_keys = {
-    #     "shot": "枪法",
-    #     "victory": "致胜",
-    #     "breach": "突破",
-    #     "snipe": "狙杀",
-    #     "prop": "道具"
-    # }
-    # filtered_data = {selected_keys[key]: filter_data[key] for key in selected_keys}
-    # # 图像设置
-    # width = 400
-    # height = 400
-    # padding = 50
-    # center = (width // 2, height // 2)
-    # radius = 100  # 半径
-
-    # # 创建图像
-    # five_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-    # draw = ImageDraw.Draw(five_img)
-
-    # # 计算五边形的点
-    # num_vars = len(filtered_data)
-    # angle = 2 * math.pi / num_vars
-    # points = []
-
-    # # 计算实际数据的点
-    # for i, (label, value) in enumerate(filtered_data.items()):
-    #     # 计算每个点的坐标
-    #     x = center[0] + radius * (value / 10) * math.cos(i * angle - math.pi / 2)
-    #     y = center[1] + radius * (value / 10) * math.sin(i * angle - math.pi / 2)
-    #     points.append((x, y))
-
-    #     # 绘制从中心到每个点的线
-    #     draw.line([center, (x, y)], fill='black', width=2)  # 线条颜色加深
-
-    # # 绘制底部模板的五边形
-    # template_points = []
-    # for i in range(num_vars):
-    #     x = center[0] + radius * math.cos(i * angle - math.pi / 2)
-    #     y = center[1] + radius * math.sin(i * angle - math.pi / 2)
-    #     template_points.append((x, y))
-
-    # draw.polygon(template_points, fill=(200, 200, 200, 255), outline='black')  # 不透明灰色填充
-
-    # # 绘制实际数据的五边形
-    # draw.polygon(points, fill=(135, 206, 250, 128), outline='blue')  # 半透明蓝色填充
-
-    # # 绘制边界线
-    # draw.line(points + [points[0]], fill='blue', width=2)
-
-    # # 标注每个特性
-    # for i, (label, value) in enumerate(filtered_data.items()):
-    #     # 计算文本位置
-    #     x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
-    #     y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
-
-    #     # 生成文本内容
-    #     text = f"{value:.2f}\n{label}"
-
-    #     text_size = draw.textbbox((0, 0), text, font=csgo_font_20)
-    #     text_width = text_size[2] - text_size[0]
-    #     text_height = text_size[3] - text_size[1]
-
-    #     # 调整文本位置
-    #     text_x = x - text_width / 2
-    #     text_y = y - text_height / 2
-
-    #     draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)  # 保留两位小数
-    # img.paste(five_img, (600, 1950), five_img)
-
-    # 底
     img_up = Image.open(TEXTURE / "base" / "footer.png")
     img.paste(img_up, (0, 2340), img_up)
 

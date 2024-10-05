@@ -206,12 +206,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             csgo_font_30,
             "mm",
         )
-        map_draw.text(
-            (180, 120), "场次", (255, 255, 255, 255), csgo_font_20, "mm"
-        )
+        map_draw.text((180, 120), "场次", "white", csgo_font_20, "mm")
+        avg_win = usr_map['winCount'] / usr_map['totalMatch']
         map_draw.text(
             (260, 80),
-            f"{usr_map['winCount'] / usr_map['totalMatch']*100 :.1f}%",
+            f"{avg_win*100 :.1f}%",
             (255, 255, 255, 255),
             csgo_font_30,
             "mm",
@@ -219,9 +218,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         map_draw.text(
             (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
         )
+        avg_rat = usr_map['ratingSum'] / usr_map['totalMatch']
+        adr = usr_map['totalAdr'] / usr_map['totalMatch']
         map_draw.text(
             (380, 80),
-            f"{usr_map['ratingSum']/ usr_map['totalMatch']:.2f} / {usr_map['totalAdr']/ usr_map['totalMatch']:.0f}",
+            f"{avg_rat:.2f} / {adr:.0f}",
             (255, 255, 255, 255),
             csgo_font_30,
             "mm",
@@ -311,7 +312,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         site_y = 1510 + 120 * (i // 2 - 1)
         img.paste(base_img, (site_x, site_y), base_img)
 
-    ## 天梯段位
+    # 天梯段位
     main4_img = Image.open(TEXTURE / "base" / "banner.png")
     main4_draw = ImageDraw.Draw(main4_img)
     main4_draw.text((50, 10), "分数曲线", (255, 255, 255, 255), csgo_font_42)
@@ -323,8 +324,8 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         max_score = max(score_list)
         min_score = min(score_list)
 
-        y_start = (min_score // 10) * 10  # 向下取整
-        y_end = ((max_score // 10) + 1) * 10  # 向上取整
+        y_start = (min_score // 10) * 10
+        y_end = ((max_score // 10) + 1) * 10
 
         width = 700
         height = 480
