@@ -111,7 +111,7 @@ async def draw_csgohome_info_img(
     )
     main2_draw.text(
         (880, 80),
-        f"{detail['entryKillRatio']* 100 :.2f}%",
+        f"{detail['entryKillRatio'] * 100:.2f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -128,7 +128,7 @@ async def draw_csgohome_info_img(
     )
     main2_draw.text(
         (415, 230),
-        f"{detail['winRate']* 100 :.1f}%",
+        f"{detail['winRate'] * 100:.1f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -142,7 +142,7 @@ async def draw_csgohome_info_img(
     )
     main2_draw.text(
         (725, 230),
-        f"{detail['headShotRatio']* 100 :.1f}%",
+        f"{detail['headShotRatio'] * 100:.1f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -199,7 +199,7 @@ async def draw_csgohome_info_img(
         )
         map_draw.text(
             (260, 80),
-            f"{usr_map['winCount'] / usr_map['totalMatch']*100 :.1f}%",
+            f"{usr_map['winCount'] / usr_map['totalMatch'] * 100:.1f}%",
             (255, 255, 255, 255),
             csgo_font_30,
             "mm",
@@ -285,7 +285,7 @@ async def draw_csgohome_info_img(
         #     )
         avg_heat = usr_weapon['weaponHeadShot'] / usr_weapon['weaponKill']
         hdr = (
-            f"{avg_heat* 100:.2f}"
+            f"{avg_heat * 100:.2f}"
             if usr_weapon['weaponKill'] is not None
             else 0
         )

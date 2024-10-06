@@ -95,15 +95,15 @@ poetry run core
    1. host为`pwaweblogin.wmpvp.com`的请求
    2. 部分Cookie中**steam_cn_token**的值是等同**access_token**的值的
 
-4. 私聊Bot，发送`csgo添加uid|tk` ，并在**命令后面直接**附上你第三步获取到的**pwasteamid**和**access_token**
-   1. `csgo添加uid 4000****4000`
-   2. `csgo添加tk 1e15****f5w8`
+4. 私聊Bot，发送`cs添加uid|tk` ，并在**命令后面直接**附上你第三步获取到的**pwasteamid**和**access_token**
+   1. `cs添加uid 4000****4000`
+   2. `cs添加tk 1e15****f5w8`
    3. 如果不添加则无法使用csgo指令查询
 
 5. 可以正常使用Bot了！
-   1. 使用`csgo搜索`查询自己的64位steamid，也可以通过steam或者完美平台个人信息自行查询
-   2. 发送`csgo绑定uid + name`
-   3. 可以进行查询，使用`csgo查询`进行查询即可
+   1. 使用`cs搜索`查询自己的64位steamid，也可以通过steam或者完美平台个人信息自行查询
+   2. 发送`cs绑定uid + name`
+   3. 可以进行查询，使用`cs查询`进行查询即可
 
 
 
@@ -116,6 +116,7 @@ poetry run core
 + [x] 查询完美平台对局记录
 + [x] 查询官匹对局记录
 + [x] 通过名称搜索用户
++ [ ] 统一core的帮助图片
 + [ ] 查询道具点位（目前完成7个地图，未完成地图包括小镇、新两图，以及改版后小镇和大厦点位）
 + [x] gs站资源图片下载
 + [ ] 查询图片优化(80%)

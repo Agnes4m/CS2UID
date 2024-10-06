@@ -123,7 +123,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     )
     main2_draw.text(
         (880, 80),
-        f"{detail['entryKillRatio']* 100 :.2f}%",
+        f"{detail['entryKillRatio']* 100:.2f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -140,7 +140,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     )
     main2_draw.text(
         (415, 230),
-        f"{detail['winRate']* 100 :.1f}%",
+        f"{detail['winRate'] * 100:.1f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -154,7 +154,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     )
     main2_draw.text(
         (725, 230),
-        f"{detail['headShotRatio']* 100 :.1f}%",
+        f"{detail['headShotRatio'] * 100:.1f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -210,7 +210,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         avg_win = usr_map['winCount'] / usr_map['totalMatch']
         map_draw.text(
             (260, 80),
-            f"{avg_win*100 :.1f}%",
+            f"{avg_win * 100:.1f}%",
             (255, 255, 255, 255),
             csgo_font_30,
             "mm",
@@ -283,7 +283,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         if usr_weapon['sprayAccuracy'] is None:
             weapon_draw.text(
                 (285, 60),
-                f"{usr_weapon['firstShotAccuracy']* 100:.2f}%",
+                f"{usr_weapon['firstShotAccuracy'] * 100:.2f}%",
                 (255, 255, 255, 255),
                 csgo_font_20,
                 "mm",
@@ -291,13 +291,13 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         else:
             weapon_draw.text(
                 (285, 60),
-                f"{usr_weapon['sprayAccuracy']* 100 :.2f}%",
+                f"{usr_weapon['sprayAccuracy'] * 100:.2f}%",
                 (255, 255, 255, 255),
                 csgo_font_20,
                 "mm",
             )
         hdr = (
-            f"{usr_weapon['headshotRate']* 100:.2f}"
+            f"{usr_weapon['headshotRate'] * 100:.2f}"
             if usr_weapon['headshotRate'] is not None
             else 0
         )
