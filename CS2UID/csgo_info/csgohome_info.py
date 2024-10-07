@@ -178,10 +178,18 @@ async def draw_csgohome_info_img(
         map_img = Image.merge('RGBA', (map_img.split()[:3] + (new_alpha,)))
 
         map_logo = (await save_img(usr_map['mapLogo'], "map")).resize((50, 50))
-        easy_paste(map_img, map_logo, (40, 100), "cc")
+        easy_paste(map_img, map_logo, (40, 60), "cc")
+        rank_img = (
+            Image.open(TEXTURE / "rank_gp" / f"{usr_map['rank']}.png")
+            .resize((100, 40))
+            .convert('RGBA')
+        )
+
+        easy_paste(map_img, rank_img, (80, 120), "cc")
+
         map_draw = ImageDraw.Draw(map_img)
         map_draw.text(
-            (110, 100),
+            (110, 60),
             usr_map['mapName'],
             (255, 255, 255, 255),
             csgo_font_20,

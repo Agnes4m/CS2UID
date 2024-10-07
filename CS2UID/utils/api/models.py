@@ -526,6 +526,16 @@ class UserHomedetailData(TypedDict):
     hours: int
     """游戏时间"""
     rank: int
+    """- 1-6 白银 Silver
+    - 7-10 黄金 Gold Nova
+    - 11 ak Master Guardian I
+    - 12 麦穗ak  Master Guardian II
+    - 13 双ak Master Guardian Elite
+    - 14 菊花 Distinguished Master Guardian
+    - 15 老鹰 Legendary Eagle
+    - 16 大老鹰 Legendary Eagle Master
+    - 17 小地球 Supreme Master First Class
+    - 18 大地球 The Global Elite"""
     authStats: int
 
 

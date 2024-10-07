@@ -123,7 +123,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     )
     main2_draw.text(
         (880, 80),
-        f"{detail['entryKillRatio']* 100:.2f}%",
+        f"{detail['entryKillRatio'] * 100:.2f}%",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",

@@ -1,3 +1,4 @@
+import random
 from typing import Dict
 from pathlib import Path
 
@@ -32,7 +33,15 @@ async def get_help():
         plugin_help=await get_help_data(),
         plugin_prefix=PREFIX,
         help_mode='light',
-        banner_bg=Image.open(TEXT_PATH / 'banner_bg.jpg'),
+        banner_bg=Image.open(
+            TEXT_PATH
+            / random.choice(
+                [
+                    # 'banner_bg2.jpg',
+                    'banner_bg3.png',
+                ]
+            )
+        ),
         banner_sub_text='所有CS玩家集体向瓦投降!',
         help_bg=Image.open(TEXT_PATH / 'bg.jpg'),
         cag_bg=Image.open(TEXT_PATH / 'cag_bg.png'),
