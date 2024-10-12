@@ -59,6 +59,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
     head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
     # 颜色小标识
+
     pj_img = Image.open(TEXTURE / "base" / "blue.png")
     pj_text = detail['summary']
     pj_draw = ImageDraw.Draw(pj_img)
@@ -66,6 +67,18 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm"
     )
     titel_img.paste(pj_img, (235, 170), pj_img)
+    if detail['stars'] > 0:
+        st_img = Image.open(TEXTURE / "base" / "red.png")
+        st_text = detail['stars']
+        st_draw = ImageDraw.Draw(st_img)
+        st_draw.text(
+            (118, 24),
+            f"⭐: {st_text}个",
+            (255, 255, 255, 255),
+            csgo_font_30,
+            "mm",
+        )
+        titel_img.paste(st_img, (480, 170), st_img)
 
     rank_scoce = detail["pvpScore"]
     rank = await assign_rank(rank_scoce)
@@ -81,15 +94,40 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
 
     # 主信息
     main2_img = Image.open(TEXTURE / "base" / "base_bg.png")
+    if detail['stars'] < 10:
+        rank_img = (
+            Image.open(TEXTURE / "base" / "rank_logo.png")
+            .convert("RGBA")
+            .resize((120, 120))
+        )
+        rank_draw = ImageDraw.Draw(rank_img)
+        rank_draw.text(
+            (58, 58), rank[0], (255, 255, 255, 255), csgo_font_30, "mm"
+        )
+    else:
+        if detail['stars'] >= 50:
+            pj_img = "3.png"
+        elif detail['stars'] >= 25:
+            pj_img = "2.png"
+        else:
+            pj_img = "1.png"
 
-    rank_img = (
-        Image.open(TEXTURE / "base" / "rank_logo.png")
-        .convert("RGBA")
-        .resize((100, 120))
-    )
-    rank_draw = ImageDraw.Draw(rank_img)
-    rank_draw.text((54, 58), rank[0], (255, 255, 255, 255), csgo_font_30, "mm")
+        rank_img = (
+            Image.open(TEXTURE / "rank" / pj_img)
+            .convert("RGBA")
+            .resize((100, 120))
+        )
+
     easy_paste(main2_img, rank_img, (100, 100), "cc")
+    if detail['stars'] > 0:
+        star_num = ImageDraw.Draw(main2_img)
+        star_num.text(
+            (102, 180),
+            f"⭐ x {detail['stars']}",
+            (255, 255, 255, 255),
+            csgo_font_30,
+            "mm",
+        )
 
     main2_draw = ImageDraw.Draw(main2_img)
 
@@ -280,10 +318,15 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             csgo_font_20,
             "mm",
         )
+        fsa = (
+            f"{usr_weapon['firstShotAccuracy'] * 100:.2f}%"
+            if usr_weapon['firstShotAccuracy'] is not None
+            else "N/A"
+        )
         if usr_weapon['sprayAccuracy'] is None:
             weapon_draw.text(
                 (285, 60),
-                f"{usr_weapon['firstShotAccuracy'] * 100:.2f}%",
+                fsa,
                 (255, 255, 255, 255),
                 csgo_font_20,
                 "mm",

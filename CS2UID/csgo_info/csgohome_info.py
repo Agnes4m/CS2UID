@@ -185,7 +185,7 @@ async def draw_csgohome_info_img(
             .convert('RGBA')
         )
 
-        easy_paste(map_img, rank_img, (80, 120), "cc")
+        easy_paste(map_img, rank_img, (70, 120), "cc")
 
         map_draw = ImageDraw.Draw(map_img)
         map_draw.text(
