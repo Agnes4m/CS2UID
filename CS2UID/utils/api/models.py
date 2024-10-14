@@ -908,3 +908,43 @@ class MatchAdvance(TypedDict):
     """拉枪率"""
     tradeFragRate: float
     """补枪率"""
+
+
+class AccountInfo(TypedDict):
+    """账号信息"""
+
+    userId: int
+    """账号id"""
+    steamId: int
+    """steam64位Id"""
+    mobilePhone: str
+    """手机号"""
+    token: str
+    """token"""
+    create: int
+
+
+class Logininfo(TypedDict):
+    userType: int
+    """用户类型，1为手机号登录"""
+    accountInfo: AccountInfo
+
+
+class LoginResult(TypedDict):
+    """登录结果"""
+
+    loginResult: Logininfo
+
+
+class LoginDetail(TypedDict):
+    """登录返回信息"""
+
+    code: int
+    """- 0:成功
+    - 20001: 验证码错误
+    - 1015: 手机号错误
+    - 90001: 服务器繁忙"""
+    description: str
+    """成功位`Success`，失败则输出报错信息"""
+    result: LoginResult
+    """登录结果"""

@@ -9,6 +9,7 @@ from httpx import AsyncClient
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
+    LoginAPI,
     UserHomeApi,
     UserInfoAPI,
     MatchTitelAPI,
@@ -24,6 +25,7 @@ from .models import (
     UserInfo,
     MatchTitel,
     MatchTotal,
+    AccountInfo,
     MatchAdvance,
     SteamGetRequest,
     UserFallRequest,
@@ -101,12 +103,10 @@ class PerfectWorldApi:
                     return raw_data
             except Exception:
                 return raw_data
-            if (
-                "result" in raw_data
-                and "error_code" in raw_data["result"]
-                and raw_data["code"] != 0
-            ):
+            if "result" in raw_data and "error_code" in raw_data["result"]:
                 return raw_data["result"]["error_code"]
+            elif raw_data["code"] != 0:
+                return raw_data["code"]
             return raw_data
 
     async def get_season_scoce(self, uid: str):
@@ -160,7 +160,7 @@ class PerfectWorldApi:
             season = "S" + season
             print("赛季", season)
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         data = await self._pf_request(
             UserDetailAPI,
@@ -183,7 +183,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
         data = await self._pf_request(
@@ -202,7 +202,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
         data = await self._pf_request(
@@ -227,7 +227,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
         data = await self._pf_request(
@@ -257,7 +257,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
         data = await self._pf_request(
@@ -281,7 +281,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
         data = await self._pf_request(
@@ -300,7 +300,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
         data = await self._pf_request(
@@ -323,7 +323,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["accesstoken"] = uid_token[-1]
         data = await self._pf_request(
             MatchTitelAPI,
@@ -343,7 +343,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["accesstoken"] = uid_token[-1]
         data = await self._pf_request(
             MatchDetailAPI,
@@ -367,7 +367,7 @@ class PerfectWorldApi:
             return -1
 
         header = self._HEADER
-        header["appversion"] = "3.3.7.154"
+        header["appversion"] = "3.4.6.164"
         header["accesstoken"] = uid_token[-1]
         data = await self._pf_request(
             MatchAdvanceAPI,
@@ -379,3 +379,23 @@ class PerfectWorldApi:
         elif data["statusCode"] != 0:
             return cast(str, data["data"])
         return cast(MatchAdvance, data["data"])
+
+    async def login_pf(self, phone_number: str, code: str):
+        """手机号和验证码登录"""
+
+        header = self._HEADER
+        header["appversion"] = "3.4.6.164"
+        data = await self._pf_request(
+            LoginAPI,
+            header=header,
+            json={
+                "appId": 2,
+                "mobilePhone": phone_number,
+                "securityCode": code,
+            },
+        )
+        if isinstance(data, int):
+            return data
+        elif data["statusCode"] != 0:
+            return cast(str, data["data"])
+        return cast(AccountInfo, data["result"]['accountInfo'])
