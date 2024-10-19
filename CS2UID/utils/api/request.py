@@ -4,14 +4,17 @@ from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 # from gsuid_core.logger import logger
-from httpx import AsyncClient
+from httpx import AsyncClient, head
 
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
     LoginAPI,
+    SearchAPI,
+    HomePageAPI,
     UserHomeApi,
     UserInfoAPI,
+    HomeDetailAPI,
     MatchTitelAPI,
     UserDetailAPI,
     UserSearchApi,
@@ -27,8 +30,10 @@ from .models import (
     MatchTotal,
     AccountInfo,
     MatchAdvance,
+    SearchRequest5,
     SteamGetRequest,
     UserFallRequest,
+    UserHomeDetail5,
     UserHomeRequest,
     UserSeasonScore,
     UserMatchRequest,
@@ -399,3 +404,107 @@ class PerfectWorldApi:
         elif data["statusCode"] != 0:
             return cast(str, data["data"])
         return cast(AccountInfo, data["result"]['accountInfo'])
+
+
+class FiveEApi:
+    ssl_verify = False
+    _HEADER: Dict[str, str] = {
+        "User-Agent": "okhttp/3.14.9",
+        "appversion": "6.2.2",
+    }
+
+    async def get_token(self) -> Optional[List[str]]:
+        user_list = await CS2User.get_all_user()
+        if user_list:
+            user: CS2User = random.choice(user_list)
+            if user.uid is None:
+                raise Exception("No valid uid")
+            token = await CS2User.get_user_stoken_by_uid(user.uid)
+            if token is None:
+                raise Exception("No valid cookie")
+            return [user.uid, token]
+
+    async def _5e_request(
+        self,
+        url: str,
+        method: Literal["GET", "POST"] = "GET",
+        header: Dict[str, str] = _HEADER,
+        params: Optional[Dict[str, Any]] = None,
+        json: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        pwasteamid: Optional[str] = None,
+        need_tk: bool = True,
+    ) -> Union[Dict, int]:
+        header = deepcopy(self._HEADER)
+
+        if pwasteamid:
+            header["pwasteamid"] = pwasteamid
+
+        if json:
+            method = "POST"
+        async with AsyncClient(verify=self.ssl_verify) as client:
+            resp = await client.request(
+                method,
+                url=url,
+                headers=header,
+                params=params,
+                json=json,
+                data=data,
+                timeout=300,
+            )
+            try:
+                raw_data = await resp.json()
+            except:  # noqa: E722
+                _raw_data = resp.text
+                try:
+                    raw_data = js.loads(_raw_data)
+                except:  # noqa: E722
+                    raw_data = {
+                        "result": {"error_code": -999, "data": _raw_data}
+                    }
+            if raw_data["success"] is not True or raw_data["errcode"] != 0:
+                return raw_data["errcode"]
+
+            return raw_data
+
+    async def search_player(self, keyword: str):
+        """搜索玩家信息"""
+        header = self._HEADER
+        data = await self._5e_request(
+            SearchAPI,
+            header=header,
+            method="GET",
+            params={
+                "keywords": keyword,
+                "page": 1,
+            },
+        )
+        if isinstance(data, int):
+            return data
+        return cast(List[SearchRequest5], data["data"]["list"])
+
+    async def get_user_detail(self, uid: str):
+        """获取玩家信息"""
+        header = self._HEADER
+        data = await self._5e_request(
+            f"{HomeDetailAPI}/{uid}",
+            header=header,
+            method="GET",
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserHomeDetail5, data["data"])
+
+    async def get_user_homepage(self, domain: str):
+        """获取玩家库存信息"""
+        header = self._HEADER
+        header["Content-Type"] = "application/x-www-form-urlencoded"
+        data = await self._5e_request(
+            HomePageAPI,
+            header=header,
+            method="POST",
+            json={"domain": domain},
+        )
+        if isinstance(data, int):
+            return data
+        return cast(UserDetailRequest, data["data"])
