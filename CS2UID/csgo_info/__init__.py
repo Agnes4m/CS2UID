@@ -3,6 +3,7 @@ import json
 from typing import cast
 
 from loguru import logger
+from .csgo_5e import get_csgo_5einfo_img
 from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.models import Event
@@ -13,7 +14,7 @@ from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
 from ..utils.database.models import CS2Bind
-from .csgo_search import get_search_players
+from .csgo_search import get_search_players, get_search_players5e
 from ..utils.api.models import UserMatchRequest
 from .csgohome_info import get_csgohome_info_img
 from ..utils.error_reply import UID_HINT, try_send
@@ -25,7 +26,9 @@ csgo_user_info = SV("CS2用户信息查询")
 @csgo_user_info.on_command(("查询"), block=True)
 async def send_csgo_info_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
+    logger.info(ev.text)
     arg = ev.text.strip()
+    logger.info(arg)
     if uid is None:
         return await try_send(bot, UID_HINT)
     try:
@@ -36,7 +39,7 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
     if paltform is None:
         logger.warning("平台是空，默认使用pf")
         paltform = "pf"
-    logger.info("当前平台是：" + paltform)
+    
     s = ""
     if "S" or "s" in ev.text:
         after_s = ev.text.lower().split("s")[-1]
@@ -53,10 +56,13 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
             s = after_s[:i] if i > 0 else ""
     if arg:
         paltform = arg
+    logger.info("当前平台是：" + paltform)
     if paltform in ["官匹", "gp", "gf"]:
         await try_send(bot, await get_csgohome_info_img(uid))
     elif paltform in ["pf", "完美"]:
         await try_send(bot, await get_csgo_info_img(uid, s))
+    elif paltform in ["5e", "5E"]:
+        await try_send(bot, await get_csgo_5einfo_img(uid, s))
 
 
 @csgo_user_info.on_command(("库存", "仓库", "饰品"), block=True)
@@ -147,4 +153,7 @@ async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
 @csgo_user_info.on_command(("搜索"), block=True)
 async def send_csgo_search(bot: Bot, ev: Event):
     name = ev.text.strip()
+    if "5e" in ev.text:
+        await try_send(bot, await get_search_players5e(name))
+    
     await try_send(bot, await get_search_players(name))

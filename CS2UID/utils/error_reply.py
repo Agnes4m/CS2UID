@@ -4,13 +4,16 @@ from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 
 UID_HINT = "[CS2] 你还没有绑定UID，请先使用[cs绑定]命令进行绑定"
-CK_HINT = "[CS2] 你还没有添加可用TOKEN，请先使用[cs添加tk]命令进行绑定"
+CK_HINT = "[CS2] 你还没有添加可用完美TOKEN，请先使用[cs添加tk]命令进行绑定"
+SK_HINT = "[CS2] 你还没有添加可用5E TOKEN，请先使用[cs添加sk]命令进行绑定"
 
 error_dict = {
     -51: UID_HINT,
     -511: CK_HINT,
     4001: "4001 - 登录已失效，请重新添加sk",
     8000102: "8000102 - auth check failed!\n该tk失效或不正确, 请检查错误tk!",
+    500: "请求参数错误,请输入正确的参数",
+    1: "5e sk已过期,请重新添加",
 }
 
 

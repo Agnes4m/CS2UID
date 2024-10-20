@@ -9,10 +9,10 @@ from gsuid_core.utils.image.image_tools import (
     draw_text_by_line,
     draw_pic_with_ring,
 )
-
+from .csgo_path import TEXTURE
 from ..utils.csgo_font import FONT_MAIN_PATH, FONT_TIELE_PATH
 from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
-
+from ..utils.csgo_font import csgo_font_30
 ICON_PATH = Path(__file__).parent / 'texture2d/icon'
 font_head = ImageFont.truetype(str(FONT_TIELE_PATH), 20)
 font_main = ImageFont.truetype(str(FONT_MAIN_PATH), 20)
@@ -22,6 +22,7 @@ async def save_img(
     img_url: str, img_type: str, size: Optional[Tuple[int, int]] = None
 ):
     """下载图片并缓存以读取"""
+    map_img = Image.new("RGBA", (200, 600), (0, 0, 0, 255))
     img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
     img_path.parent.mkdir(parents=True, exist_ok=True)
     if not img_path.is_file():
@@ -402,3 +403,13 @@ async def percent_to_img(percent: float, size: tuple = (211, 46)):
             img_out.paste(img_none, (i * 20, 0), img_none)
         percent -= 0.1
     return img_out.resize(size)
+
+async def draw_card(img: Image.Image, txt: str, site: Tuple[int, int], color: str = "blue", font = csgo_font_30):
+    """画卡片"""
+    pj_img = Image.open(TEXTURE / "base" / "color" / f"{color}.png")
+    pj_text = txt
+    pj_draw = ImageDraw.Draw(pj_img)
+    pj_draw.text(
+        (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), font, "mm"
+    )
+    img.paste(pj_img, site, pj_img)

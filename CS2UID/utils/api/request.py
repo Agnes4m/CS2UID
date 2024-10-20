@@ -4,7 +4,7 @@ from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 # from gsuid_core.logger import logger
-from httpx import AsyncClient, head
+from httpx import AsyncClient
 
 from ..database.models import CS2User
 from .api import (
@@ -413,16 +413,16 @@ class FiveEApi:
         "appversion": "6.2.2",
     }
 
-    async def get_token(self) -> Optional[List[str]]:
+    async def get_stoken(self) -> Optional[List[str]]:
         user_list = await CS2User.get_all_user()
         if user_list:
             user: CS2User = random.choice(user_list)
             if user.uid is None:
                 raise Exception("No valid uid")
-            token = await CS2User.get_user_stoken_by_uid(user.uid)
-            if token is None:
+            stoken = await CS2User.get_user_stoken_by_uid(user.uid)
+            if stoken is None:
                 raise Exception("No valid cookie")
-            return [user.uid, token]
+            return [user.uid, stoken]
 
     async def _5e_request(
         self,
@@ -483,11 +483,11 @@ class FiveEApi:
             return data
         return cast(List[SearchRequest5], data["data"]["list"])
 
-    async def get_user_detail(self, uid: str):
+    async def get_user_detail(self, domain: str):
         """获取玩家信息"""
         header = self._HEADER
         data = await self._5e_request(
-            f"{HomeDetailAPI}/{uid}",
+            f"{HomeDetailAPI}/{domain}",
             header=header,
             method="GET",
         )

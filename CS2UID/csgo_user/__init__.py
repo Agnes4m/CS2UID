@@ -6,7 +6,7 @@ from gsuid_core.sv import SV, Bot, Event
 from gsuid_core.utils.message import send_diff_msg
 
 # from ..utils.error_reply import get_error
-from .add_ck import add_uid, add_token
+from .add_ck import add_stoken, add_uid, add_token
 from ..utils.database.models import CS2Bind
 
 csgo_user_bind = SV('CS2用户绑定')
@@ -19,6 +19,11 @@ csgo_switch_paltform = SV('CS2切换平台', area='DIRECT')
 async def send_csgo_add_tk_msg(bot: Bot, ev: Event):
     tk = ev.text.strip()
     await bot.send(await add_token(ev, tk))
+
+@csgo_add_tk.on_prefix(('添加SK', '添加sk'))
+async def send_csgo_add_st_msg(bot: Bot, ev: Event):
+    tk = ev.text.strip()
+    await bot.send(await add_stoken(ev, tk))
 
 
 @csgo_add_uids.on_prefix(('添加uid', '添加uid'))
@@ -106,9 +111,6 @@ async def send_csgo_switch_paltform_msg(bot: Bot, ev: Event):
     elif "5e" in paltform:
         await CS2Bind.switch_paltform(qid, bot_id, "5e")
         return await bot.send('[CS2] 切换5e平台成功！')
-    elif "b5" in paltform:
-        await CS2Bind.switch_paltform(qid, bot_id, "b5")
-        return await bot.send('[CS2] 切换b5平台成功！')
     elif "官匹" in paltform or "国服" in paltform:
         await CS2Bind.switch_paltform(qid, bot_id, "gf")
         return await bot.send('[CS2] 切换国服官匹平台成功！')

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 from gsuid_core.logger import logger
+from gsuid_core.plugins.ZZZeroUID.ZZZeroUID.zzzerouid_stamina.draw_zzz_stamina import NO
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
@@ -180,7 +181,7 @@ async def draw_csgohome_info_img(
         map_logo = (await save_img(usr_map['mapLogo'], "map")).resize((50, 50))
         easy_paste(map_img, map_logo, (40, 60), "cc")
         rank_img = (
-            Image.open(TEXTURE / "rank_gp" / f"{usr_map['rank']}.png")
+            Image.open(TEXTURE / "rank_gp" / f"{usr_map['rank']if usr_map['rank'] is not None else '0'}.png")
             .resize((100, 40))
             .convert('RGBA')
         )
