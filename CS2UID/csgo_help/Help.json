@@ -28,11 +28,11 @@
       }
     ]
   },
-  "查询服务": {
+  "完美平台服务": {
     "desc": "默认查完美绑定战绩，也可以后带uid",
     "data": [
       {
-        "name": "查询",
+        "name": "查询(完美)",
         "desc": "查询cs完美平台数据一览",
         "eg": "查询",
         "need_ck": true,
@@ -69,6 +69,27 @@
         "eg": "对局记录天梯",
         "need_ck": true,
         "need_sk": false,
+        "need_admin": false
+      }
+    ]
+  },
+  "5E平台查询": {
+    "desc": "查5E平台绑定战绩，也可以后带uid",
+    "data": [
+      {
+        "name": "查询5e",
+        "desc": "查询cs 5e平台数据一览",
+        "eg": "查询5e",
+        "need_ck": false,
+        "need_sk": true,
+        "need_admin": false
+      },
+      {
+        "name": "搜索5e",
+        "desc": "搜索cs 5e平台用户信息",
+        "eg": "查询5e",
+        "need_ck": false,
+        "need_sk": true,
         "need_admin": false
       }
     ]
@@ -113,7 +134,31 @@
       {
         "name": "下载全部资源",
         "desc": "下载完整资源(非必要)",
-        "eg": "cs下载全部资源",
+        "eg": "下载全部资源",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": true
+      },
+      {
+        "name": "添加uid",
+        "desc": "作为完美数据请求的uid",
+        "eg": "添加uid 123456",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": true
+      },
+      {
+        "name": "添加tk",
+        "desc": "作为完美数据请求的token",
+        "eg": "添加tk abcd5epio",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": true
+      },
+      {
+        "name": "添加sk",
+        "desc": "作为5e数据请求的token",
+        "eg": "添加sk abcd5epio",
         "need_ck": false,
         "need_sk": false,
         "need_admin": true

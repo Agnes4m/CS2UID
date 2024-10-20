@@ -2,7 +2,7 @@ from typing import Union
 
 from gsuid_core.logger import logger
 
-from ..utils.csgo_api import pf_api, api_5e
+from ..utils.csgo_api import api_5e, pf_api
 from ..utils.error_reply import get_error, not_player
 
 
@@ -25,9 +25,10 @@ async def get_search_players(name: str) -> Union[str, bytes]:
     out_msg += "请输入【cs绑定uid xxx】来绑定信息"
     return out_msg
 
+
 async def get_search_players5e(name: str) -> Union[str, bytes]:
     detail = await api_5e.search_player(name)
-    logger.debug(detail)
+    logger.info(detail)
     if isinstance(detail, int):
         return get_error(detail)
 
@@ -36,7 +37,8 @@ async def get_search_players5e(name: str) -> Union[str, bytes]:
 
     out_msg = ""
     for index, one_player in enumerate(detail, start=1):
-        out_msg += f"""{index}: {one_player['username'].strip()}
-uid: {one_player['domain']}"""
-    out_msg += "请输入【cs绑定uid xxx】来绑定信息"
+        out_msg += f"""{index}. {one_player['username'].strip()}
+uid: {one_player['domain']}
+"""
+    out_msg += "请输入【cs绑定5euid xxx】来绑定信息"
     return out_msg

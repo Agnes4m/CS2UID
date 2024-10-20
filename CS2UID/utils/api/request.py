@@ -3,8 +3,8 @@ import json as js
 from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
-# from gsuid_core.logger import logger
 from httpx import AsyncClient
+from gsuid_core.logger import logger
 
 from ..database.models import CS2User
 from .api import (
@@ -433,7 +433,7 @@ class FiveEApi:
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         pwasteamid: Optional[str] = None,
-        need_tk: bool = True,
+        need_sk: bool = True,
     ) -> Union[Dict, int]:
         header = deepcopy(self._HEADER)
 
@@ -470,6 +470,11 @@ class FiveEApi:
     async def search_player(self, keyword: str):
         """搜索玩家信息"""
         header = self._HEADER
+        uid_token = await self.get_stoken()
+        if uid_token is None:
+            logger.info("找不到stoken")
+            return 1
+        header["token"] = uid_token[1]
         data = await self._5e_request(
             SearchAPI,
             header=header,

@@ -9,10 +9,11 @@ from gsuid_core.utils.image.image_tools import (
     draw_text_by_line,
     draw_pic_with_ring,
 )
+
 from .csgo_path import TEXTURE
-from ..utils.csgo_font import FONT_MAIN_PATH, FONT_TIELE_PATH
 from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
-from ..utils.csgo_font import csgo_font_30
+from ..utils.csgo_font import FONT_MAIN_PATH, FONT_TIELE_PATH, csgo_font_30
+
 ICON_PATH = Path(__file__).parent / 'texture2d/icon'
 font_head = ImageFont.truetype(str(FONT_TIELE_PATH), 20)
 font_main = ImageFont.truetype(str(FONT_MAIN_PATH), 20)
@@ -404,7 +405,14 @@ async def percent_to_img(percent: float, size: tuple = (211, 46)):
         percent -= 0.1
     return img_out.resize(size)
 
-async def draw_card(img: Image.Image, txt: str, site: Tuple[int, int], color: str = "blue", font = csgo_font_30):
+
+async def draw_card(
+    img: Image.Image,
+    txt: str,
+    site: Tuple[int, int],
+    color: str = "blue",
+    font=csgo_font_30,
+):
     """画卡片"""
     pj_img = Image.open(TEXTURE / "base" / "color" / f"{color}.png")
     pj_text = txt

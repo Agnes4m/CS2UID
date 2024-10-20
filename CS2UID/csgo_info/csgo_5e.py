@@ -3,15 +3,16 @@ from pathlib import Path
 from typing import Union
 
 from PIL import Image, ImageDraw
+
 # from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
+from .utils import save_img
 from .csgo_path import TEXTURE
 from ..utils.csgo_api import api_5e
-from .utils import save_img
-from ..utils.api.models import UserHomeDetail5
 from ..utils.error_reply import get_error
+from ..utils.api.models import UserHomeDetail5
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
 
 
@@ -53,7 +54,6 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
     head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
     # 颜色小标识
-
 
     # 基础信息表
     main1_img = Image.open(TEXTURE / "base" / "banner.png")
@@ -99,14 +99,16 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
         csgo_font_42,
         "mm",
     )
-    level_img = await save_img(total_info["level_url"],"level")
+    level_img = await save_img(total_info["level_url"], "level")
     main11_img.paste(level_img, (100, 30), level_img)
     img.paste(main11_img, (0, 410), main11_img)
 
     # 赛季信息
     main2_img = Image.open(TEXTURE / "base" / "banner.png")
     main2_draw = ImageDraw.Draw(main2_img)
-    main2_draw.text((50, 10), season_info["now_season"], (255, 255, 255, 255), csgo_font_42)
+    main2_draw.text(
+        (50, 10), season_info["now_season"], (255, 255, 255, 255), csgo_font_42
+    )
 
     img.paste(main2_img, (0, 330), main2_img)
 
@@ -115,7 +117,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
 
     main22_draw = ImageDraw.Draw(main22_img)
     season_list = season_info["season_list"][0]
-    
+
     # 等级和优先分数
     level_img = await save_img(season_list['level_url'], "level")
     main22_img.paste(level_img, (100, 30), level_img)
@@ -129,14 +131,14 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
         "mm",
     )
     main22_img.paste(level_bg, (100, 30), level_bg)
-    
-    main22_draw.text(
-        (260, 80),
-        f"{detail['avgWe']:.1f}",
-        (255, 255, 255, 255),
-        csgo_font_42,
-        "mm",
-    )
+
+    # main22_draw.text(
+    #     (260, 80),
+    #     f"{detail['avgWe']:.1f}",
+    #     (255, 255, 255, 255),
+    #     csgo_font_42,
+    #     "mm",
+    # )
     main22_draw.text(
         (415, 80),
         f"{detail['career_data']['rating']:.2f}",
@@ -219,13 +221,17 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     #     # map_layer = Image.new("RGBA", (480, 180), (0, 0, 0, 0))
     #     # 750*480
 
-    #     map_img = (await save_img(f"{map_detail['map_name'].lower()}.png", "map")).resize(
+    #     map_img = (
+    #        await save_img(f"{map_detail['map_name'].lower()}.png", "map")
+    #       ).resize(
     #         (470, 180)
     #     )
     #     new_alpha = Image.new('L', map_img.size, 128)
     #     map_img = Image.merge('RGBA', (map_img.split()[:3] + (new_alpha,)))
 
-    #     map_logo = (await save_img(usr_map['mapLogo'], "map")).resize((50, 50))
+    #     map_logo = (
+    #       await save_img(usr_map['mapLogo'],
+    #       "map")).resize((50, 50))
     #     easy_paste(map_img, map_logo, (40, 100), "cc")
     #     map_draw = ImageDraw.Draw(map_img)
     #     map_draw.text(
@@ -376,7 +382,8 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     #     scale = (height - 2 * padding) / (y_end - y_start)
 
     #     draw.line(
-    #         [(padding, height - padding), (width - padding, height - padding)],
+    #         [(padding, height - padding),
+    #           (width - padding, height - padding)],
     #         fill='black',
     #     )
     #     draw.line(
@@ -387,7 +394,8 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     #         y = height - padding - (i - y_start) * scale
     #         draw.line([(padding - 5, y), (padding, y)], fill='black')
     #         draw.text(
-    #             (padding - 50, y - 15), str(i), fill='white', font=csgo_font_20
+    #             (padding - 50, y - 15), str(i),
+    #               fill='white', font=csgo_font_20
     #         )
 
     #     for i in range(len(score_list)):
@@ -419,12 +427,13 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
 
     # 五数据图
     selected_keys = [
-        "awp_ratio", "end_ratio", 
-        "headshot_ratio", 
-        "kill_ratio", 
+        "awp_ratio",
+        "end_ratio",
+        "headshot_ratio",
+        "kill_ratio",
         "mvp_ratio",
         "per_assist",
-        ]
+    ]
     filter_data = {key: detail[key] for key in selected_keys}
     selected_keys = {
         "awp_ratio": "枪法",
@@ -432,14 +441,14 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
         "headshot_ratio": "突破",
         "kill_ratio": "狙杀",
         "mvp_ratio": "道具",
-        "per_assist" : "助攻",
+        "per_assist": "助攻",
     }
     filtered_data = {
         selected_keys[key]: filter_data[key] for key in selected_keys
     }
     width = 400
     height = 400
-    padding = 50
+    # padding = 50
     center = (width // 2, height // 2)
     radius = 100  # 半径
 

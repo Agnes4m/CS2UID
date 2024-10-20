@@ -8,6 +8,7 @@ from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
 exec_list.extend(
     [
         'ALTER TABLE CS2Bind ADD COLUMN platform TEXT DEFAULT "pf"',
+        'ALTER TABLE CS2Bind ADD COLUMN domain TEXT DEFAULT ""',
     ]
 )
 

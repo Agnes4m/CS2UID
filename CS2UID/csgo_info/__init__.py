@@ -3,32 +3,31 @@ import json
 from typing import cast
 
 from loguru import logger
-from .csgo_5e import get_csgo_5einfo_img
 from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.models import Event
 from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.database.api import get_uid
 
+from .csgo_5e import get_csgo_5einfo_img
 from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
 from ..utils.database.models import CS2Bind
-from .csgo_search import get_search_players, get_search_players5e
 from ..utils.api.models import UserMatchRequest
 from .csgohome_info import get_csgohome_info_img
 from ..utils.error_reply import UID_HINT, try_send
 from .csgo_matchdetail import get_csgo_match_detail_img
+from .csgo_search import get_search_players, get_search_players5e
 
 csgo_user_info = SV("CS2用户信息查询")
 
 
 @csgo_user_info.on_command(("查询"), block=True)
 async def send_csgo_info_msg(bot: Bot, ev: Event):
-    uid = await get_uid(bot, ev, CS2Bind)
     logger.info(ev.text)
     arg = ev.text.strip()
-    logger.info(arg)
+    uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
         return await try_send(bot, UID_HINT)
     try:
@@ -39,7 +38,7 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
     if paltform is None:
         logger.warning("平台是空，默认使用pf")
         paltform = "pf"
-    
+
     s = ""
     if "S" or "s" in ev.text:
         after_s = ev.text.lower().split("s")[-1]
@@ -154,6 +153,9 @@ async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
 async def send_csgo_search(bot: Bot, ev: Event):
     name = ev.text.strip()
     if "5e" in ev.text:
+        name = name.replace("5e", "").strip()
+        logger.info("[cs][5e]正在搜索{}".format(name))
         await try_send(bot, await get_search_players5e(name))
-    
-    await try_send(bot, await get_search_players(name))
+    else:
+        logger.info("[cs][完美]正在搜索{}".format(name))
+        await try_send(bot, await get_search_players(name))
