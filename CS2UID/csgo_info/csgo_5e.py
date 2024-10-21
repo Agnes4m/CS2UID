@@ -3,16 +3,15 @@ from pathlib import Path
 from typing import Union
 
 from PIL import Image, ImageDraw
-
 # from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
-from .utils import save_img
 from .csgo_path import TEXTURE
 from ..utils.csgo_api import api_5e
 from ..utils.error_reply import get_error
 from ..utils.api.models import UserHomeDetail5
+from .utils import save_img, resize_image_to_percentage
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
 
 
@@ -33,12 +32,12 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     total_info = detail["career_data"]
     season_info = detail["season_data"]
     name = user_info["username"]
-    uid = user_info["domain"]
+    uid = f"id: {user_info['domain']}"
     avatar = user_info["avatar_url"]
 
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
-    img_bg = Image.open(Path(TEXTURE / "bg" / "1.jpg")).resize((1000, 2400))
+    img_bg = Image.open(Path(TEXTURE / "bg" / "5.jpg")).resize((1000, 2400))
     new_alpha = Image.new('L', img_bg.size, 128)
     img_bg_out = Image.merge('RGBA', (img_bg.split()[:3] + (new_alpha,)))
     img.paste(img_bg_out, (0, 0), img_bg_out)
@@ -46,13 +45,14 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     # 标题
     titel_img = Image.open(TEXTURE / "base" / "title_bg.png")
     head = await save_img(avatar, "avatar")
-    round_head = await draw_pic_with_ring(head, 100)
+    round_head = await draw_pic_with_ring(head, 80)
 
     easy_paste(titel_img, round_head, (112, 108), "cc")
     head_draw = ImageDraw.Draw(titel_img)
     head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
     head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
+    img.paste(titel_img, (0, 55), titel_img)
     # 颜色小标识
 
     # 基础信息表
@@ -73,7 +73,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     )
     main11_draw.text(
         (415, 80),
-        f"{total_info['rating']:.2f}",
+        f"{total_info['rating']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -87,7 +87,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     )
     main11_draw.text(
         (725, 80),
-        f"{total_info['per_win_match']:.2f}",
+        f"{total_info['per_win_match']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -100,7 +100,8 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
         "mm",
     )
     level_img = await save_img(total_info["level_url"], "level")
-    main11_img.paste(level_img, (100, 30), level_img)
+    level_img = await resize_image_to_percentage(level_img, 60)
+    main11_img.paste(level_img, (50, 30), level_img)
     img.paste(main11_img, (0, 410), main11_img)
 
     # 赛季信息
@@ -110,7 +111,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
         (50, 10), season_info["now_season"], (255, 255, 255, 255), csgo_font_42
     )
 
-    img.paste(main2_img, (0, 330), main2_img)
+    img.paste(main2_img, (0, 620), main2_img)
 
     # 赛季主信息
     main22_img = Image.open(TEXTURE / "base" / "base_bg.png")
@@ -120,17 +121,20 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
 
     # 等级和优先分数
     level_img = await save_img(season_list['level_url'], "level")
-    main22_img.paste(level_img, (100, 30), level_img)
+    level_img = await resize_image_to_percentage(level_img, 60)
+    main22_img.paste(level_img, (50, 40), level_img)
     level_bg = await save_img(season_list['level_bg_url'], "level_bg")
+    # logger.info(season_list['level_bg_url'])
+    level_bg = await resize_image_to_percentage(level_bg, 60)
     level_draw = ImageDraw.Draw(level_bg)
     level_draw.text(
-        (110, 100),
+        (70, 25),
         season_list['elo'],
         (255, 255, 255, 255),
-        csgo_font_20,
+        csgo_font_30,
         "mm",
     )
-    main22_img.paste(level_bg, (100, 30), level_bg)
+    main22_img.paste(level_bg, (50, 200), level_bg)
 
     # main22_draw.text(
     #     (260, 80),
@@ -141,28 +145,28 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     # )
     main22_draw.text(
         (415, 80),
-        f"{detail['career_data']['rating']:.2f}",
+        f"{detail['career_data']['rating']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
     main22_draw.text(
         (570, 80),
-        f"{season_list['rws']:.2f}",
+        f"{season_list['rws']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
     main22_draw.text(
         (725, 80),
-        f"{season_list['adr']:.2f}",
+        f"{season_list['adr']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
     # main22_draw.text(
     #     (880, 80),
-    #     f"{season_list['entryKillRatio'] * 100:.2f}%",
+    #     f"{season_list['entryKillRatio']}%",
     #     (255, 255, 255, 255),
     #     csgo_font_42,
     #     "mm",
@@ -177,7 +181,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     )
     main22_draw.text(
         (415, 230),
-        f"{season_list['per_win_match'] * 100:.1f}%",
+        f"{season_list['per_win_match']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -204,7 +208,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     #     "mm",
     # ) MVP
 
-    img.paste(main22_img, (0, 410), main22_img)
+    img.paste(main22_img, (0, 700), main22_img)
 
     # 地图信息表
     # main1_img = Image.open(TEXTURE / "base" / "banner.png")
@@ -434,72 +438,75 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
         "mvp_ratio",
         "per_assist",
     ]
-    filter_data = {key: detail[key] for key in selected_keys}
-    selected_keys = {
-        "awp_ratio": "枪法",
-        "end_ratio": "致胜",
-        "headshot_ratio": "突破",
-        "kill_ratio": "狙杀",
-        "mvp_ratio": "道具",
-        "per_assist": "助攻",
-    }
-    filtered_data = {
-        selected_keys[key]: filter_data[key] for key in selected_keys
-    }
-    width = 400
-    height = 400
-    # padding = 50
-    center = (width // 2, height // 2)
-    radius = 100  # 半径
+    if season_list['power']:
+        filter_data = {key: season_list['power'][key] for key in selected_keys}
+        selected_keys = {
+            "awp_ratio": "枪法",
+            "end_ratio": "致胜",
+            "headshot_ratio": "突破",
+            "kill_ratio": "狙杀",
+            "mvp_ratio": "道具",
+            "per_assist": "助攻",
+        }
+        filtered_data = {
+            selected_keys[key]: filter_data[key] for key in selected_keys
+        }
+        width = 400
+        height = 400
+        # padding = 50
+        center = (width // 2, height // 2)
+        radius = 100  # 半径
 
-    five_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-    draw = ImageDraw.Draw(five_img)
+        five_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        draw = ImageDraw.Draw(five_img)
 
-    num_vars = len(filtered_data)
-    angle = 2 * math.pi / num_vars
-    points = []
+        num_vars = len(filtered_data)
+        angle = 2 * math.pi / num_vars
+        points = []
 
-    for i, (label, value) in enumerate(filtered_data.items()):
-        x = center[0] + radius * (value / 10) * math.cos(
-            i * angle - math.pi / 2
+        for i, (label, value) in enumerate(filtered_data.items()):
+            x = center[0] + radius * (value / 10) * math.cos(
+                i * angle - math.pi / 2
+            )
+            y = center[1] + radius * (value / 10) * math.sin(
+                i * angle - math.pi / 2
+            )
+            points.append((x, y))
+
+            draw.line([center, (x, y)], fill='black', width=2)
+
+        template_points = []
+        for i in range(num_vars):
+            x = center[0] + radius * math.cos(i * angle - math.pi / 2)
+            y = center[1] + radius * math.sin(i * angle - math.pi / 2)
+            template_points.append((x, y))
+
+        draw.polygon(
+            template_points, fill=(200, 200, 200, 255), outline='black'
         )
-        y = center[1] + radius * (value / 10) * math.sin(
-            i * angle - math.pi / 2
-        )
-        points.append((x, y))
 
-        draw.line([center, (x, y)], fill='black', width=2)
+        draw.polygon(points, fill=(135, 206, 250, 128), outline='blue')
 
-    template_points = []
-    for i in range(num_vars):
-        x = center[0] + radius * math.cos(i * angle - math.pi / 2)
-        y = center[1] + radius * math.sin(i * angle - math.pi / 2)
-        template_points.append((x, y))
+        draw.line(points + [points[0]], fill='blue', width=2)
 
-    draw.polygon(template_points, fill=(200, 200, 200, 255), outline='black')
+        for i, (label, value) in enumerate(filtered_data.items()):
+            x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
+            y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
 
-    draw.polygon(points, fill=(135, 206, 250, 128), outline='blue')
+            text = f"{value:.2f}\n{label}"
 
-    draw.line(points + [points[0]], fill='blue', width=2)
+            text_size = draw.textbbox((0, 0), text, font=csgo_font_20)
+            text_width = text_size[2] - text_size[0]
+            text_height = text_size[3] - text_size[1]
 
-    for i, (label, value) in enumerate(filtered_data.items()):
-        x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
-        y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
+            text_x = x - text_width / 2
+            text_y = y - text_height / 2
 
-        text = f"{value:.2f}\n{label}"
-
-        text_size = draw.textbbox((0, 0), text, font=csgo_font_20)
-        text_width = text_size[2] - text_size[0]
-        text_height = text_size[3] - text_size[1]
-
-        text_x = x - text_width / 2
-        text_y = y - text_height / 2
-
-        draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)
-    img.paste(five_img, (600, 1950), five_img)
+            draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)
+        img.paste(five_img, (600, 1950), five_img)
 
     # 底
-    img_up = Image.open(TEXTURE / "base" / "footer.png")
+    img_up = Image.open(TEXTURE / "base" / "footer5e.png")
     img.paste(img_up, (0, 2340), img_up)
 
     return await convert_img(img)

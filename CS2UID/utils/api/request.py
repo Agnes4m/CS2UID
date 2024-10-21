@@ -410,7 +410,7 @@ class FiveEApi:
     ssl_verify = False
     _HEADER: Dict[str, str] = {
         "User-Agent": "okhttp/3.14.9",
-        "appversion": "6.2.2",
+        "version": "6.2.2",
     }
 
     async def get_stoken(self) -> Optional[List[str]]:
@@ -452,6 +452,7 @@ class FiveEApi:
                 data=data,
                 timeout=300,
             )
+            # logger.info(resp.text)
             try:
                 raw_data = await resp.json()
             except:  # noqa: E722
@@ -472,7 +473,7 @@ class FiveEApi:
         header = self._HEADER
         uid_token = await self.get_stoken()
         if uid_token is None:
-            logger.info("找不到stoken")
+            logger.info("[CS2][5E]找不到stoken")
             return 1
         header["token"] = uid_token[1]
         data = await self._5e_request(
@@ -491,11 +492,17 @@ class FiveEApi:
     async def get_user_detail(self, domain: str):
         """获取玩家信息"""
         header = self._HEADER
+        uid_token = await self.get_stoken()
+        if uid_token is None:
+            logger.info("[CS2][5E]找不到stoken")
+            return 1
+        header["token"] = uid_token[1]
         data = await self._5e_request(
             f"{HomeDetailAPI}/{domain}",
             header=header,
             method="GET",
         )
+        # logger.info(data)
         if isinstance(data, int):
             return data
         return cast(UserHomeDetail5, data["data"])
@@ -503,6 +510,10 @@ class FiveEApi:
     async def get_user_homepage(self, domain: str):
         """获取玩家库存信息"""
         header = self._HEADER
+        uid_token = await self.get_stoken()
+        if uid_token is None:
+            logger.info("[CS2][5E]找不到stoken")
+            return 1
         header["Content-Type"] = "application/x-www-form-urlencoded"
         data = await self._5e_request(
             HomePageAPI,

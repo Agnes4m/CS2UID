@@ -13,6 +13,7 @@ from .csgo_5e import get_csgo_5einfo_img
 from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
+from .utils import parse_s_value
 from ..utils.database.models import CS2Bind
 from ..utils.api.models import UserMatchRequest
 from .csgohome_info import get_csgohome_info_img
@@ -25,43 +26,58 @@ csgo_user_info = SV("CS2用户信息查询")
 
 @csgo_user_info.on_command(("查询"), block=True)
 async def send_csgo_info_msg(bot: Bot, ev: Event):
-    logger.info(ev.text)
+    logger.info(ev)
     arg = ev.text.strip()
-    uid = await get_uid(bot, ev, CS2Bind)
-    if uid is None:
-        return await try_send(bot, UID_HINT)
-    try:
-        paltform = await CS2Bind.get_paltform(ev.user_id)
-    except Exception as E:
-        logger.warning(f"{E}\n获取CS2Bind数据失败，将使用默认值：pf")
-        paltform = "pf"
-    if paltform is None:
-        logger.warning("平台是空，默认使用pf")
-        paltform = "pf"
+    uid5e = await CS2Bind.get_domain(ev.user_id)
 
-    s = ""
-    if "S" or "s" in ev.text:
-        after_s = ev.text.lower().split("s")[-1]
-        if (
-            after_s.isdigit()
-            or after_s.startswith(("+", "-"))
-            and after_s[1:].isdigit()
-        ):
-            s = after_s
-        else:
-            i = 0
-            while i < len(after_s) and after_s[i].isdigit():
-                i += 1
-            s = after_s[:i] if i > 0 else ""
-    if arg:
-        paltform = arg
-    logger.info("当前平台是：" + paltform)
-    if paltform in ["官匹", "gp", "gf"]:
+    # 确认 arg 和 uid5e 的有效性
+    if not arg or uid5e is None:
+        return await try_send(bot, UID_HINT)
+
+    # 初始化 uid
+    uid = None
+    platform = None
+
+    # 判断平台
+    if "5E" in arg.upper():
+        platform = "5e"
+        uid = uid5e.replace("5e", "").replace("5E", "").strip()
+        
+        # 提取 s 值
+        s = parse_s_value(arg)
+        
+        if not s:  # 如果没有后面的参数
+            platform = await CS2Bind.get_platform(ev.user_id) or "pf"
+    else:
+        uid = await get_uid(bot, ev, CS2Bind)
+
+        if uid is None:
+            return await try_send(bot, UID_HINT)
+
+        # 获取平台
+        try:
+            platform = await CS2Bind.get_platform(ev.user_id) or "pf"
+        except Exception as e:
+            logger.warning(f"{e}\n获取CS2Bind数据失败，将使用默认值：pf")
+            platform = "pf"
+
+    # 如果 platform 仍然是 None，设置默认值
+    if platform is None:
+        logger.warning("平台是空，默认使用pf")
+        platform = "pf"
+
+    s = parse_s_value(arg)
+    logger.info(f"当前平台是：{platform}")
+
+    # 发送对应信息
+    if platform in ["官匹", "gp", "gf"]:
         await try_send(bot, await get_csgohome_info_img(uid))
-    elif paltform in ["pf", "完美"]:
+    elif platform in ["pf", "完美"]:
         await try_send(bot, await get_csgo_info_img(uid, s))
-    elif paltform in ["5e", "5E"]:
+    elif platform in ["5e", "5E"]:
+        logger.info(f"[CS2][5E]正在查询uid: {uid}")
         await try_send(bot, await get_csgo_5einfo_img(uid, s))
+
 
 
 @csgo_user_info.on_command(("库存", "仓库", "饰品"), block=True)

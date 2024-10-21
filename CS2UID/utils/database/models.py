@@ -34,7 +34,7 @@ class CS2Bind(Bind, table=True):
 
     @classmethod
     @with_session
-    async def get_paltform(
+    async def get_platform(
         cls,
         session,
         user_id: str,
@@ -43,6 +43,18 @@ class CS2Bind(Bind, table=True):
         data = await cls.select_data(user_id)
 
         return data.platform if data else None
+
+    @classmethod
+    @with_session
+    async def get_domain(
+        cls,
+        session,
+        user_id: str,
+    ):
+        """获取domain的参数值"""
+        data = await cls.select_data(user_id)
+
+        return data.domain if data else None
 
 
 class CS2User(User, table=True):
