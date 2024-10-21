@@ -28,26 +28,29 @@ csgo_user_info = SV("CS2用户信息查询")
 async def send_csgo_info_msg(bot: Bot, ev: Event):
     logger.info(ev)
     arg = ev.text.strip()
-    uid5e = await CS2Bind.get_domain(ev.user_id)
 
-    # 确认 arg 和 uid5e 的有效性
-    if not arg or uid5e is None:
-        return await try_send(bot, UID_HINT)
-
-    # 初始化 uid
+    # 初始化 uid 和 platform
     uid = None
     platform = None
+    s = ""
 
     # 判断平台
     if "5E" in arg.upper():
         platform = "5e"
-        uid = uid5e.replace("5e", "").replace("5E", "").strip()
-        
-        # 提取 s 值
-        s = parse_s_value(arg)
-        
-        if not s:  # 如果没有后面的参数
-            platform = await CS2Bind.get_platform(ev.user_id) or "pf"
+
+        # 提取后续参数作为 uid
+        parts = arg.split()
+        if len(parts) > 1:
+            uid = parts[1].strip()  # 获取 "5E" 后面的参数作为 uid
+            s = parse_s_value(arg)  # 尝试提取 s 值
+        else:
+            # 如果没有后续参数，则尝试获取 uid5e
+            uid = await CS2Bind.get_domain(ev.user_id)
+            if uid is not None:
+                uid = uid.replace("5e", "").replace("5E", "").strip()
+            else:
+                return await try_send(bot, UID_HINT)
+
     else:
         uid = await get_uid(bot, ev, CS2Bind)
 
@@ -66,8 +69,13 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
         logger.warning("平台是空，默认使用pf")
         platform = "pf"
 
+    # 如果 platform 仍然是 None，设置默认值
+    if platform is None:
+        logger.warning("平台是空，默认使用pf")
+        platform = "pf"
+
     s = parse_s_value(arg)
-    logger.info(f"当前平台是：{platform}")
+    logger.info(f"[CS2]当前平台是：{platform}")
 
     # 发送对应信息
     if platform in ["官匹", "gp", "gf"]:

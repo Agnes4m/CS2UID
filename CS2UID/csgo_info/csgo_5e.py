@@ -58,7 +58,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
     # 基础信息表
     main1_img = Image.open(TEXTURE / "base" / "banner.png")
     main1_draw = ImageDraw.Draw(main1_img)
-    main1_draw.text((50, 10), "基础", (255, 255, 255, 255), csgo_font_42)
+    main1_draw.text((50, 10), "历史最高", (255, 255, 255, 255), csgo_font_42)
 
     img.paste(main1_img, (0, 330), main1_img)
 
