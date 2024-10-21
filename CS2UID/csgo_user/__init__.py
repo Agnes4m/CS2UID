@@ -63,7 +63,7 @@ async def send_csgo_bind_uid_msg(bot: Bot, ev: Event):
             # data = await CS2Bind.insert_uid(
             #     qid, ev.bot_id, uid, ev.group_id, is_digit=False
             # )
-            data = await CS2Bind.insert_data(
+            data = await CS2Bind.update_data(
                 qid, ev.bot_id, domain=uid, group_id=ev.group_id
             )
             return await send_diff_msg(

@@ -8,7 +8,7 @@ from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
 exec_list.extend(
     [
         'ALTER TABLE CS2Bind ADD COLUMN platform TEXT DEFAULT "pf"',
-        'ALTER TABLE CS2Bind ADD COLUMN domain TEXT DEFAULT ""',
+        'ALTER TABLE CS2Bind ADD COLUMN domain TEXT DEFAULT',
     ]
 )
 
@@ -16,6 +16,7 @@ exec_list.extend(
 class CS2Bind(Bind, table=True):
     uid: Optional[str] = Field(default=None, title='CS2UID')
     platform: str = Field(default='pf', title='平台')
+    domain: str = Field(default='', title='5e域名')
 
     @classmethod
     @with_session
