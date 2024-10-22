@@ -492,11 +492,11 @@ class FiveEApi:
     async def get_user_detail(self, domain: str):
         """获取玩家信息"""
         header = self._HEADER
-        uid_token = await self.get_stoken()
-        if uid_token is None:
-            logger.info("[CS2][5E]找不到stoken")
-            return 1
-        header["token"] = uid_token[1]
+        # uid_token = await self.get_stoken()
+        # if uid_token is None:
+        #     logger.info("[CS2][5E]找不到stoken")
+        #     return 1
+        # header["token"] = uid_token[1]
         data = await self._5e_request(
             f"{HomeDetailAPI}/{domain}",
             header=header,
@@ -524,3 +524,20 @@ class FiveEApi:
         if isinstance(data, int):
             return data
         return cast(UserDetailRequest, data["data"])
+
+    async def get_user_homeall(self, domain: str, year: str, season: str):
+        header = self._HEADER
+        data = await self._5e_request(
+            f"{HomeDetailAPI}/{domain}",
+            header=header,
+            method="GET",
+            params={
+                "matchType":"9",
+                "year": year,
+                "season": season
+            }
+        )
+        # logger.info(data)
+        if isinstance(data, int):
+            return data
+        return cast(UserHomeDetail5, data["data"])

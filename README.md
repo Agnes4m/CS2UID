@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD033 -->
 # CS2UID
 
 <p align="center">
@@ -39,8 +40,8 @@ cd ../
 # 启动Bot（如此时GsCore正在运行，请先使用Ctrl+C快捷键关闭GsCore，无需重启Bot（如NoneBot2））
 poetry run core
 ```
-</p></details>
 
+</p></details>
 
 ## 丨功能
 
@@ -70,21 +71,21 @@ poetry run core
 
 <details><summary>查询地图道具点位 - 命令: csgo道具</summary><p>
 
-- 参数以空格间隔，参数数量为0-4
-- 如果参数为0，返回地图
-- 如果参数为1，地图存在返回地图开始点位
-- 如果参数为2，地图存在返回地图目的点位
-- 如果参数为3且最后一个参数是道具(火/烟/闪/雷),则默认开始点位和目的点位一致
-- 如果参数为4，则正常输出攻略
++ 参数以空格间隔，参数数量为0-4
++ 如果参数为0，返回地图
++ 如果参数为1，地图存在返回地图开始点位
++ 如果参数为2，地图存在返回地图目的点位
++ 如果参数为3且最后一个参数是道具(火/烟/闪/雷),则默认开始点位和目的点位一致
++ 如果参数为4，则正常输出攻略
 
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test5.jpg"><img src="./img/test5.png"  alt="CS2lUID_道具"></a>
 </p></details>
 
 ### 管理员功能
 
-- 添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid
++ 添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid
 
-- 下载拓展资源 - 命令: csgo下载全部资源
++ 下载拓展资源 - 命令: csgo下载全部资源
 
 ## 丨使用方式
 
