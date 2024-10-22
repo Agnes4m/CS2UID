@@ -32,7 +32,7 @@ homepage = "https://github.com/Agnes4m/CS2UID"
 repository = "https://github.com/Agnes4m/CS2UID"
 documentation = "https://docs.sayu-bot.com/"
 packages = [
-    { include = "LOLegendsUID" }
+    { include = "CS2UID" }
 ]
 exclude = ["tests", "deploy"]
 

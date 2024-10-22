@@ -1,5 +1,6 @@
 import math
-from pathlib import Path
+
+# from pathlib import Path
 from typing import Union
 
 from PIL import Image, ImageDraw
@@ -36,16 +37,16 @@ async def get_csgo_info_img(uid: str, season: str = "") -> Union[str, bytes]:
 async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     if not detail:
         return "token已过期"
+
+    # 提取用户信息
     name = detail["name"]
-    uid = detail["steamId"]
-    uid = uid[:4] + "********" + uid[12:]
+    uid = f"{detail['steamId'][:4]}********{detail['steamId'][12:]}"
     avatar = detail["avatar"]
 
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
-    img_bg = Image.open(Path(TEXTURE / "bg" / "1.jpg")).resize((1000, 2400))
-    new_alpha = Image.new('L', img_bg.size, 128)
-    img_bg_out = Image.merge('RGBA', (img_bg.split()[:3] + (new_alpha,)))
+    img_bg = Image.open(TEXTURE / "bg" / "1.jpg").resize((1000, 2400))
+    img_bg_out = create_background(img_bg)
     img.paste(img_bg_out, (0, 0), img_bg_out)
 
     # 标题
@@ -53,32 +54,10 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     head = await save_img(avatar, "avatar")
     round_head = await draw_pic_with_ring(head, 100)
 
-    easy_paste(titel_img, round_head, (112, 108), "cc")
-    head_draw = ImageDraw.Draw(titel_img)
-    head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
-    head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
-    head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
-    # 颜色小标识
+    place_avatar_in_title(titel_img, round_head, name, uid)
 
-    pj_img = Image.open(TEXTURE / "base" / "blue.png")
-    pj_text = detail['summary']
-    pj_draw = ImageDraw.Draw(pj_img)
-    pj_draw.text(
-        (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm"
-    )
-    titel_img.paste(pj_img, (235, 170), pj_img)
-    if detail['stars'] > 0:
-        st_img = Image.open(TEXTURE / "base" / "red.png")
-        st_text = detail['stars']
-        st_draw = ImageDraw.Draw(st_img)
-        st_draw.text(
-            (118, 24),
-            f"⭐: {st_text}个",
-            (255, 255, 255, 255),
-            csgo_font_30,
-            "mm",
-        )
-        titel_img.paste(st_img, (480, 170), st_img)
+    # 颜色小标识
+    await add_summary_and_stars(titel_img, detail)
 
     rank_scoce = detail["pvpScore"]
     rank = await assign_rank(rank_scoce)
@@ -489,3 +468,46 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     img.paste(img_up, (0, 2340), img_up)
 
     return await convert_img(img)
+
+
+def create_background(img_bg: Image.Image) -> Image.Image:
+    """创建带有透明度的新背景图像"""
+    new_alpha = Image.new('L', img_bg.size, 128)
+    return Image.merge('RGBA', img_bg.split()[:3] + (new_alpha,))
+
+
+def place_avatar_in_title(
+    titel_img: Image.Image, round_head: Image.Image, name: str, uid: str
+) -> None:
+    """在标题图像中放置头像和文本信息"""
+    easy_paste(titel_img, round_head, (112, 108), "cc")
+    head_draw = ImageDraw.Draw(titel_img)
+    head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
+    head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
+    head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
+
+
+async def add_summary_and_stars(
+    titel_img: Image.Image, detail: UserDetailData
+) -> None:
+    """在标题图像中添加评价和星级"""
+    pj_img = Image.open(TEXTURE / "base" / "blue.png")
+    pj_text = detail['summary']
+    pj_draw = ImageDraw.Draw(pj_img)
+    pj_draw.text(
+        (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm"
+    )
+    titel_img.paste(pj_img, (235, 170), pj_img)
+
+    if detail['stars'] > 0:
+        st_img = Image.open(TEXTURE / "base" / "red.png")
+        st_text = detail['stars']
+        st_draw = ImageDraw.Draw(st_img)
+        st_draw.text(
+            (118, 24),
+            f"⭐: {st_text}个",
+            (255, 255, 255, 255),
+            csgo_font_30,
+            "mm",
+        )
+        titel_img.paste(st_img, (480, 170), st_img)

@@ -9,11 +9,11 @@ from gsuid_core.models import Event
 from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.database.api import get_uid
 
+from .utils import parse_s_value
 from .csgo_5e import get_csgo_5einfo_img
 from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_match import get_csgo_match_img
-from .utils import parse_s_value
 from ..utils.database.models import CS2Bind
 from ..utils.api.models import UserMatchRequest
 from .csgohome_info import get_csgohome_info_img
@@ -87,7 +87,6 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
         await try_send(bot, await get_csgo_5einfo_img(uid, s))
 
 
-
 @csgo_user_info.on_command(("库存", "仓库", "饰品"), block=True)
 async def send_csgo_goods_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
@@ -111,41 +110,49 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
     uid = await get_uid(bot, ev, CS2Bind)
     if uid is None:
         return await try_send(bot, UID_HINT)
+    tag = 1 if "官匹" in ev.text else 3
+    type_i = determine_match_type(ev.text)
 
-    if "官匹" in ev.text:
-        tag = 1
-    else:
-        tag = 3
-
-    if "天梯" in ev.text:
-        type_i = 12
-    elif "pro" in ev.text:
-        type_i = 41
-    elif "巅峰" in ev.text:
-        type_i = 20
-    elif "周末" in ev.text:
-        type_i = 27
-    elif "自定义" in ev.text:
-        type_i = 14
-    else:
-        type_i = -1
+    # 获取比赛信息
     resp = await bot.receive_resp(
         await get_csgo_match_img(ev.user_id, uid, tag, type_i)
     )
-    if resp is not None:
-        index = resp.text
-        if not index.isdigit():
-            return
-        detail_path = (
-            get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
+    if resp is None:
+        return
+
+    index = resp.text
+    if not index.isdigit():
+        return
+
+    detail_path = get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
+    if not detail_path.is_file():
+        return await try_send(
+            bot, "没有对局缓存，请使用指令 cs对局记录 生成数据"
         )
-        if not detail_path.is_file():
-            await try_send(bot, "没有对局缓存，请使用指令 cs对局记录 生成数据")
-        with detail_path.open("r", encoding="utf-8") as f:
-            match_detail = cast(UserMatchRequest, json.load(f))
-        match_id = match_detail["data"]["matchList"][int(index) - 1]["matchId"]
+
+    with detail_path.open("r", encoding="utf-8") as f:  # 使用标准的 with
+        match_detail = cast(UserMatchRequest, json.load(f))
+
+    # 获取比赛 ID
+    try:
+        match_list = match_detail["data"]["matchList"]
+        if match_list is None or len(match_list) < int(index):
+            return await try_send(bot, "比赛记录不完整或不存在。")
+
+        match_id = match_list[int(index) - 1]["matchId"]
         match_detail_out = await get_csgo_match_detail_img(match_id)
         await try_send(bot, match_detail_out)
+    except (KeyError, IndexError) as e:
+        logger.error(f"无法获取比赛 ID: {e}")
+        await try_send(bot, "获取比赛详情时出错。")
+
+
+def determine_match_type(text: str) -> int:
+    """根据输入文本确定比赛类型"""
+    match_types = {"天梯": 12, "pro": 41, "巅峰": 20, "周末": 27, "自定义": 14}
+
+    matched_key = next((key for key in match_types if key in text), None)
+    return match_types.get(matched_key, -1) if matched_key is not None else -1
 
 
 @csgo_user_info.on_command(("对局详情"), block=True)
@@ -176,10 +183,13 @@ async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
 @csgo_user_info.on_command(("搜索"), block=True)
 async def send_csgo_search(bot: Bot, ev: Event):
     name = ev.text.strip()
-    if "5e" in ev.text:
+
+    if "5e" in name.lower():
         name = name.replace("5e", "").strip()
-        logger.info("[cs][5e]正在搜索{}".format(name))
-        await try_send(bot, await get_search_players5e(name))
+        logger.info("[cs][5e] 正在搜索 {}".format(name))
+        response = await get_search_players5e(name)
     else:
-        logger.info("[cs][完美]正在搜索{}".format(name))
-        await try_send(bot, await get_search_players(name))
+        logger.info("[cs][完美] 正在搜索 {}".format(name))
+        response = await get_search_players(name)
+
+    await try_send(bot, response)

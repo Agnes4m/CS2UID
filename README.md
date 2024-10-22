@@ -9,7 +9,6 @@
         <a href="http://docs.gsuid.gbots.work/#/" target="_blank">安装文档</a>
 </div>
 
-
 ## 丨安装提醒
 
 > **注意：该插件为[早柚核心(gsuid_core)](https://github.com/Genshin-bots/gsuid_core)的扩展，具体安装方式可参考[GenshinUID](https://github.com/KimigaiiWuyi/GenshinUID)**
@@ -107,23 +106,22 @@ poetry run core
    2. 发送`cs绑定uid + name`
    3. 可以进行查询，使用`cs查询`进行查询即可
 
-### 5e抓包
+### 5e抓包(仅安卓)
 
 1. 安装插件
-2. 使用**小号**打开**5e对战平台**
-3. 打开Fiddler或者其他抓包软件，抓取**pwasteamid**和**access_token**
-   1. host为`pwaweblogin.wmpvp.com`的请求
-   2. 部分Cookie中**steam_cn_token**的值是等同**access_token**的值的
+2. 使用**小号**打开**5e对战平台app**
+3. 打开小黄鸟或者其他抓包软件，抓取**token**
+   1. host为`app.5eplay.com`或`ya-api-app.5eplay.com`的请求
+   2. 基本能抓到的包都有这个参数
 
-4. 私聊Bot，发送`cs添加uid|tk` ，并在**命令后面直接**附上你第三步获取到的**pwasteamid**和**access_token**
-   1. `cs添加uid 4000****4000`
-   2. `cs添加tk 1e15****f5w8`
-   3. 如果不添加则无法使用csgo指令查询
+4. 私聊Bot，发送`cs添加sk` ，并在**命令后面直接**附上你第三步获取到的**token**
+   1. `cs添加sk WOSFNJX****`
+   2. 如果不添加则无法使用`cs搜索`指令查询
 
 5. 可以正常使用Bot了！
-   1. 使用`cs搜索`查询自己的64位steamid，也可以通过steam或者完美平台个人信息自行查询
-   2. 发送`cs绑定uid + name`
-   3. 可以进行查询，使用`cs查询`进行查询即可
+   1. 使用`cs搜索5e`查询自己的5e uid
+   2. 发送`cs绑定uid5e + name`
+   3. 可以进行查询，使用`cs查询5e`进行查询即可
 
 ## 丨当前进度
 
