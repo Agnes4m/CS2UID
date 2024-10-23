@@ -11,22 +11,27 @@ from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 from .csgo_path import TEXTURE
 from ..utils.csgo_api import api_5e
 from ..utils.error_reply import get_error
-from ..utils.api.models import UserHomeDetail5
+from ..utils.api.models import UserHomeDetail5, UserSeason5
 from .utils import save_img, resize_image_to_percentage
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
 
 
 async def get_csgo_5einfo_img(uid: str, season: str = "") -> Union[str, bytes]:
     detail = await api_5e.get_user_detail(uid)
-
+    
     # logger.info(detail)
     if isinstance(detail, int):
         return get_error(detail)
+    
+    year, season = detail["season_data"]["now_season_v1"].split(" ")
+    season = season.replace("S", "").strip()
+    info = await api_5e.get_user_homeall(uid, year, season)
+    if isinstance(info, int):
+        return get_error(info)
+    return await draw_csgo_5einfo_img(detail, info)
 
-    return await draw_csgo_5einfo_img(detail)
 
-
-async def draw_csgo_5einfo_img(detail: UserHomeDetail5) -> bytes | str:
+async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> bytes | str:
     if not detail:
         return "token已过期"
     user_info = detail["user"]

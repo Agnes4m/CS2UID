@@ -40,6 +40,7 @@ from .models import (
     UserDetailRequest,
     UserSearchRequest,
     UserHomedetailRequest,
+    UserSeason5,
 )
 
 
@@ -526,18 +527,15 @@ class FiveEApi:
         return cast(UserDetailRequest, data["data"])
 
     async def get_user_homeall(self, domain: str, year: str, season: str):
+        """获取年度信息"""
         header = self._HEADER
         data = await self._5e_request(
             f"{HomeDetailAPI}/{domain}",
             header=header,
             method="GET",
-            params={
-                "matchType":"9",
-                "year": year,
-                "season": season
-            }
+            params={"matchType": "9", "year": year, "season": season},
         )
         # logger.info(data)
         if isinstance(data, int):
             return data
-        return cast(UserHomeDetail5, data["data"])
+        return cast(UserSeason5, data["data"])

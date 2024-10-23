@@ -1,7 +1,4 @@
-from re import S
-from turtle import st
 from typing import List, Optional, TypedDict
-from zlib import adler32
 
 
 class UsrInfo(TypedDict):
@@ -1268,20 +1265,25 @@ class UserHomeDetail5(TypedDict):
     season_data: SeasonData5
     user: User5
 
+
 class Elo5(TypedDict):
     """赛季变化数据"""
+
     data: str
     "elo分数"
     time: str
     "时间月日"
 
+
 class ChartInfo5(TypedDict):
     """赛季变化数据"""
+
     elo: List[Elo5]
     flags: List[str]
     "标记, rws,rating,elo"
     rating: List[Elo5]
     rws: List[Elo5]
+
 
 class MapsData5(TypedDict):
     avg_kill: str
@@ -1306,9 +1308,11 @@ class MapsData5(TypedDict):
     """rws"""
     url: str
     """地图背景图"""
-    
+
+
 class MatchData(TypedDict):
     """当前赛季数据"""
+
     draw: str
     """未知"""
     elo: str
@@ -1328,8 +1332,9 @@ class MatchData(TypedDict):
     season: str
     """赛季"""
     sx_2024s1: bool
-    win: str 
+    win: str
     """胜场"""
+
 
 class MatchDetail5(TypedDict):
     adr: str
@@ -1381,9 +1386,11 @@ class MatchDetail5(TypedDict):
     rating: str
     rws: str
     sur: str
-    
+
+
 class MaxData5(TypedDict):
     """最佳数据"""
+
     adr: str
     adr_match_id: str
     awp_kill: str
@@ -1397,8 +1404,10 @@ class MaxData5(TypedDict):
     rating: str
     rating_match_id: str
 
+
 class WeaponsData5(TypedDict):
     """武器数据"""
+
     ave_per_kill: str
     """使用频率（0-1)"""
     avg_harm: str
@@ -1416,9 +1425,10 @@ class WeaponsData5(TypedDict):
     weapons_url: str
     """武器图片"""
 
+
 class UserSeason5(TypedDict):
     """用户赛季数据"""
-    
+
     chart_info: ChartInfo5
     maps_data: List[MapsData5]
     match_data: MatchData

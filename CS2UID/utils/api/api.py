@@ -32,4 +32,6 @@ HomeDetailAPI = (
 HomePageAPI = (
     "https://ya-api-app.5eplay.com/v1/user/steam/inventory/homepage/record"
 )
-HomeSeason = 'https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1'
+HomeSeason = (
+    'https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1'
+)
