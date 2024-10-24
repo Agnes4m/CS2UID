@@ -61,7 +61,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
     img.paste(titel_img, (0, 55), titel_img)
     # 颜色小标识
 
-    # 基础信息表
+    # 最高信息表
     main1_img = Image.open(TEXTURE / "base" / "banner.png")
     main1_draw = ImageDraw.Draw(main1_img)
     main1_draw.text((50, 10), "历史最高", (255, 255, 255, 255), csgo_font_42)
@@ -120,7 +120,7 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
     img.paste(main2_img, (0, 620), main2_img)
 
     # 赛季主信息
-    main22_img = Image.open(TEXTURE / "base" / "base_bg.png")
+    main22_img = Image.open(TEXTURE / "base" / "base_5ebg.png")
 
     main22_draw = ImageDraw.Draw(main22_img)
     season_list = season_info["season_list"][0]
