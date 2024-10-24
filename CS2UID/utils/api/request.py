@@ -29,6 +29,7 @@ from .models import (
     MatchTitel,
     MatchTotal,
     AccountInfo,
+    UserSeason5,
     MatchAdvance,
     SearchRequest5,
     SteamGetRequest,
@@ -40,7 +41,6 @@ from .models import (
     UserDetailRequest,
     UserSearchRequest,
     UserHomedetailRequest,
-    UserSeason5,
 )
 
 
