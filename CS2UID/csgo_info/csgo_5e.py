@@ -276,154 +276,150 @@ async def draw_csgo_5einfo_img(
     main1_draw = ImageDraw.Draw(main1_img)
     main1_draw.text((50, 10), "地图", (255, 255, 255, 255), csgo_font_42)
 
-    img.paste(main1_img, (0, 930), main1_img)
+    img.paste(main1_img, (0, 1210), main1_img)
 
     # 地图
-    # map_info = info["maps_data"]
-    # logger.info(map_info)
-    # for i in range(min(4, len(map_info))):
-    #     map_detail = map_info[i]
-    #     usr_map = map_detail['map_desc']
-    #     # map_layer = Image.new("RGBA", (480, 180), (0, 0, 0, 0))
-    #     # 750*480
+    map_info = info["maps_data"]
+    logger.info(map_info)
+    for i in range(min(4, len(map_info))):
+        map_detail = map_info[i]
+        logger.info(map_detail)
+        # map_layer = Image.new("RGBA", (480, 180), (0, 0, 0, 0))
+        # 750*480
+        map_img = (await save_img(map_detail['url'], "map")).resize((470, 180))
+        new_alpha = Image.new('L', map_img.size, 128)
+        map_img = Image.merge('RGBA', (map_img.split()[:3] + (new_alpha,)))
 
-    #     map_img = (
-    #        await save_img(f"{map_detail['map_name'].lower()}.png", "map")
-    #       ).resize(
-    #         (470, 180)
-    #     )
-    #     new_alpha = Image.new('L', map_img.size, 128)
-    #     map_img = Image.merge('RGBA', (map_img.split()[:3] + (new_alpha,)))
-
-    #     map_logo = (
-    #       await save_img(usr_map['mapLogo'],
-    #       "map")).resize((50, 50))
-    #     easy_paste(map_img, map_logo, (40, 100), "cc")
-    #     map_draw = ImageDraw.Draw(map_img)
-    #     map_draw.text(
-    #         (110, 100),
-    #         usr_map['mapName'],
-    #         (255, 255, 255, 255),
-    #         csgo_font_20,
-    #         "mm",
-    #     )
-    #     map_draw.text(
-    #         (180, 80),
-    #         str(usr_map['totalMatch']),
-    #         (255, 255, 255, 255),
-    #         csgo_font_30,
-    #         "mm",
-    #     )
-    #     map_draw.text((180, 120), "场次", "white", csgo_font_20, "mm")
-    #     avg_win = usr_map['winCount'] / usr_map['totalMatch']
-    #     map_draw.text(
-    #         (260, 80),
-    #         f"{avg_win * 100:.1f}%",
-    #         (255, 255, 255, 255),
-    #         csgo_font_30,
-    #         "mm",
-    #     )
-    #     map_draw.text(
-    #         (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
-    #     )
-    #     avg_rat = usr_map['ratingSum'] / usr_map['totalMatch']
-    #     adr = usr_map['totalAdr'] / usr_map['totalMatch']
-    #     map_draw.text(
-    #         (380, 80),
-    #         f"{avg_rat:.2f} / {adr:.0f}",
-    #         (255, 255, 255, 255),
-    #         csgo_font_30,
-    #         "mm",
-    #     )
-    #     map_draw.text(
-    #         (380, 120), "RT/ADR", (255, 255, 255, 255), csgo_font_20, "mm"
-    #     )
-    #     if i % 2 == 0:
-    #         site_x = 20
-    #     else:
-    #         site_x = 520
-    #     site_y = 1240 + 200 * (i // 2 - 1)
-    #     img.paste(map_img, (site_x, site_y), map_img)
+        map_logo = (await save_img(map_detail['icon'], "logo")).resize(
+            (50, 50)
+        )
+        easy_paste(map_img, map_logo, (40, 100), "cc")
+        map_draw = ImageDraw.Draw(map_img)
+        map_draw.text(
+            (110, 100),
+            map_detail['map_name'],
+            (255, 255, 255, 255),
+            csgo_font_20,
+            "mm",
+        )
+        map_draw.text(
+            (180, 80),
+            str(map_detail['match_total']),
+            (255, 255, 255, 255),
+            csgo_font_30,
+            "mm",
+        )
+        map_draw.text((180, 120), "场次", "white", csgo_font_20, "mm")
+        avg_win = map_detail['per_win']
+        map_draw.text(
+            (260, 80),
+            f"{avg_win * 100:.1f}%",
+            (255, 255, 255, 255),
+            csgo_font_30,
+            "mm",
+        )
+        map_draw.text(
+            (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
+        avg_rat = map_detail['rating']
+        rws = map_detail['rws']
+        map_draw.text(
+            (380, 80),
+            f"{avg_rat} / {rws}",
+            (255, 255, 255, 255),
+            csgo_font_30,
+            "mm",
+        )
+        map_draw.text(
+            (380, 120), "RT/RWS", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
+        if i % 2 == 0:
+            site_x = 20
+        else:
+            site_x = 520
+        site_y = 1500 + 200 * (i // 2 - 1)
+        img.paste(map_img, (site_x, site_y), map_img)
 
     # 武器信息表
-    # main3_img = Image.open(TEXTURE / "base" / "banner.png")
-    # main3_draw = ImageDraw.Draw(main3_img)
-    # main3_draw.text((50, 10), "武器", (255, 255, 255, 255), csgo_font_42)
+    main3_img = Image.open(TEXTURE / "base" / "banner.png")
+    main3_draw = ImageDraw.Draw(main3_img)
+    main3_draw.text((50, 10), "武器", (255, 255, 255, 255), csgo_font_42)
 
-    # img.paste(main3_img, (0, 1300), main3_img)
+    img.paste(main3_img, (0, 1700), main3_img)
 
     # 武器
-    # for i in range(min(8, len(detail['hotWeapons2']))):
+    logger.info(info['weapons_data'])
+    for i in range(min(8, len(info['weapons_data']))):
 
-    #     usr_weapon = detail['hotWeapons2'][i]
+        usr_weapon = info['weapons_data'][i]
 
-    #     base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize(
-    #         (500, 110)
-    #     )
-    #     weapon_img = await save_img(usr_weapon['image'], "weapon")
-    #     weapon_img = weapon_img.resize(
-    #         (int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2))
-    #     )
-    #     easy_paste(base_img, weapon_img, (100, 70), "cc")
+        base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize(
+            (500, 110)
+        )
+        weapon_img = await save_img(usr_weapon['weapons_url'], "weapon")
+        weapon_img = weapon_img.resize(
+            (int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2))
+        )
+        easy_paste(base_img, weapon_img, (100, 70), "cc")
 
-    #     weapon_draw = ImageDraw.Draw(base_img)
-    #     weapon_draw.text(
-    #         (77, 17),
-    #         usr_weapon['nameZh'],
-    #         (255, 255, 255, 255),
-    #         csgo_font_20,
-    #         "mm",
-    #     )
-    #     weapon_draw.text(
-    #         (204, 60),
-    #         str(usr_weapon['killNum']),
-    #         (255, 255, 255, 255),
-    #         csgo_font_20,
-    #         "mm",
-    #     )
-    #     weapon_draw.text(
-    #         (375, 60),
-    #         f"{usr_weapon['avgTimeToKill']}ms",
-    #         (255, 255, 255, 255),
-    #         csgo_font_20,
-    #         "mm",
-    #     )
-    #     fsa = (
-    #         f"{usr_weapon['firstShotAccuracy'] * 100:.2f}%"
-    #         if usr_weapon['firstShotAccuracy'] is not None
-    #         else "N/A"
-    #     )
-    #     if usr_weapon['sprayAccuracy'] is None:
-    #         weapon_draw.text(
-    #             (285, 60),
-    #             fsa,
-    #             (255, 255, 255, 255),
-    #             csgo_font_20,
-    #             "mm",
-    #         )
-    #     else:
-    #         weapon_draw.text(
-    #             (285, 60),
-    #             f"{usr_weapon['sprayAccuracy'] * 100:.2f}%",
-    #             (255, 255, 255, 255),
-    #             csgo_font_20,
-    #             "mm",
-    #         )
-    #     hdr = (
-    #         f"{usr_weapon['headshotRate'] * 100:.2f}"
-    #         if usr_weapon['headshotRate'] is not None
-    #         else 0
-    #     )
-    #     weapon_draw.text(
-    #         (430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm"
-    #     )
+        weapon_draw = ImageDraw.Draw(base_img)
+        weapon_draw.text(
+            (77, 17),
+            usr_weapon['weapon_name'],
+            (255, 255, 255, 255),
+            csgo_font_20,
+            "mm",
+        )
+        weapon_draw.text(
+            (204, 60),
+            str(usr_weapon['kill']),
+            (255, 255, 255, 255),
+            csgo_font_20,
+            "mm",
+        )
+        weapon_draw.text(
+            (375, 60),
+            f"{usr_weapon['ave_per_kill']}",
+            (255, 255, 255, 255),
+            csgo_font_20,
+            "mm",
+        )
+        fsa = (
+            f"{usr_weapon['per_kill']}"
+            if usr_weapon['per_kill'] is not None
+            else "N/A"
+        )
+        if usr_weapon['avg_harm'] is None:
+            weapon_draw.text(
+                (285, 60),
+                fsa,
+                (255, 255, 255, 255),
+                csgo_font_20,
+                "mm",
+            )
+        else:
+            weapon_draw.text(
+                (285, 60),
+                f"{usr_weapon['avg_harm']}",
+                (255, 255, 255, 255),
+                csgo_font_20,
+                "mm",
+            )
+        hdr = (
+            f"{usr_weapon['per_headshot']}"
+            if usr_weapon['per_headshot'] is not None
+            else "0%"
+        )
+        weapon_draw.text(
+            (430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
 
-    #     if i % 2 == 0:
-    #         site_x = 0
-    #     else:
-    #         site_x = 500
-    #     site_y = 1510 + 120 * (i // 2 - 1)
-    #     img.paste(base_img, (site_x, site_y), base_img)
+        if i % 2 == 0:
+            site_x = 0
+        else:
+            site_x = 500
+        site_y = 1900 + 120 * (i // 2 - 1)
+        img.paste(base_img, (site_x, site_y), base_img)
 
     # 天梯段位
     # main4_img = Image.open(TEXTURE / "base" / "banner.png")

@@ -1434,4 +1434,4 @@ class UserSeason5(TypedDict):
     match_data: MatchData
     match_detail: MatchDetail5
     max_data: MaxData5
-    weapons_data: WeaponsData5
+    weapons_data: List[WeaponsData5]
