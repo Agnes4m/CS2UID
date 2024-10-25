@@ -9,6 +9,7 @@ from gsuid_core.logger import logger
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
+    HomeSeason,
     LoginAPI,
     SearchAPI,
     HomePageAPI,
@@ -530,7 +531,7 @@ class FiveEApi:
         """获取年度信息"""
         header = self._HEADER
         data = await self._5e_request(
-            f"{HomeDetailAPI}/{domain}",
+            f"{HomeSeason}/{domain}",
             header=header,
             method="GET",
             params={"matchType": "9", "year": year, "season": season},

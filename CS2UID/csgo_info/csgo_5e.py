@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Union
 
 from PIL import Image, ImageDraw
+from gsuid_core.logger import logger
 
 # from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
@@ -130,103 +131,156 @@ async def draw_csgo_5einfo_img(
     # 等级和优先分数
     level_img = await save_img(season_list['level_url'], "level")
     level_img = await resize_image_to_percentage(level_img, 60)
-    main22_img.paste(level_img, (50, 40), level_img)
+    main22_img.paste(level_img, (50, 25), level_img)
     level_bg = await save_img(season_list['level_bg_url'], "level_bg")
     # logger.info(season_list['level_bg_url'])
     level_bg = await resize_image_to_percentage(level_bg, 60)
     level_draw = ImageDraw.Draw(level_bg)
     level_draw.text(
-        (70, 25),
+        (68, 25),
         season_list['elo'],
         (255, 255, 255, 255),
         csgo_font_30,
         "mm",
     )
-    main22_img.paste(level_bg, (50, 200), level_bg)
+    main22_img.paste(level_bg, (50, 125), level_bg)
 
-    # main22_draw.text(
-    #     (260, 80),
-    #     f"{detail['avgWe']:.1f}",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # )
+    logger.info(info['match_data'])
     main22_draw.text(
-        (415, 80),
-        f"{detail['career_data']['rating']}",
+        (260, 80),
+        f"{info['match_data']['rank']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
     main22_draw.text(
+        (415, 80),
+        f"{info['match_data']['pre_win_match']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    all_match = info["match_data"]["win"] + info["match_data"]["loses"]
+    main22_draw.text(
         (570, 80),
-        f"{season_list['rws']}",
+        f"{all_match}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
     main22_draw.text(
         (725, 80),
-        f"{season_list['adr']}",
+        f"{info['match_detail']['kd']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
-    # main22_draw.text(
-    #     (880, 80),
-    #     f"{season_list['entryKillRatio']}%",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # ) # 爆头率
+    main22_draw.text(
+        (880, 80),
+        f"{info['match_detail']['per_headshot']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
 
     main22_draw.text(
+        (105, 230),
+        str(info["match_data"]['rating']),
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
         (260, 230),
-        str(season_list['match_total']),
+        str(info["match_data"]['rws']),
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
     main22_draw.text(
         (415, 230),
-        f"{season_list['per_win_match']}",
+        f"{info['match_detail']['adr']}",
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
     )
-    # main22_draw.text(
-    #     (570, 230),
-    #     f"{detail['kd']:.2f}",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # )  KD
-    # main22_draw.text(
-    #     (725, 230),
-    #     f"{detail['headShotRatio'] * 100:.1f}%",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # ) 爆头率
-    # main22_draw.text(
-    #     (880, 230),
-    #     f"{detail['mvpCount']}",
-    #     (255, 255, 255, 255),
-    #     csgo_font_42,
-    #     "mm",
-    # ) MVP
+    main22_draw.text(
+        (570, 230),
+        f"{info['match_detail']['kpr']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (725, 230),
+        f"{info['match_detail']['impact']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (880, 230),
+        f"{info['match_detail']['sur']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+
+    main22_draw.text(
+        (105, 380),
+        str(info["match_detail"]['kast']),
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (260, 380),
+        str(info["match_detail"]['avg_kill']),
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (415, 380),
+        f"{info['match_detail']['avg_death']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (570, 380),
+        f"{info['match_detail']['avg_assist']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (725, 380),
+        f"{info['match_detail']['kill_5']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
+    main22_draw.text(
+        (880, 380),
+        f"{info['match_detail']['kill_4']}",
+        (255, 255, 255, 255),
+        csgo_font_42,
+        "mm",
+    )
 
     img.paste(main22_img, (0, 700), main22_img)
 
     # 地图信息表
-    # main1_img = Image.open(TEXTURE / "base" / "banner.png")
-    # main1_draw = ImageDraw.Draw(main1_img)
-    # main1_draw.text((50, 10), "地图", (255, 255, 255, 255), csgo_font_42)
+    main1_img = Image.open(TEXTURE / "base" / "banner.png")
+    main1_draw = ImageDraw.Draw(main1_img)
+    main1_draw.text((50, 10), "地图", (255, 255, 255, 255), csgo_font_42)
 
-    # img.paste(main1_img, (0, 780), main1_img)
+    img.paste(main1_img, (0, 930), main1_img)
 
     # 地图
-    # map_info = detail["match_data"]
+    # map_info = info["maps_data"]
+    # logger.info(map_info)
     # for i in range(min(4, len(map_info))):
     #     map_detail = map_info[i]
     #     usr_map = map_detail['map_desc']
@@ -288,7 +342,7 @@ async def draw_csgo_5einfo_img(
     #         site_x = 20
     #     else:
     #         site_x = 520
-    #     site_y = 1090 + 200 * (i // 2 - 1)
+    #     site_y = 1240 + 200 * (i // 2 - 1)
     #     img.paste(map_img, (site_x, site_y), map_img)
 
     # 武器信息表
