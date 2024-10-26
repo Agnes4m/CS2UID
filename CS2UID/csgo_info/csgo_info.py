@@ -203,7 +203,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         map_img = (await save_img(usr_map['mapImage'], "map")).resize(
             (470, 180)
         )
-        new_alpha = Image.new('L', map_img.size, 128)
+        new_alpha = Image.new('L', map_img.size, 90)
         map_img = Image.merge('RGBA', (map_img.split()[:3] + (new_alpha,)))
 
         map_logo = (await save_img(usr_map['mapLogo'], "map")).resize((50, 50))

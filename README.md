@@ -43,33 +43,33 @@ poetry run core
 
 </p></details>
 
-## 丨功能
+## 丨功能 (全部指令见帮助指令内)
 
-绑定切换删除UID - 命令:csgo绑定UID、csgo删除UID、csgo切换UID</
+绑定切换删除UID - 命令:cs绑定UID、cs删除UID、cs切换UID、cs绑定UID5e、cs删除UID5e、cs切换UID5e</
 
-帮助 - 命令: csgo帮助
+帮助 - 命令: cs帮助
 
-<details><summary>查询基本信息 - 命令: csgo查询</summary><p>
+<details><summary>查询基本信息 - 命令: cs查询</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test1.jpg"><img src="./img/test1.png" width="360" height="800" alt="CS2lUID_查询"></a>
 </p></details>
 
-<details><summary>查询官匹基本信息 - 命令: csgo查询官匹</summary><p>
+<details><summary>查询官匹基本信息 - 命令: cs查询官匹</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test2.jpg"><img src="./img/test2.png" width="360" height="800" alt="CS2lUID_官匹"></a>
 </p></details>
 
-<details><summary>查询steam库存 - 命令: csgo库存</summary><p>
+<details><summary>查询steam库存 - 命令: cs库存</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test3.jpg"><img src="./img/test3.png" width="360" height="800" alt="CS2lUID_库存"></a>
 </p></details>
 
-查询好友码 - 命令: csgo好友码
+查询好友码 - 命令: cs好友码
 
-搜索用户 - 命令: csgo搜索 + name
+搜索用户 - 命令: cs搜索 + name
 
-<details><summary>查询对局记录信息 - 命令: csgo对局记录</summary><p>
+<details><summary>查询对局记录信息 - 命令: cs对局记录</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_对局信息"></a>
 </p></details>
 
-<details><summary>查询地图道具点位 - 命令: csgo道具</summary><p>
+<details><summary>查询地图道具点位 - 命令: cs道具</summary><p>
 
 + 参数以空格间隔，参数数量为0-4
 + 如果参数为0，返回地图
@@ -83,9 +83,9 @@ poetry run core
 
 ### 管理员功能
 
-+ 添加TK/uid（私聊） - 命令: csgo添加tk|csgo添加uid
++ 添加TK/uid（私聊） - 命令: cs添加tk|cs添加uid
 
-+ 下载拓展资源 - 命令: csgo下载全部资源
++ 下载拓展资源 - 命令: cs下载全部资源
 
 ## 丨使用方式
 
@@ -100,7 +100,7 @@ poetry run core
 4. 私聊Bot，发送`cs添加uid|tk` ，并在**命令后面直接**附上你第三步获取到的**pwasteamid**和**access_token**
    1. `cs添加uid 4000****4000`
    2. `cs添加tk 1e15****f5w8`
-   3. 如果不添加则无法使用csgo指令查询
+   3. 如果不添加则无法使用cs指令查询
 
 5. 可以正常使用Bot了！
    1. 使用`cs搜索`查询自己的64位steamid，也可以通过steam或者完美平台个人信息自行查询

@@ -47,7 +47,7 @@ async def draw_csgo_5einfo_img(
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
     img_bg = Image.open(Path(TEXTURE / "bg" / "5.jpg")).resize((1000, 2400))
-    new_alpha = Image.new('L', img_bg.size, 128)
+    new_alpha = Image.new('L', img_bg.size, 90)
     img_bg_out = Image.merge('RGBA', (img_bg.split()[:3] + (new_alpha,)))
     img.paste(img_bg_out, (0, 0), img_bg_out)
 
@@ -111,7 +111,7 @@ async def draw_csgo_5einfo_img(
     level_img = await save_img(total_info["level_url"], "level")
     level_img = await resize_image_to_percentage(level_img, 60)
     main11_img.paste(level_img, (50, 30), level_img)
-    img.paste(main11_img, (0, 410), main11_img)
+    img.paste(main11_img, (0, 400), main11_img)
 
     # 赛季信息
     main2_img = Image.open(TEXTURE / "base" / "banner.png")
@@ -120,7 +120,7 @@ async def draw_csgo_5einfo_img(
         (50, 10), season_info["now_season"], (255, 255, 255, 255), csgo_font_42
     )
 
-    img.paste(main2_img, (0, 620), main2_img)
+    img.paste(main2_img, (0, 600), main2_img)
 
     # 赛季主信息
     main22_img = Image.open(TEXTURE / "base" / "base_5ebg.png")
@@ -269,14 +269,14 @@ async def draw_csgo_5einfo_img(
         "mm",
     )
 
-    img.paste(main22_img, (0, 700), main22_img)
+    img.paste(main22_img, (0, 670), main22_img)
 
     # 地图信息表
     main1_img = Image.open(TEXTURE / "base" / "banner.png")
     main1_draw = ImageDraw.Draw(main1_img)
     main1_draw.text((50, 10), "地图", (255, 255, 255, 255), csgo_font_42)
 
-    img.paste(main1_img, (0, 1210), main1_img)
+    img.paste(main1_img, (0, 1170), main1_img)
 
     # 地图
     map_info = info["maps_data"]
@@ -337,7 +337,7 @@ async def draw_csgo_5einfo_img(
             site_x = 20
         else:
             site_x = 520
-        site_y = 1500 + 200 * (i // 2 - 1)
+        site_y = 1470 + 200 * (i // 2 - 1)
         img.paste(map_img, (site_x, site_y), map_img)
 
     # 武器信息表
@@ -345,7 +345,7 @@ async def draw_csgo_5einfo_img(
     main3_draw = ImageDraw.Draw(main3_img)
     main3_draw.text((50, 10), "武器", (255, 255, 255, 255), csgo_font_42)
 
-    img.paste(main3_img, (0, 1700), main3_img)
+    img.paste(main3_img, (0, 1670), main3_img)
 
     # 武器
     logger.info(info['weapons_data'])
@@ -353,12 +353,12 @@ async def draw_csgo_5einfo_img(
 
         usr_weapon = info['weapons_data'][i]
 
-        base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize(
+        base_img = Image.open(TEXTURE / "base" / "weapon_5ebg.png").resize(
             (500, 110)
         )
-        weapon_img = await save_img(usr_weapon['weapons_url'], "weapon")
+        weapon_img = await save_img(usr_weapon['weapons_url'], "weapon5e")
         weapon_img = weapon_img.resize(
-            (int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2))
+            (int(weapon_img.size[0] * 0.5), int(weapon_img.size[1] * 0.5))
         )
         easy_paste(base_img, weapon_img, (100, 70), "cc")
 
@@ -418,7 +418,7 @@ async def draw_csgo_5einfo_img(
             site_x = 0
         else:
             site_x = 500
-        site_y = 1900 + 120 * (i // 2 - 1)
+        site_y = 1880 + 120 * (i // 2 - 1)
         img.paste(base_img, (site_x, site_y), base_img)
 
     # 天梯段位
@@ -427,65 +427,81 @@ async def draw_csgo_5einfo_img(
     # main4_draw.text((50, 10), "分数曲线", (255, 255, 255, 255), csgo_font_42)
     # img.paste(main4_img, (0, 1880), main4_img)
 
-    # score_list = detail['historyScores']
-    # if len(score_list) > 0:
-    #     score_list = score_list[:10]
-    #     max_score = max(score_list)
-    #     min_score = min(score_list)
+    score_list = info['chart_info']["elo"]
+    if len(score_list) > 0:
+        # 取前10个分数
+        score_list = score_list[:10]
+        score_values = [float(score['data']) for score in score_list]
 
-    #     y_start = (min_score // 10) * 10
-    #     y_end = ((max_score // 10) + 1) * 10
+        max_score = max(score_values)
+        min_score = min(score_values)
 
-    #     width = 700
-    #     height = 480
-    #     padding = 100
-    #     img_line = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-    #     draw = ImageDraw.Draw(img_line)
-    #     scale = (height - 2 * padding) / (y_end - y_start)
+        y_start = (min_score // 10) * 10
+        y_end = ((max_score // 10) + 1) * 10
 
-    #     draw.line(
-    #         [(padding, height - padding),
-    #           (width - padding, height - padding)],
-    #         fill='black',
-    #     )
-    #     draw.line(
-    #         [(padding, padding), (padding, height - padding)], fill='black'
-    #     )
+        total_steps = 10
+        step_size = (y_end - y_start) / total_steps
 
-    #     for i in range(y_start, y_end + 1, 10):
-    #         y = height - padding - (i - y_start) * scale
-    #         draw.line([(padding - 5, y), (padding, y)], fill='black')
-    #         draw.text(
-    #             (padding - 50, y - 15), str(i),
-    #               fill='white', font=csgo_font_20
-    #         )
+        width = 700
+        height = 480
+        padding = 100
+        img_line = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        draw = ImageDraw.Draw(img_line)
+        scale = (height - 2 * padding) / (y_end - y_start)
 
-    #     for i in range(len(score_list)):
-    #         x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
-    #         draw.line(
-    #             [(x, height - padding), (x, height - padding + 5)],
-    #             fill='black',
-    #         )
-    #         draw.text(
-    #             (x - 10, height - padding + 10),
-    #             str(i),
-    #             fill='white',
-    #             font=csgo_font_20,
-    #         )
+        draw.line(
+            [(padding, height - padding), (width - padding, height - padding)],
+            fill='black',
+        )
+        draw.line(
+            [(padding, padding), (padding, height - padding)], fill='black'
+        )
 
-    #     points = []
-    #     for i, score in enumerate(reversed(score_list)):
-    #         x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
-    #         y = height - padding - (score - y_start) * scale
-    #         points.append((x, y))
+        # 只绘制 10 个可读线
+        for i in range(total_steps + 1):
+            y_value = y_start + i * step_size
+            y = height - padding - (y_value - y_start) * scale
+            draw.line([(padding - 5, y), (padding, y)], fill='black')
+            draw.text(
+                (padding - 50, y - 15),
+                str(int(y_value)),
+                fill='white',
+                font=csgo_font_20,
+            )
 
-    #         draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill='blue')
-    #         draw.text(
-    #             (x - 15, y - 30), str(score), fill='white', font=csgo_font_20
-    #         )
+        for i in range(len(score_list)):
+            x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
+            draw.line(
+                [(x, height - padding), (x, height - padding + 5)],
+                fill='black',
+            )
+            draw.text(
+                (x - 10, height - padding + 10),
+                str(i),
+                fill='white',
+                font=csgo_font_20,
+            )
 
-    #     draw.line(points, fill='yellow', width=3)
-    #     img.paste(img_line, (0, 1900), img_line)
+        points = []
+        for i, score in enumerate(reversed(score_list)):
+            x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
+            y = (
+                height
+                - padding
+                - (math.ceil(float(score["data"])) - y_start) * scale
+            )
+            points.append((x, y))
+
+            draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill='blue')
+            draw.text(
+                (x - 15, y - 30),
+                f"{float(score['data']):.0f}",
+                fill='white',
+                font=csgo_font_20,
+            )
+
+        draw.line(points, fill='yellow', width=3)
+        img.paste(img_line, (0, 1920), img_line)
 
     # 五数据图
     selected_keys = [
@@ -509,47 +525,52 @@ async def draw_csgo_5einfo_img(
         filtered_data = {
             selected_keys[key]: filter_data[key] for key in selected_keys
         }
+
+        total_value = sum(filtered_data.values())
+        normalized_data = {
+            label: value / total_value
+            for label, value in filtered_data.items()
+        }
+
         width = 400
         height = 400
-        # padding = 50
         center = (width // 2, height // 2)
-        radius = 100  # 半径
+        max_radius = 100  # 最大半径
 
         five_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(five_img)
 
-        num_vars = len(filtered_data)
+        num_vars = len(normalized_data)
         angle = 2 * math.pi / num_vars
         points = []
 
-        for i, (label, value) in enumerate(filtered_data.items()):
-            x = center[0] + radius * (value / 10) * math.cos(
-                i * angle - math.pi / 2
-            )
-            y = center[1] + radius * (value / 10) * math.sin(
-                i * angle - math.pi / 2
-            )
+        for i, (label, value) in enumerate(normalized_data.items()):
+            radius = max_radius * value  # 使用归一化后的值计算半径
+            x = center[0] + radius * math.cos(i * angle - math.pi / 2)
+            y = center[1] + radius * math.sin(i * angle - math.pi / 2)
             points.append((x, y))
 
             draw.line([center, (x, y)], fill='black', width=2)
 
         template_points = []
         for i in range(num_vars):
-            x = center[0] + radius * math.cos(i * angle - math.pi / 2)
-            y = center[1] + radius * math.sin(i * angle - math.pi / 2)
+            x = center[0] + max_radius * math.cos(i * angle - math.pi / 2)
+            y = center[1] + max_radius * math.sin(i * angle - math.pi / 2)
             template_points.append((x, y))
 
         draw.polygon(
             template_points, fill=(200, 200, 200, 255), outline='black'
         )
-
         draw.polygon(points, fill=(135, 206, 250, 128), outline='blue')
-
         draw.line(points + [points[0]], fill='blue', width=2)
 
-        for i, (label, value) in enumerate(filtered_data.items()):
-            x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
-            y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
+        for i, (label, value) in enumerate(normalized_data.items()):
+            x = center[0] + (max_radius + 30) * math.cos(
+                i * angle - math.pi / 2
+            )
+            y = center[1] + (max_radius + 30) * math.sin(
+                i * angle - math.pi / 2
+            )
 
             text = f"{value:.2f}\n{label}"
 
@@ -561,7 +582,7 @@ async def draw_csgo_5einfo_img(
             text_y = y - text_height / 2
 
             draw.text((text_x, text_y), text, fill='white', font=csgo_font_20)
-        img.paste(five_img, (600, 1950), five_img)
+        img.paste(five_img, (600, 1980), five_img)
 
     # 底
     img_up = Image.open(TEXTURE / "base" / "footer5e.png")

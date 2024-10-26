@@ -9,9 +9,9 @@ from gsuid_core.logger import logger
 from ..database.models import CS2User
 from .api import (
     CsgoFall,
-    HomeSeason,
     LoginAPI,
     SearchAPI,
+    HomeSeason,
     HomePageAPI,
     UserHomeApi,
     UserInfoAPI,

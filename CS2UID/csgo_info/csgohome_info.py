@@ -50,7 +50,7 @@ async def draw_csgohome_info_img(
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
     img_bg = Image.open(TEXTURE / "bg" / "2.jpg").resize((1000, 2400))
-    new_alpha = Image.new('L', img_bg.size, 128)
+    new_alpha = Image.new('L', img_bg.size, 90)
     img_bg_out = Image.merge('RGBA', img_bg.split()[:3] + (new_alpha,))
     img.paste(img_bg_out, (0, 0), img_bg_out)
 
