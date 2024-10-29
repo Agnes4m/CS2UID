@@ -8,7 +8,6 @@ from gsuid_core.sv import get_plugin_prefix
 from gsuid_core.help.model import PluginHelp
 from gsuid_core.help.draw_new_plugin_help import get_new_help
 
-from ..utils.image import get_footer
 from ..version import CS2UID_version
 
 HELP_DATA = Path(__file__).parent / 'help.json'
@@ -17,6 +16,10 @@ TEXT_PATH = Path(__file__).parent / 'texture2d'
 ICON = TEXT_PATH / 'icon.png'
 
 PREFIX = get_plugin_prefix('CS2UID')
+
+
+def get_footer():
+    return Image.open(TEXT_PATH / 'footer.png')
 
 
 async def get_help_data() -> Dict[str, PluginHelp]:
