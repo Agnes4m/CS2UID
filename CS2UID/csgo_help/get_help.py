@@ -34,7 +34,7 @@ async def get_help():
         plugin_icon=Image.open(ICON),
         plugin_help=await get_help_data(),
         plugin_prefix=PREFIX,
-        help_mode='light',
+        help_mode='dark',
         banner_bg=Image.open(
             TEXT_PATH / 'banner_bg.jpg',
         ),

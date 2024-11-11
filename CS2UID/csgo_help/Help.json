@@ -87,7 +87,7 @@
       {
         "name": "搜索5e",
         "desc": "搜索cs 5e平台用户信息",
-        "eg": "查询5e",
+        "eg": "搜索5e",
         "need_ck": false,
         "need_sk": true,
         "need_admin": false
