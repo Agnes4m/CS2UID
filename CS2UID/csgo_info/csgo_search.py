@@ -42,7 +42,7 @@ async def get_search_players5e(name: str) -> Union[str, bytes]:
         return not_player
 
     out_msg = [
-        f"{index}. {one_player['username'].strip()}\nuid: {one_player['domain']}\n"
+        f"{index}. {one_player['username']}\nuid: {one_player['domain']}\n"
         for index, one_player in enumerate(detail, start=1)
     ]
     out_msg.append("请输入【cs绑定5euid xxx】来绑定信息")

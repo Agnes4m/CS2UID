@@ -16,7 +16,6 @@ from .utils import paste_img, add_detail, load_groudback
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
-green_logo = Image.open(TEXTURE / "green.png")
 
 
 async def get_csgo_match_img(
@@ -139,8 +138,7 @@ async def draw_csgo_match_img(
             break
         one_img = await create_one_match_img(detail[i])
         img.paste(one_img, (50, 400 + 120 * i), one_img)
-        if detail[i]["greenMatch"]:
-            img.paste(green_logo, (20, 400 + 120 * i), green_logo)
+        # if detail[i]["greenMatch"]:
+        #     img.paste(green_logo, (20, 400 + 120 * i), green_logo)
 
-    return await convert_img(await add_detail(img))
     return await convert_img(await add_detail(img))

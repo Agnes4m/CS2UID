@@ -17,7 +17,6 @@ from .utils import (
 )
 
 TEXTURE = Path(__file__).parent / "texture2d"
-green_logo = Image.open(TEXTURE / "green.png")
 
 
 async def get_csgo_match_detail_img(match_id: str) -> Union[str, bytes]:

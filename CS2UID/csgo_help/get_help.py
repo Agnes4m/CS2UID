@@ -4,8 +4,8 @@ from pathlib import Path
 import aiofiles
 from PIL import Image
 from msgspec import json as msgjson
-from gsuid_core.sv import get_plugin_available_prefix
 from gsuid_core.help.model import PluginHelp
+from gsuid_core.sv import get_plugin_available_prefix
 from gsuid_core.help.draw_new_plugin_help import get_new_help
 
 from ..version import CS2UID_version
@@ -16,6 +16,7 @@ TEXT_PATH = Path(__file__).parent / 'texture2d'
 ICON = TEXT_PATH / 'icon.png'
 
 PREFIX = get_plugin_available_prefix('CS2UID')
+
 
 def get_footer():
     return Image.open(TEXT_PATH / 'footer.png')
