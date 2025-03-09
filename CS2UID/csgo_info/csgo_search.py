@@ -8,7 +8,7 @@ from ..utils.error_reply import get_error, not_player
 
 async def get_search_players(name: str) -> Union[str, bytes]:
     detail = await pf_api.search_player(name)
-    logger.debug(detail)
+    logger.info(detail)
 
     if isinstance(detail, int):
         return get_error(detail)

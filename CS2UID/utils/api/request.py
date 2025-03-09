@@ -95,6 +95,7 @@ class PerfectWorldApi:
                 data=data,
                 timeout=300,
             )
+            print(resp.text)
             try:
                 raw_data = await resp.json()
             except:  # noqa: E722
@@ -112,7 +113,7 @@ class PerfectWorldApi:
                 return raw_data
             if "result" in raw_data and "error_code" in raw_data["result"]:
                 return raw_data["result"]["error_code"]
-            elif raw_data["code"] != 0:
+            elif raw_data["code"] != 0 and raw_data["code"] != 1:
                 return raw_data["code"]
             return raw_data
 
