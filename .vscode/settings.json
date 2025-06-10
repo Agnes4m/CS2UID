@@ -1,3 +1,14 @@
 {
-  "python.languageServer": "None"
+  "python.languageServer": "None",
+  "python.analysis.typeCheckingMode": "off",
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/../../../../"
+  ],
+  "isort.args": [
+    "--profile",
+    "black"
+  ],
+  "basedpyright.analysis.extraPaths": [
+    "${workspaceFolder}/../../../"
+  ]
 }
