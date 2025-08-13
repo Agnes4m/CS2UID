@@ -24,7 +24,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "CS2UID"
 version = "0.2.0"
-description = "基于GsCore, 支持OneBot(QQ)、OneBotV12、QQ频道、微信、KOOK（开黑啦）、Telegram（电报）、FeiShu（飞书）、DoDo、Discord的全功能HoshinoBot/NoneBot2/Koishi/yunzai/ZeroBot某MOBA游戏机器人插件"
+description = "基于gsuid-core, 支持NoneBot2 & HoshinoBot & ZeroBot & YunzaiBot的CS插件"
 authors = ["Agnes Digital <735803792@qq.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
@@ -56,3 +56,15 @@ pycln = "^2.1.2"
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
 pytest-asyncio = "^0.20.3"
+
+[project]
+name = "CS2UID"
+version = "0.2.0"
+description = "基于gsuid-core, 支持NoneBot2 & HoshinoBot & ZeroBot & YunzaiBot的全功能某FPS游戏Bot插件"
+authors = [
+  { name = "Agnes Digital", email = "Z735803792@163.com" }
+]
+dependencies = []
+requires-python = "==3.10.*"
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
