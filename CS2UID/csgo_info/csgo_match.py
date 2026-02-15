@@ -1,26 +1,25 @@
 import json
-from pathlib import Path
 from typing import List, Union
+from pathlib import Path
 
 from PIL import Image
+
 from gsuid_core.logger import logger
 from gsuid_core.data_store import get_res_path
-from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.utils import download_pic_to_image
+from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring
 
+from .utils import paste_img, add_detail, load_groudback
 from ..utils.csgo_api import pf_api
 from ..utils.api.models import Match
 from ..utils.error_reply import get_error
-from .utils import paste_img, add_detail, load_groudback
 
 TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 
 
-async def get_csgo_match_img(
-    user_id, uid: str, tag: int, _type: int
-) -> Union[str, bytes]:
+async def get_csgo_match_img(user_id, uid: str, tag: int, _type: int) -> Union[str, bytes]:
     detail = await pf_api.get_csgopfmatch(uid, tag, _type)
     logger.debug(detail)
     if isinstance(detail, dict) and detail["data"] is None:
@@ -39,9 +38,7 @@ async def get_csgo_match_img(
         avatar = msg["data"]["avatar"]
     if isinstance(detail, int):
         return get_error(detail)
-    detail_path: Path = (
-        get_res_path("CS2UID") / "match" / user_id / "match.json"
-    )
+    detail_path: Path = get_res_path("CS2UID") / "match" / user_id / "match.json"
     detail_path.parent.mkdir(parents=True, exist_ok=True)
     print(detail_path)
     with detail_path.open("w", encoding="utf-8") as f:
@@ -66,9 +63,7 @@ async def get_csgo_match_img(
         else:
             match_type = "完美平台对战"
 
-    return await draw_csgo_match_img(
-        detail["data"]["matchList"], name, avatar, uid, match_type
-    )
+    return await draw_csgo_match_img(detail["data"]["matchList"], name, avatar, uid, match_type)
 
 
 async def create_one_match_img(detail: Match) -> Image.Image:
@@ -84,9 +79,7 @@ async def create_one_match_img(detail: Match) -> Image.Image:
     round_logo = await draw_pic_with_ring(logo, 50)
     img.paste(round_logo, (10, 10), round_logo)
 
-    await paste_img(
-        img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0)
-    )
+    await paste_img(img, f"比分 {detail['score1']}:{detail['score2']}", 35, (80, 0))
     await paste_img(img, detail["endTime"], 20, (70, 50))
 
     await paste_img(img, detail["mapName"], 30, (250, 0))
@@ -110,9 +103,7 @@ async def create_one_match_img(detail: Match) -> Image.Image:
     return img
 
 
-async def draw_csgo_match_img(
-    detail: List[Match], name: str, avatar: str, uid: str, match_type: str
-) -> bytes | str:
+async def draw_csgo_match_img(detail: List[Match], name: str, avatar: str, uid: str, match_type: str) -> bytes | str:
     if not detail:
         return "token已过期"
 

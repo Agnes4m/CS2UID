@@ -1,12 +1,12 @@
-import random
 import json as js
+import random
 from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
 
 from httpx import AsyncClient
+
 from gsuid_core.logger import logger
 
-from ..database.models import CS2User
 from .api import (
     CsgoFall,
     LoginAPI,
@@ -43,6 +43,7 @@ from .models import (
     UserSearchRequest,
     UserHomedetailRequest,
 )
+from ..database.models import CS2User
 
 
 class PerfectWorldApi:
@@ -103,9 +104,7 @@ class PerfectWorldApi:
                 try:
                     raw_data = js.loads(_raw_data)
                 except:  # noqa: E722
-                    raw_data = {
-                        "result": {"error_code": -999, "data": _raw_data}
-                    }
+                    raw_data = {"result": {"error_code": -999, "data": _raw_data}}
             try:
                 if not raw_data["result"]:
                     return raw_data
@@ -406,7 +405,7 @@ class PerfectWorldApi:
             return data
         elif data["statusCode"] != 0:
             return cast(str, data["data"])
-        return cast(AccountInfo, data["result"]['accountInfo'])
+        return cast(AccountInfo, data["result"]["accountInfo"])
 
 
 class FiveEApi:
@@ -463,9 +462,7 @@ class FiveEApi:
                 try:
                     raw_data = js.loads(_raw_data)
                 except:  # noqa: E722
-                    raw_data = {
-                        "result": {"error_code": -999, "data": _raw_data}
-                    }
+                    raw_data = {"result": {"error_code": -999, "data": _raw_data}}
             if raw_data["success"] is not True or raw_data["errcode"] != 0:
                 return raw_data["errcode"]
 

@@ -1,9 +1,10 @@
 import re
 import json
-from pathlib import Path
 from typing import Dict, List, Union
+from pathlib import Path
 
 from PIL import Image
+
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.data_store import get_res_path
@@ -56,7 +57,7 @@ async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
     # 同目的点位多方式分类
     grouped_tags: Dict[str, List[str]] = {}
     for tag in tag_pos_2_list:
-        prefix, _ = tag.split('_', 1)
+        prefix, _ = tag.split("_", 1)
         if prefix not in grouped_tags:
             grouped_tags[prefix] = []
         grouped_tags[prefix].append(tag)
@@ -70,17 +71,12 @@ async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
     filter_keyword = tag_list[3]
 
     for one_group in grouped_lists:
-
         if filter_keyword == "快烟":
             # 如果关键词是"快烟"，则保留含有"快烟"的项
             filtered_group = [one for one in one_group if "快烟" in one]
         else:
             # 如果关键词不是"快烟"，则排除含有"快烟"的项，同时保留包含filter_keyword的项
-            filtered_group = [
-                one
-                for one in one_group
-                if "快烟" not in one and filter_keyword in one
-            ]
+            filtered_group = [one for one in one_group if "快烟" not in one and filter_keyword in one]
 
         print("fil", len(filtered_group))
         # 如果filtered_group非空，则添加到item_list中
@@ -117,16 +113,12 @@ async def re_match(texts: str, bot: Bot):
     目前暂时使用空格匹配"""
     map_pattern = await build_map_pattern()
 
-    tag_pattern = re.compile(
-        rf'^{("|".join(re.escape(tag) for tag in tag_lists))}\b', re.IGNORECASE
-    )
-    pattern_list_1 = '|'.join(re.escape(tag) for tag in tag_list_1)
-    pattern_list_2 = '|'.join(re.escape(tag) for tag in tag_list_2)
+    tag_pattern = re.compile(rf"^{('|'.join(re.escape(tag) for tag in tag_lists))}\b", re.IGNORECASE)
+    pattern_list_1 = "|".join(re.escape(tag) for tag in tag_list_1)
+    pattern_list_2 = "|".join(re.escape(tag) for tag in tag_list_2)
 
     # 构建匹配tag_list_1中的标签后跟tag_list_2中的标签的正则表达式，但不要求\b在tag_list_2后
-    tag_pattern_combo = re.compile(
-        rf'\b({pattern_list_1})({pattern_list_2})(?!\w)', re.IGNORECASE
-    )
+    tag_pattern_combo = re.compile(rf"\b({pattern_list_1})({pattern_list_2})(?!\w)", re.IGNORECASE)
 
     map_match = map_pattern.match(texts)
     if map_match:
@@ -156,17 +148,13 @@ async def re_match(texts: str, bot: Bot):
                         if len(positions) == 2:
                             break
 
-            positions = [
-                match.group() for match in tag_pattern.finditer(remaining_text)
-            ][:2]
+            positions = [match.group() for match in tag_pattern.finditer(remaining_text)][:2]
             print(positions)
             if len(positions) == 2:
                 tag_set_1 = set(tag_list_1)
                 tag_set_2 = set(tag_list_2)
                 pos1, pos2 = positions
-                is_match = (pos1 in tag_set_1 and pos2 in tag_set_2) or (
-                    pos1 in tag_set_2 and pos2 in tag_set_1
-                )
+                is_match = (pos1 in tag_set_1 and pos2 in tag_set_2) or (pos1 in tag_set_2 and pos2 in tag_set_1)
 
                 if is_match:
                     # 查找pos2的结束位置并更新remaining_text
@@ -188,15 +176,13 @@ async def re_match(texts: str, bot: Bot):
                                 "res",
                                 map_name,
                                 pos1,
-                                f'{pos2}{item}.png',
+                                f"{pos2}{item}.png",
                             )
                             if img_path.exists():
                                 print(f"攻略路径{img_path}")
                                 await bot.send(await convert_img(img_path))
                                 return
-                        await bot.send(
-                            "参数不正确，没有正确的道具信息（烟火闪雷）"
-                        )
+                        await bot.send("参数不正确，没有正确的道具信息（烟火闪雷）")
             await bot.send("参数不正确,没有位置信息或者缺少（至少有两个位置）")
             return
         await bot.send("参数不正确,没有地图信息")
@@ -208,7 +194,6 @@ async def start_json():
     index: Dict[str, Dict[str, List[str]]] = {}
 
     for first_dir in Path(res_img_path / "res").iterdir():
-
         if not first_dir.is_dir():
             continue
 
@@ -217,27 +202,21 @@ async def start_json():
         for second_dir in first_dir.iterdir():
             if not second_dir.is_dir():
                 continue
-            if not any(second_dir.glob('*')):
+            if not any(second_dir.glob("*")):
                 continue
             index_set = set()
 
-            for file in second_dir.glob('*'):
+            for file in second_dir.glob("*"):
                 if file.is_file():
-                    prefix = (
-                        file.name.split('_')[0]
-                        if '_' in file.name
-                        else file.name
-                    )
+                    prefix = file.name.split("_")[0] if "_" in file.name else file.name
                     index_set.add(prefix)
                 if index_set:
-                    index[first_dir.name][second_dir.name] = sorted(
-                        list(index_set)
-                    )
+                    index[first_dir.name][second_dir.name] = sorted(list(index_set))
 
     for first_level, second_levels in index.items():
         for second_level, prefixes in second_levels.items():
             index[first_level][second_level] = sorted(list(prefixes))
 
-    with config_item_path.open('w', encoding='utf-8') as f:
+    with config_item_path.open("w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=4)
     logger.success("已生成道具索引")

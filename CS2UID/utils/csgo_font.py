@@ -2,8 +2,8 @@ from pathlib import Path
 
 from PIL import ImageFont
 
-FONT_MAIN_PATH = Path(__file__).parent / 'fonts/loli.ttf'
-FONT_TIELE_PATH = Path(__file__).parent / 'fonts/title.ttf'
+FONT_MAIN_PATH = Path(__file__).parent / "fonts/loli.ttf"
+FONT_TIELE_PATH = Path(__file__).parent / "fonts/title.ttf"
 
 
 def csgo_font_main(size: int) -> ImageFont.FreeTypeFont:

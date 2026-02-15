@@ -1,9 +1,10 @@
 from typing import Optional
 
 from sqlmodel import Field
+
+from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
 from gsuid_core.utils.database.startup import exec_list
 from gsuid_core.utils.database.base_models import Bind, User, with_session
-from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
 
 exec_list.extend(
     [
@@ -14,9 +15,9 @@ exec_list.extend(
 
 
 class CS2Bind(Bind, table=True):
-    uid: Optional[str] = Field(default=None, title='CS2UID')
-    platform: str = Field(default='pf', title='平台')
-    domain: str = Field(default='', title='5e域名')
+    uid: Optional[str] = Field(default=None, title="CS2UID")
+    platform: str = Field(default="pf", title="平台")
+    domain: str = Field(default="", title="5e域名")
 
     @classmethod
     @with_session
@@ -58,15 +59,15 @@ class CS2Bind(Bind, table=True):
 
 
 class CS2User(User, table=True):
-    uid: Optional[str] = Field(default=None, title='CS2UID')
+    uid: Optional[str] = Field(default=None, title="CS2UID")
 
 
 @site.register_admin
 class CS2Bindadmin(GsAdminModel):
-    pk_name = 'id'
+    pk_name = "id"
     page_schema = PageSchema(
-        label='CS2绑定管理',
-        icon='fa fa-users',
+        label="CS2绑定管理",
+        icon="fa fa-users",
     )  # type: ignore
 
     # 配置管理模型
@@ -75,10 +76,10 @@ class CS2Bindadmin(GsAdminModel):
 
 @site.register_admin
 class CS2Useradmin(GsAdminModel):
-    pk_name = 'id'
+    pk_name = "id"
     page_schema = PageSchema(
-        label='CS2用户管理',
-        icon='fa fa-users',
+        label="CS2用户管理",
+        icon="fa fa-users",
     )  # type: ignore
 
     # 配置管理模型

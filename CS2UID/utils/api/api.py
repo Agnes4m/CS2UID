@@ -1,14 +1,14 @@
-HOST = 'https://pwaweblogin.wmpvp.com'
+HOST = "https://pwaweblogin.wmpvp.com"
 APIHOST = "https://api.wmpvp.com"
 STEAMCNHOST = "https://gwapi.pwesports.cn"
 
 UserInfoAPI = f"{HOST}/user-info"
-UserSeasonScoreAPI = f'{HOST}/user-info/season-ladder-score-list'
-DailyStatsAPI = f'{HOST}/user-info/daily-stats'
+UserSeasonScoreAPI = f"{HOST}/user-info/season-ladder-score-list"
+DailyStatsAPI = f"{HOST}/user-info/daily-stats"
 
 
 # post
-UserDetailAPI = f'{APIHOST}/api/csgo/home/pvp/detailStats'
+UserDetailAPI = f"{APIHOST}/api/csgo/home/pvp/detailStats"
 UserHomematchApi = f"{APIHOST}/api/csgo/home/match/list"
 UserHomeApi = f"{APIHOST}/api/csgo/home/official/detailStats"
 UserSearchApi = "https://appengine.wmpvp.com/steamcn/app/search/user"
@@ -26,12 +26,6 @@ LoginAPI = "https://passport.pwesports.cn/account/login"
 
 # 5e search
 SearchAPI = "https://app.5eplay.com/api/csgo/data/search"
-HomeDetailAPI = (
-    "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"
-)
-HomePageAPI = (
-    "https://ya-api-app.5eplay.com/v1/user/steam/inventory/homepage/record"
-)
-HomeSeason = (
-    'https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1'
-)
+HomeDetailAPI = "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"
+HomePageAPI = "https://ya-api-app.5eplay.com/v1/user/steam/inventory/homepage/record"
+HomeSeason = "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1"

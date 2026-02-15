@@ -2,6 +2,7 @@ import math
 from pathlib import Path
 
 from PIL import Image, ImageDraw
+
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
@@ -9,9 +10,9 @@ from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 from .utils import save_img
 from .csgo_path import TEXTURE
 from ..utils.csgo_api import pf_api
-from ..utils.error_reply import not_msg, get_error
-from ..utils.api.models import UserFall, UserHomedetailData
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
+from ..utils.api.models import UserFall, UserHomedetailData
+from ..utils.error_reply import not_msg, get_error
 
 # TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
@@ -28,17 +29,15 @@ async def get_csgohome_info_img(uid: str, friend: bool = False):
         return get_error(fall)
 
     if friend:
-        return data['data']["friendCode"]
+        return data["data"]["friendCode"]
 
-    if data['data']['hotMaps'] is None or len(data['data']['hotMaps']) == 0:
+    if data["data"]["hotMaps"] is None or len(data["data"]["hotMaps"]) == 0:
         return not_msg
 
-    return await draw_csgohome_info_img(data['data'], fall["result"])
+    return await draw_csgohome_info_img(data["data"], fall["result"])
 
 
-async def draw_csgohome_info_img(
-    detail: UserHomedetailData, fall: UserFall
-) -> bytes | str:
+async def draw_csgohome_info_img(detail: UserHomedetailData, fall: UserFall) -> bytes | str:
     if not detail:
         return "token已过期"
 
@@ -50,8 +49,8 @@ async def draw_csgohome_info_img(
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
     img_bg = Image.open(TEXTURE / "bg" / "2.jpg").resize((1000, 2400))
-    new_alpha = Image.new('L', img_bg.size, 90)
-    img_bg_out = Image.merge('RGBA', img_bg.split()[:3] + (new_alpha,))
+    new_alpha = Image.new("L", img_bg.size, 90)
+    img_bg_out = Image.merge("RGBA", img_bg.split()[:3] + (new_alpha,))
     img.paste(img_bg_out, (0, 0), img_bg_out)
 
     # 处理标题
@@ -115,12 +114,10 @@ async def draw_csgohome_info_img(
         csgo_font_42,
         "mm",
     )
-    main2_draw.text(
-        (105, 230), str(rank_scoce), (255, 255, 255, 255), csgo_font_42, "mm"
-    )
+    main2_draw.text((105, 230), str(rank_scoce), (255, 255, 255, 255), csgo_font_42, "mm")
     main2_draw.text(
         (260, 230),
-        str(detail['cnt']),
+        str(detail["cnt"]),
         (255, 255, 255, 255),
         csgo_font_42,
         "mm",
@@ -164,49 +161,38 @@ async def draw_csgohome_info_img(
     img.paste(main1_img, (0, 780), main1_img)
 
     # 地图
-    for i in range(min(4, len(detail['hotMaps']))):
-
-        usr_map = detail['hotMaps'][i]
+    for i in range(min(4, len(detail["hotMaps"]))):
+        usr_map = detail["hotMaps"][i]
         # map_layer = Image.new("RGBA", (480, 180), (0, 0, 0, 0))
         # 750*480
 
-        map_img = (await save_img(usr_map['mapImage'], "map")).resize(
-            (470, 180)
-        )
-        new_alpha = Image.new('L', map_img.size, 128)
-        map_img = Image.merge('RGBA', (map_img.split()[:3] + (new_alpha,)))
+        map_img = (await save_img(usr_map["mapImage"], "map")).resize((470, 180))
+        new_alpha = Image.new("L", map_img.size, 128)
+        map_img = Image.merge("RGBA", (map_img.split()[:3] + (new_alpha,)))
 
-        map_logo = (await save_img(usr_map['mapLogo'], "map")).resize((50, 50))
+        map_logo = (await save_img(usr_map["mapLogo"], "map")).resize((50, 50))
         easy_paste(map_img, map_logo, (40, 60), "cc")
-        rank_png = (
-            f"{usr_map['rank']if usr_map['rank'] is not None else '0'}.png"
-        )
-        rank_img = (
-            Image.open(TEXTURE / "rank_gp" / rank_png)
-            .resize((100, 40))
-            .convert('RGBA')
-        )
+        rank_png = f"{usr_map['rank'] if usr_map['rank'] is not None else '0'}.png"
+        rank_img = Image.open(TEXTURE / "rank_gp" / rank_png).resize((100, 40)).convert("RGBA")
 
         easy_paste(map_img, rank_img, (70, 120), "cc")
 
         map_draw = ImageDraw.Draw(map_img)
         map_draw.text(
             (110, 60),
-            usr_map['mapName'],
+            usr_map["mapName"],
             (255, 255, 255, 255),
             csgo_font_20,
             "mm",
         )
         map_draw.text(
             (180, 80),
-            str(usr_map['totalMatch']),
+            str(usr_map["totalMatch"]),
             (255, 255, 255, 255),
             csgo_font_30,
             "mm",
         )
-        map_draw.text(
-            (180, 120), "场次", (255, 255, 255, 255), csgo_font_20, "mm"
-        )
+        map_draw.text((180, 120), "场次", (255, 255, 255, 255), csgo_font_20, "mm")
         map_draw.text(
             (260, 80),
             f"{usr_map['winCount'] / usr_map['totalMatch'] * 100:.1f}%",
@@ -214,11 +200,9 @@ async def draw_csgohome_info_img(
             csgo_font_30,
             "mm",
         )
-        map_draw.text(
-            (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
-        )
-        avg_rat = usr_map['ratingSum'] / usr_map['totalMatch']
-        avg_map_adr = usr_map['totalAdr'] / usr_map['totalMatch']
+        map_draw.text((260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm")
+        avg_rat = usr_map["ratingSum"] / usr_map["totalMatch"]
+        avg_map_adr = usr_map["totalAdr"] / usr_map["totalMatch"]
         map_draw.text(
             (380, 80),
             f"{avg_rat:.2f} / {avg_map_adr:.0f}",
@@ -242,30 +226,25 @@ async def draw_csgohome_info_img(
     img.paste(main3_img, (0, 1300), main3_img)
 
     # 武器
-    for i in range(min(8, len(detail['hotWeapons']))):
+    for i in range(min(8, len(detail["hotWeapons"]))):
+        usr_weapon = detail["hotWeapons"][i]
 
-        usr_weapon = detail['hotWeapons'][i]
-
-        base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize(
-            (500, 110)
-        )
-        weapon_img = await save_img(usr_weapon['weaponImage'], "weapon")
-        weapon_img = weapon_img.resize(
-            (int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2))
-        )
+        base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize((500, 110))
+        weapon_img = await save_img(usr_weapon["weaponImage"], "weapon")
+        weapon_img = weapon_img.resize((int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2)))
         easy_paste(base_img, weapon_img, (100, 70), "cc")
 
         weapon_draw = ImageDraw.Draw(base_img)
         weapon_draw.text(
             (77, 17),
-            usr_weapon['weaponName'],
+            usr_weapon["weaponName"],
             (255, 255, 255, 255),
             csgo_font_20,
             "mm",
         )
         weapon_draw.text(
             (204, 60),
-            str(usr_weapon['weaponKill']),
+            str(usr_weapon["weaponKill"]),
             (255, 255, 255, 255),
             csgo_font_20,
             "mm",
@@ -293,12 +272,8 @@ async def draw_csgohome_info_img(
         #         csgo_font_20,
         #         "mm",
         #     )
-        avg_heat = usr_weapon['weaponHeadShot'] / usr_weapon['weaponKill']
-        hdr = (
-            f"{avg_heat * 100:.2f}"
-            if usr_weapon['weaponKill'] is not None
-            else 0
-        )
+        avg_heat = usr_weapon["weaponHeadShot"] / usr_weapon["weaponKill"]
+        hdr = f"{avg_heat * 100:.2f}" if usr_weapon["weaponKill"] is not None else 0
         weapon_draw.text((430, 31), f"{hdr}", "white", csgo_font_20, "mm")
 
         if i % 2 == 0:
@@ -314,7 +289,7 @@ async def draw_csgohome_info_img(
     main4_draw.text((50, 10), "分数曲线", (255, 255, 255, 255), csgo_font_42)
     img.paste(main4_img, (0, 1880), main4_img)
 
-    score_list = detail['historyRatings']
+    score_list = detail["historyRatings"]
     if len(score_list) > 0:
         score_list = score_list[:10]
         # 获取最大值和最小值
@@ -329,38 +304,34 @@ async def draw_csgohome_info_img(
         width = 700
         height = 480
         padding = 100
-        img_line = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        img_line = Image.new("RGBA", (width, height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(img_line)
         scale = (height - 2 * padding) / (y_end - y_start)
 
         # 绘制坐标轴
         draw.line(
             [(padding, height - padding), (width - padding, height - padding)],
-            fill='black',
+            fill="black",
         )
-        draw.line(
-            [(padding, padding), (padding, height - padding)], fill='black'
-        )
+        draw.line([(padding, padding), (padding, height - padding)], fill="black")
 
         # 标注 Y 轴
         for i in range(math.ceil(y_start), math.ceil(y_end) + 1, 10):
             y = height - padding - (i - y_start) * scale
-            draw.line([(padding - 5, y), (padding, y)], fill='black')
-            draw.text(
-                (padding - 50, y - 15), str(i), fill='white', font=csgo_font_20
-            )
+            draw.line([(padding - 5, y), (padding, y)], fill="black")
+            draw.text((padding - 50, y - 15), str(i), fill="white", font=csgo_font_20)
 
         # 标注 X 轴
         for i in range(len(score_list)):
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
             draw.line(
                 [(x, height - padding), (x, height - padding + 5)],
-                fill='black',
+                fill="black",
             )
             draw.text(
                 (x - 10, height - padding + 10),
                 str(i),
-                fill='white',
+                fill="white",
                 font=csgo_font_20,
             )
 
@@ -371,15 +342,11 @@ async def draw_csgohome_info_img(
             y = height - padding - (score - y_start) * scale
             points.append((x, y))
 
-            draw.ellipse(
-                (x - 6, y - 6, x + 6, y + 6), fill='blue'
-            )  # 使用蓝色圆形点
-            draw.text(
-                (x - 15, y - 30), str(score), fill='white', font=csgo_font_20
-            )
+            draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill="blue")  # 使用蓝色圆形点
+            draw.text((x - 15, y - 30), str(score), fill="white", font=csgo_font_20)
 
         # 绘制折线
-        draw.line(points, fill='yellow', width=3)
+        draw.line(points, fill="yellow", width=3)
         img.paste(img_line, (0, 1900), img_line)
 
     img_up = Image.open(TEXTURE / "base" / "footer.png")
@@ -393,4 +360,4 @@ async def draw_title_info(titel_img: Image.Image, name: str, uid: str) -> None:
     head_draw = ImageDraw.Draw(titel_img)
     head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
     head_draw.text((250, 100), uid, (255, 255, 255, 255), csgo_font_30)
-    head_draw.line([(250, 150), (550, 150)], fill='white', width=2)
+    head_draw.line([(250, 150), (550, 150)], fill="white", width=2)

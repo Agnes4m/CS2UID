@@ -13,10 +13,10 @@ async def get_search_players(name: str) -> Union[str, bytes]:
     if isinstance(detail, int):
         return get_error(detail)
 
-    if not detail['result']:
+    if not detail["result"]:
         return not_player
 
-    players_msg = detail['result']
+    players_msg = detail["result"]
     out_msg = []
 
     for one_player in players_msg:
@@ -28,7 +28,7 @@ async def get_search_players(name: str) -> Union[str, bytes]:
         out_msg.append(info_msg)
 
     out_msg.append("请输入【cs绑定uid xxx】来绑定信息")
-    return ''.join(out_msg)
+    return "".join(out_msg)
 
 
 async def get_search_players5e(name: str) -> Union[str, bytes]:
@@ -46,4 +46,4 @@ async def get_search_players5e(name: str) -> Union[str, bytes]:
         for index, one_player in enumerate(detail, start=1)
     ]
     out_msg.append("请输入【cs绑定5euid xxx】来绑定信息")
-    return ''.join(out_msg)
+    return "".join(out_msg)
