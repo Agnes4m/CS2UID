@@ -1,13 +1,12 @@
 from pathlib import Path
 
 from PIL import Image
-
 from gsuid_core.subscribe import gs_subscribe
 from gsuid_core.status.plugin_status import register_status
 
 from ..utils.database.models import CS2Bind, CS2User
 
-ICON = Path(__file__).parent.parent.parent / "icon.png"
+ICON = Path(__file__).parent.parent.parent / "img/icon.jpg"
 
 
 def get_ICON():
@@ -26,7 +25,6 @@ async def get_add_num():
         if data.uid:
             all_uid.extend(data.user_id.split("_"))
     return len(set(all_uid))
-
 
 
 register_status(
