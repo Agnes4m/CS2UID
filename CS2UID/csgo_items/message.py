@@ -97,7 +97,11 @@ items = [
 
 async def build_map_pattern():
     # 将所有地图的别名转义并合并成一个大的选择组
-    escaped_aliases = ["(?:{})".format(re.escape(alias)) for aliases in map_dict.values() for alias in aliases]
+    escaped_aliases = [
+        "(?:{})".format(re.escape(alias))
+        for aliases in map_dict.values()
+        for alias in aliases
+    ]
     return re.compile(f"^({'|'.join(escaped_aliases)})", re.IGNORECASE)
 
 

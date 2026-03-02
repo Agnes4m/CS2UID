@@ -70,7 +70,9 @@ async def get_csgo_goods_img(uid: str) -> Union[str, bytes]:
     #     return "出现意外错误，请重启core正常使用该功能"
 
 
-async def draw_csgo_goods_img(detail: SteamGet, base: UserHomedetailData) -> bytes | str:
+async def draw_csgo_goods_img(
+    detail: SteamGet, base: UserHomedetailData
+) -> bytes | str:
     if not detail:
         return "token已过期"
     if not detail["previewItem"]:
@@ -94,7 +96,9 @@ async def draw_csgo_goods_img(detail: SteamGet, base: UserHomedetailData) -> byt
     level_img = Image.open(ICON_PATH / "main1.png").resize((700, 220))
     await simple_paste_img(level_img, "steam库存信息", (100, 30), 40)
     await simple_paste_img(level_img, f"总物品数量：{totalCount}", (100, 90), 40)
-    await simple_paste_img(level_img, f"总物品价值：{totalPrice / 100}馒头", (100, 150), 40)
+    await simple_paste_img(
+        level_img, f"总物品价值：{totalPrice / 100}馒头", (100, 150), 40
+    )
 
     img.paste(level_img, (100, 300), level_img)
 
@@ -160,14 +164,18 @@ async def update_tag_data_for_special_types(tag_data: dict) -> None:
 
 async def update_quality_info(one_get: OneGet, tag_data: dict) -> dict:
     """更新物品的品质信息"""
-    qua_color, qua_text_replacement = quality_mapping.get(tag_data.get("品质", "_default"), quality_mapping["_default"])
+    qua_color, qua_text_replacement = quality_mapping.get(
+        tag_data.get("品质", "_default"), quality_mapping["_default"]
+    )
     if qua_text_replacement is not None:
         tag_data["品质"] = qua_text_replacement
     img_qua = Image.new("RGB", (5, 15), color=qua_color)
     return {"img_qua": img_qua, "qua_color": qua_color}
 
 
-async def paste_item_name(good_img: Image.Image, name_out: list, tag_data: dict, description: str) -> None:
+async def paste_item_name(
+    good_img: Image.Image, name_out: list, tag_data: dict, description: str
+) -> None:
     """粘贴物品的名称和种类"""
     st = "ST™"
     if len(name_out) == 1:
@@ -199,7 +207,9 @@ async def process_stat_trak(
     if st_count:
         await simple_paste_img(good_img, f"{st_count}个", (33, 5), color="red", size=13)
 
-    await simple_paste_img(good_img, msg1, (20, 60), color=tag_data.get("品质", "Purple"))
+    await simple_paste_img(
+        good_img, msg1, (20, 60), color=tag_data.get("品质", "Purple")
+    )
     await simple_paste_img(good_img, msg2, (20, 25), color="Purple")
 
 

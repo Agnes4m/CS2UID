@@ -114,7 +114,9 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
     type_i = determine_match_type(ev.text)
 
     # 获取比赛信息
-    resp = await bot.receive_resp(await get_csgo_match_img(ev.user_id, uid, tag, type_i))
+    resp = await bot.receive_resp(
+        await get_csgo_match_img(ev.user_id, uid, tag, type_i)
+    )
     if resp is None:
         return
 
