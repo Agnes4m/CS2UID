@@ -19,7 +19,9 @@ TEXTURE = Path(__file__).parent / "texture2d"
 FONT_PATH = Path(__file__).parent / "font/萝莉体 第二版.ttf"
 
 
-async def get_csgo_match_img(user_id, uid: str, tag: int, _type: int) -> Union[str, bytes]:
+async def get_csgo_match_img(
+    user_id, uid: str, tag: int, _type: int
+) -> Union[str, bytes]:
     detail = await pf_api.get_csgopfmatch(uid, tag, _type)
     logger.debug(detail)
     if isinstance(detail, dict) and detail["data"] is None:
@@ -63,7 +65,9 @@ async def get_csgo_match_img(user_id, uid: str, tag: int, _type: int) -> Union[s
         else:
             match_type = "完美平台对战"
 
-    return await draw_csgo_match_img(detail["data"]["matchList"], name, avatar, uid, match_type)
+    return await draw_csgo_match_img(
+        detail["data"]["matchList"], name, avatar, uid, match_type
+    )
 
 
 async def create_one_match_img(detail: Match) -> Image.Image:
@@ -103,7 +107,9 @@ async def create_one_match_img(detail: Match) -> Image.Image:
     return img
 
 
-async def draw_csgo_match_img(detail: List[Match], name: str, avatar: str, uid: str, match_type: str) -> bytes | str:
+async def draw_csgo_match_img(
+    detail: List[Match], name: str, avatar: str, uid: str, match_type: str
+) -> bytes | str:
     if not detail:
         return "token已过期"
 

@@ -56,11 +56,15 @@ async def send_csgo_bind_uid_msg(bot: Bot, ev: Event):
 
         if "绑定" in ev.command:
             if not uid:
-                return await bot.send("该命令需要带上正确的uid!\n如果不知道, 可以使用[cs搜索5e xxx]查询uid")
+                return await bot.send(
+                    "该命令需要带上正确的uid!\n如果不知道, 可以使用[cs搜索5e xxx]查询uid"
+                )
             # data = await CS2Bind.insert_uid(
             #     qid, ev.bot_id, uid, ev.group_id, is_digit=False
             # )
-            data = await CS2Bind.update_data(qid, ev.bot_id, domain=uid, group_id=ev.group_id)
+            data = await CS2Bind.update_data(
+                qid, ev.bot_id, domain=uid, group_id=ev.group_id
+            )
             return await send_diff_msg(
                 bot,
                 data,
@@ -94,12 +98,18 @@ async def send_csgo_bind_uid_msg(bot: Bot, ev: Event):
         await bot.logger.info("[CS2] [绑定/解绑]UserID: {}".format(qid))
 
         if uid and not uid.isdigit() or uid and len(uid) != 17:
-            return await bot.send("你输入了错误的格式!\n正确的UID是个人资料steam64位id\n可以使用[cs搜索 xxx]查询uid")
+            return await bot.send(
+                "你输入了错误的格式!\n正确的UID是个人资料steam64位id\n可以使用[cs搜索 xxx]查询uid"
+            )
 
         if "绑定" in ev.command:
             if not uid:
-                return await bot.send("该命令需要带上正确的uid!(steam64位id)\n如果不知道, 可以使用[cs搜索 xxx]查询uid")
-            data = await CS2Bind.insert_uid(qid, ev.bot_id, uid, ev.group_id, is_digit=False)
+                return await bot.send(
+                    "该命令需要带上正确的uid!(steam64位id)\n如果不知道, 可以使用[cs搜索 xxx]查询uid"
+                )
+            data = await CS2Bind.insert_uid(
+                qid, ev.bot_id, uid, ev.group_id, is_digit=False
+            )
             return await send_diff_msg(
                 bot,
                 data,

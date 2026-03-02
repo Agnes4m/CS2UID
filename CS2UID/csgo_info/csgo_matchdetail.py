@@ -89,13 +89,21 @@ async def draw_csgo_match_img(detail: MatchTotal) -> bytes | str:
     await simple_paste_img(map_img, "地图时长", (220, 250), size=30)
     await simple_paste_img(map_img, f"{base['duration']}分钟", (220, 300), size=30)
     await simple_paste_img(map_img, "结束时间", (390, 250), size=30)
-    await simple_paste_img(map_img, str(base["endTime"][:10]).strip(), (390, 300), size=30)
-    await simple_paste_img(map_img, str(base["endTime"][11:]).strip(), (390, 340), size=30)
+    await simple_paste_img(
+        map_img, str(base["endTime"][:10]).strip(), (390, 300), size=30
+    )
+    await simple_paste_img(
+        map_img, str(base["endTime"][11:]).strip(), (390, 340), size=30
+    )
     await simple_paste_img(map_img, "匹配方式", (560, 250), size=30)
     if base["greenMatch"]:
-        await simple_paste_img(map_img, "天梯绿色对局", (560, 300), size=30, color="green")
+        await simple_paste_img(
+            map_img, "天梯绿色对局", (560, 300), size=30, color="green"
+        )
     else:
-        await simple_paste_img(map_img, "天梯普通对局", (560, 300), size=30, color="blue")
+        await simple_paste_img(
+            map_img, "天梯普通对局", (560, 300), size=30, color="blue"
+        )
     img_bg.paste(map_img, (75, -100), mask=map_img)
     print(players[0])
 

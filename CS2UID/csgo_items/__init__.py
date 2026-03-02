@@ -104,8 +104,16 @@ async def csgo_item_all(bot: Bot, ev: Event):
     elif len(tag_list) == 1:
         map_name = await find_map_key(tag_list[0])
         if map_name in data:
-            points = [point_folder.name for point_folder in (root_path / map_name).glob("*/") if point_folder.is_dir()]
-            msg = f"当前地图{map_name}支持的点位有：\n" + ",".join(points) + "\n请输入【csgo道具 + 地图 + 点位】查询"
+            points = [
+                point_folder.name
+                for point_folder in (root_path / map_name).glob("*/")
+                if point_folder.is_dir()
+            ]
+            msg = (
+                f"当前地图{map_name}支持的点位有：\n"
+                + ",".join(points)
+                + "\n请输入【csgo道具 + 地图 + 点位】查询"
+            )
             await bot.send(await text2pic(msg), at_sender=True)
             return
         else:
@@ -114,7 +122,9 @@ async def csgo_item_all(bot: Bot, ev: Event):
 
     elif len(tag_list) == 2:
         map_name = await find_map_key(tag_list[0])
-        if map_name not in data:  # 如果没有找到匹配的地图，find_map_key 可能返回原始别名
+        if (
+            map_name not in data
+        ):  # 如果没有找到匹配的地图，find_map_key 可能返回原始别名
             await bot.send("没有该地图，请使用指令【csgo道具】查询地图")
             return
 
@@ -150,7 +160,9 @@ async def csgo_item_all(bot: Bot, ev: Event):
         tag_list = [tag_list[0], tag_list[1], tag_list[1], tag_list[2]]
 
     if len(tag_list) != 4:
-        await bot.send("参数不正确，请输入【csgo道具 地图名 点位 目的点位 烟/火/闪】/n例如：沙2 匪口 b门 烟")
+        await bot.send(
+            "参数不正确，请输入【csgo道具 地图名 点位 目的点位 烟/火/闪】/n例如：沙2 匪口 b门 烟"
+        )
         return
 
     if len(tag_list) == 4:
