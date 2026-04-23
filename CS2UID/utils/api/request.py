@@ -1,9 +1,6 @@
 import json as js
-import random
 from copy import deepcopy
 from typing import Any, Dict, List, Union, Literal, Optional, cast
-
-from httpx import AsyncClient
 
 from gsuid_core.logger import logger
 
@@ -25,6 +22,7 @@ from .api import (
     UserSteamPreview,
     UserSeasonScoreAPI,
 )
+from .perf import get_pool, token_manager
 from .models import (
     UserInfo,
     MatchTitel,
@@ -43,7 +41,6 @@ from .models import (
     UserSearchRequest,
     UserHomedetailRequest,
 )
-from ..database.models import CS2User
 
 
 class PerfectWorldApi:
@@ -58,21 +55,14 @@ class PerfectWorldApi:
     }
 
     async def get_token(self) -> Optional[List[str]]:
-        user_list = await CS2User.get_all_user()
-        if user_list:
-            user: CS2User = random.choice(user_list)
-            if user.uid is None:
-                raise Exception("No valid uid")
-            token = await CS2User.get_user_cookie_by_uid(user.uid)
-            if token is None:
-                raise Exception("No valid cookie")
-            return [user.uid, token]
+        # 使用TokenManager获取随机有效token（带缓存）
+        return await token_manager.get_random_token("pf")
 
     async def _pf_request(
         self,
         url: str,
         method: Literal["GET", "POST"] = "GET",
-        header: Dict[str, str] = _HEADER,
+        header: Optional[Dict[str, str]] = None,
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
@@ -86,35 +76,36 @@ class PerfectWorldApi:
 
         if json:
             method = "POST"
-        async with AsyncClient(verify=self.ssl_verify) as client:
-            resp = await client.request(
-                method,
-                url=url,
-                headers=header,
-                params=params,
-                json=json,
-                data=data,
-                timeout=300,
-            )
-            logger.info(f"[CS2][PF] Response: {resp.text}")
+
+        # 使用连接池替代每次创建新的AsyncClient
+        pool = get_pool()
+        resp = await pool.request(
+            method,
+            url=url,
+            headers=header,
+            params=params,
+            json=json,
+            data=data,
+        )
+        logger.info(f"[CS2][PF] Response: {resp.text}")
+        try:
+            raw_data = await resp.json()
+        except:  # noqa: E722
+            _raw_data = resp.text
             try:
-                raw_data = await resp.json()
+                raw_data = js.loads(_raw_data)
             except:  # noqa: E722
-                _raw_data = resp.text
-                try:
-                    raw_data = js.loads(_raw_data)
-                except:  # noqa: E722
-                    raw_data = {"result": {"error_code": -999, "data": _raw_data}}
-            try:
-                if not raw_data["result"]:
-                    return raw_data
-            except Exception:
+                raw_data = {"result": {"error_code": -999, "data": _raw_data}}
+        try:
+            if not raw_data["result"]:
                 return raw_data
-            if "result" in raw_data and "error_code" in raw_data["result"]:
-                return raw_data["result"]["error_code"]
-            elif raw_data["code"] != 0 and raw_data["code"] != 1:
-                return raw_data["code"]
+        except Exception:
             return raw_data
+        if "result" in raw_data and "error_code" in raw_data["result"]:
+            return raw_data["result"]["error_code"]
+        elif raw_data["code"] != 0 and raw_data["code"] != 1:
+            return raw_data["code"]
+        return raw_data
 
     async def get_season_scoce(self, uid: str):
         uid_token = await self.get_token()
@@ -416,21 +407,14 @@ class FiveEApi:
     }
 
     async def get_stoken(self) -> Optional[List[str]]:
-        user_list = await CS2User.get_all_user()
-        if user_list:
-            user: CS2User = random.choice(user_list)
-            if user.uid is None:
-                raise Exception("No valid uid")
-            stoken = await CS2User.get_user_stoken_by_uid(user.uid)
-            if stoken is None:
-                raise Exception("No valid cookie")
-            return [user.uid, stoken]
+        # 使用TokenManager获取随机有效token（带缓存）
+        return await token_manager.get_random_token("5e")
 
     async def _5e_request(
         self,
         url: str,
         method: Literal["GET", "POST"] = "GET",
-        header: Dict[str, str] = _HEADER,
+        header: Optional[Dict[str, str]] = None,
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
@@ -444,29 +428,30 @@ class FiveEApi:
 
         if json:
             method = "POST"
-        async with AsyncClient(verify=self.ssl_verify) as client:
-            resp = await client.request(
-                method,
-                url=url,
-                headers=header,
-                params=params,
-                json=json,
-                data=data,
-                timeout=300,
-            )
-            # logger.info(resp.text)
-            try:
-                raw_data = await resp.json()
-            except:  # noqa: E722
-                _raw_data = resp.text
-                try:
-                    raw_data = js.loads(_raw_data)
-                except:  # noqa: E722
-                    raw_data = {"result": {"error_code": -999, "data": _raw_data}}
-            if raw_data["success"] is not True or raw_data["errcode"] != 0:
-                return raw_data["errcode"]
 
-            return raw_data
+        # 使用连接池替代每次创建新的AsyncClient
+        pool = get_pool()
+        resp = await pool.request(
+            method,
+            url=url,
+            headers=header,
+            params=params,
+            json=json,
+            data=data,
+        )
+        # logger.info(resp.text)
+        try:
+            raw_data = await resp.json()
+        except:  # noqa: E722
+            _raw_data = resp.text
+            try:
+                raw_data = js.loads(_raw_data)
+            except:  # noqa: E722
+                raw_data = {"result": {"error_code": -999, "data": _raw_data}}
+        if raw_data["success"] is not True or raw_data["errcode"] != 0:
+            return raw_data["errcode"]
+
+        return raw_data
 
     async def search_player(self, keyword: str):
         """搜索玩家信息"""

@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from PIL import Image
-from gsuid_core.subscribe import gs_subscribe
+
+# from gsuid_core.subscribe import gs_subscribe
 from gsuid_core.status.plugin_status import register_status
 
 from ..utils.database.models import CS2Bind, CS2User
