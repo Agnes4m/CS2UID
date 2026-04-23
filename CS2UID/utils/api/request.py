@@ -96,7 +96,7 @@ class PerfectWorldApi:
                 data=data,
                 timeout=300,
             )
-            print(resp.text)
+            logger.info(f"[CS2][PF] Response: {resp.text}")
             try:
                 raw_data = await resp.json()
             except:  # noqa: E722
@@ -165,7 +165,7 @@ class PerfectWorldApi:
             return -1
         if season:
             season = "S" + season
-            print("赛季", season)
+            logger.info(f"[CS2][PF] 赛季: {season}")
         header = self._HEADER
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"

@@ -40,7 +40,7 @@ async def get_csgo_match_img(user_id, uid: str, tag: int, _type: int) -> Union[s
         return get_error(detail)
     detail_path: Path = get_res_path("CS2UID") / "match" / user_id / "match.json"
     detail_path.parent.mkdir(parents=True, exist_ok=True)
-    print(detail_path)
+    logger.info(f"[CS2] Match detail path: {detail_path}")
     with detail_path.open("w", encoding="utf-8") as f:
         json.dump(detail, f, ensure_ascii=False, indent=4)
 
