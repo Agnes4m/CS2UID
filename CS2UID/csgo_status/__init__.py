@@ -7,7 +7,7 @@ from gsuid_core.status.plugin_status import register_status
 
 from ..utils.database.models import CS2Bind, CS2User
 
-ICON = Path(__file__).parent.parent.parent / "img/logo.jpg"
+ICON = Path(__file__).parent.parent.parent / "img/logo.png"
 
 
 def get_ICON():
