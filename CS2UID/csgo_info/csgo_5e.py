@@ -33,7 +33,9 @@ async def get_csgo_5einfo_img(uid: str, season: str = "") -> Union[str, bytes]:
     return await draw_csgo_5einfo_img(detail, info)
 
 
-async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> bytes | str:
+async def draw_csgo_5einfo_img(
+    detail: UserHomeDetail5, info: UserSeason5
+) -> bytes | str:
     if not detail:
         return "token已过期"
     user_info = detail["user"]
@@ -115,7 +117,9 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
     # 赛季信息
     main2_img = Image.open(TEXTURE / "base" / "banner.png")
     main2_draw = ImageDraw.Draw(main2_img)
-    main2_draw.text((50, 10), season_info["now_season"], (255, 255, 255, 255), csgo_font_42)
+    main2_draw.text(
+        (50, 10), season_info["now_season"], (255, 255, 255, 255), csgo_font_42
+    )
 
     img.paste(main2_img, (0, 600), main2_img)
 
@@ -345,7 +349,9 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
 
         base_img = Image.open(TEXTURE / "base" / "weapon_5ebg.png").resize((500, 110))
         weapon_img = await save_img(usr_weapon["weapons_url"], "weapon5e")
-        weapon_img = weapon_img.resize((int(weapon_img.size[0] * 0.5), int(weapon_img.size[1] * 0.5)))
+        weapon_img = weapon_img.resize(
+            (int(weapon_img.size[0] * 0.5), int(weapon_img.size[1] * 0.5))
+        )
         easy_paste(base_img, weapon_img, (100, 70), "cc")
 
         weapon_draw = ImageDraw.Draw(base_img)
@@ -370,7 +376,9 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
             csgo_font_20,
             "mm",
         )
-        fsa = f"{usr_weapon['per_kill']}" if usr_weapon["per_kill"] is not None else "N/A"
+        fsa = (
+            f"{usr_weapon['per_kill']}" if usr_weapon["per_kill"] is not None else "N/A"
+        )
         if usr_weapon["avg_harm"] is None:
             weapon_draw.text(
                 (285, 60),
@@ -387,7 +395,11 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
                 csgo_font_20,
                 "mm",
             )
-        hdr = f"{usr_weapon['per_headshot']}" if usr_weapon["per_headshot"] is not None else "0%"
+        hdr = (
+            f"{usr_weapon['per_headshot']}"
+            if usr_weapon["per_headshot"] is not None
+            else "0%"
+        )
         weapon_draw.text((430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm")
 
         if i % 2 == 0:
@@ -495,7 +507,9 @@ async def draw_csgo_5einfo_img(detail: UserHomeDetail5, info: UserSeason5) -> by
         filtered_data = {selected_keys[key]: filter_data[key] for key in selected_keys}
 
         total_value = sum(filtered_data.values())
-        normalized_data = {label: value / total_value for label, value in filtered_data.items()}
+        normalized_data = {
+            label: value / total_value for label, value in filtered_data.items()
+        }
 
         width = 400
         height = 400
