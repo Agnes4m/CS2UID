@@ -37,7 +37,9 @@ async def get_csgohome_info_img(uid: str, friend: bool = False):
     return await draw_csgohome_info_img(data["data"], fall["result"])
 
 
-async def draw_csgohome_info_img(detail: UserHomedetailData, fall: UserFall) -> bytes | str:
+async def draw_csgohome_info_img(
+    detail: UserHomedetailData, fall: UserFall
+) -> bytes | str:
     if not detail:
         return "token已过期"
 
@@ -114,7 +116,9 @@ async def draw_csgohome_info_img(detail: UserHomedetailData, fall: UserFall) -> 
         csgo_font_42,
         "mm",
     )
-    main2_draw.text((105, 230), str(rank_scoce), (255, 255, 255, 255), csgo_font_42, "mm")
+    main2_draw.text(
+        (105, 230), str(rank_scoce), (255, 255, 255, 255), csgo_font_42, "mm"
+    )
     main2_draw.text(
         (260, 230),
         str(detail["cnt"]),
@@ -173,7 +177,9 @@ async def draw_csgohome_info_img(detail: UserHomedetailData, fall: UserFall) -> 
         map_logo = (await save_img(usr_map["mapLogo"], "map")).resize((50, 50))
         easy_paste(map_img, map_logo, (40, 60), "cc")
         rank_png = f"{usr_map['rank'] if usr_map['rank'] is not None else '0'}.png"
-        rank_img = Image.open(TEXTURE / "rank_gp" / rank_png).resize((100, 40)).convert("RGBA")
+        rank_img = (
+            Image.open(TEXTURE / "rank_gp" / rank_png).resize((100, 40)).convert("RGBA")
+        )
 
         easy_paste(map_img, rank_img, (70, 120), "cc")
 
@@ -231,7 +237,9 @@ async def draw_csgohome_info_img(detail: UserHomedetailData, fall: UserFall) -> 
 
         base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize((500, 110))
         weapon_img = await save_img(usr_weapon["weaponImage"], "weapon")
-        weapon_img = weapon_img.resize((int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2)))
+        weapon_img = weapon_img.resize(
+            (int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2))
+        )
         easy_paste(base_img, weapon_img, (100, 70), "cc")
 
         weapon_draw = ImageDraw.Draw(base_img)
