@@ -1,3 +1,4 @@
+import asyncio
 from typing import Tuple, Union, Optional
 from pathlib import Path
 
@@ -24,29 +25,124 @@ async def save_img(img_url: str, img_type: str, size: Optional[Tuple[int, int]] 
     """下载图片并缓存以读取"""
     map_img = Image.new("RGBA", (200, 600), (0, 0, 0, 255))
     img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
+    lock_path = img_path.parent / (img_path.stem + ".lock")
     img_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # 使用 lock 文件防止并发下载同一图片
+    while lock_path.exists():
+        await asyncio.sleep(0.1)
+
     if not img_path.is_file():
-        for i in range(3):
-            try:
-                map_img = await download_pic_to_image(img_url)
-                if map_img.mode != "RGBA":
-                    map_img = map_img.convert("RGBA")
-                if map_img:
-                    map_img.save(img_path)
-                    break
-                logger.warning(f"图片下载错误，正在尝试第{i + 2}次")
-                if i == 2:
-                    raise Exception("图片下载失败！")
-            except Exception:
-                continue
+        lock_path.touch()
+        try:
+            for i in range(3):
+                try:
+                    map_img = await download_pic_to_image(img_url)
+                    if map_img:
+                        # 先保存原始图片，再转换模式返回
+                        map_img.save(img_path)
+                        # 转换为 RGBA 模式返回
+                        if map_img.mode != "RGBA":
+                            map_img = map_img.convert("RGBA")
+                        break
+                    logger.warning(f"图片下载错误，正在尝试第{i + 2}次")
+                    if i == 2:
+                        raise Exception("图片下载失败！")
+                except Exception:
+                    continue
+        finally:
+            if lock_path.exists():
+                lock_path.unlink()
 
     else:
         map_img = Image.open(img_path)
         if map_img.mode != "RGBA":
             map_img = map_img.convert("RGBA")
     if size:
-        map_img.resize(size)
+        map_img = map_img.resize(size)
     return map_img
+
+
+async def batch_download_images(
+    url_list: list[tuple[str, str]],
+) -> dict[str, Image.Image]:
+    """
+    批量下载图片并缓存。
+
+    Args:
+        url_list: [(url, img_type), ...] 的列表
+
+    Returns:
+        {url: Image} 的字典
+    """
+    results: dict[str, Image.Image] = {}
+
+    # 去重：使用字典按 URL 去重，保留第一个 img_type
+    unique_urls: dict[str, str] = {}
+    for img_url, img_type in url_list:
+        if img_url not in unique_urls:
+            unique_urls[img_url] = img_type
+
+    tasks = []
+    for img_url, img_type in unique_urls.items():
+        img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
+        lock_path = img_path.parent / (img_path.stem + ".lock")
+
+        # 等待锁文件消失（表示其他下载任务完成）
+        while lock_path.exists():
+            await asyncio.sleep(0.1)
+
+        if img_path.is_file():
+            try:
+                img = Image.open(img_path)
+                if img.mode != "RGBA":
+                    img = img.convert("RGBA")
+                results[img_url] = img
+                continue
+            except Exception:
+                logger.warning(f"图片读取失败，将重新下载: {img_url}")
+
+        # 文件不存在或读取失败，需要下载
+        tasks.append((img_url, img_type, img_path, lock_path))
+
+    if tasks:
+
+        async def download_one(img_url: str, img_type: str, img_path: Path, lock_path: Path) -> tuple[str, Image.Image]:
+            # 创建锁文件
+            lock_path.touch()
+            try:
+                img_path.parent.mkdir(parents=True, exist_ok=True)
+                for i in range(3):
+                    try:
+                        img = await download_pic_to_image(img_url)
+                        if img:
+                            # 先保存原始图片，再转换模式返回
+                            img.save(img_path)
+                            logger.info(f"图片下载成功: {img_url}")
+                            # 转换为 RGBA 模式返回
+                            if img.mode != "RGBA":
+                                img = img.convert("RGBA")
+                            return img_url, img
+                        logger.warning(f"图片下载错误，正在尝试第{i + 2}次")
+                    except Exception as e:
+                        logger.warning(f"图片下载异常: {e}")
+                        continue
+                # 下载失败，返回空白图片
+                logger.error(f"图片下载失败: {img_url}")
+                return img_url, Image.new("RGBA", (200, 600), (0, 0, 0, 255))
+            finally:
+                # 删除锁文件
+                if lock_path.exists():
+                    lock_path.unlink()
+
+        download_tasks = [
+            download_one(url, img_type, img_path, lock_path) for url, img_type, img_path, lock_path in tasks
+        ]
+        download_results = await asyncio.gather(*download_tasks)
+        for url, img in download_results:
+            results[url] = img
+
+    return results
 
 
 async def paste_img(

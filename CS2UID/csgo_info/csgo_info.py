@@ -9,7 +9,7 @@ from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
 
-from .utils import save_img, assign_rank
+from .utils import assign_rank, batch_download_images
 from .csgo_path import TEXTURE
 from ..utils.csgo_api import pf_api
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
@@ -44,6 +44,21 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     uid = f"{detail['steamId'][:4]}********{detail['steamId'][12:]}"
     avatar = detail["avatar"]
 
+    # 收集所有需要下载的图片 URL
+    url_list: list[tuple[str, str]] = [(avatar, "avatar")]
+
+    # 地图图片
+    for usr_map in detail["hotMaps"][:4]:
+        url_list.append((usr_map["mapImage"], "map"))
+        url_list.append((usr_map["mapLogo"], "map"))
+
+    # 武器图片
+    for usr_weapon in detail["hotWeapons2"][:8]:
+        url_list.append((usr_weapon["image"], "weapon"))
+
+    # 批量下载所有图片
+    downloaded_images = await batch_download_images(url_list)
+
     # 背景图
     img = Image.open(TEXTURE / "base" / "bg.jpg")
     img_bg = Image.open(TEXTURE / "bg" / "1.jpg").resize((1000, 2400))
@@ -52,7 +67,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
 
     # 标题
     titel_img = Image.open(TEXTURE / "base" / "title_bg.png")
-    head = await save_img(avatar, "avatar")
+    head = downloaded_images.get(avatar, Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
     round_head = await draw_pic_with_ring(head, 100)
 
     place_avatar_in_title(titel_img, round_head, name, uid)
@@ -188,11 +203,13 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         # map_layer = Image.new("RGBA", (480, 180), (0, 0, 0, 0))
         # 750*480
 
-        map_img = (await save_img(usr_map["mapImage"], "map")).resize((470, 180))
+        map_img = downloaded_images.get(usr_map["mapImage"], Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
+        map_img = map_img.resize((470, 180))
         new_alpha = Image.new("L", map_img.size, 90)
         map_img = Image.merge("RGBA", (map_img.split()[:3] + (new_alpha,)))
 
-        map_logo = (await save_img(usr_map["mapLogo"], "map")).resize((50, 50))
+        map_logo = downloaded_images.get(usr_map["mapLogo"], Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
+        map_logo = map_logo.resize((50, 50))
         easy_paste(map_img, map_logo, (40, 100), "cc")
         map_draw = ImageDraw.Draw(map_img)
         map_draw.text(
@@ -248,7 +265,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         usr_weapon = detail["hotWeapons2"][i]
 
         base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize((500, 110))
-        weapon_img = await save_img(usr_weapon["image"], "weapon")
+        weapon_img = downloaded_images.get(usr_weapon["image"], Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
         weapon_img = weapon_img.resize((int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2)))
         easy_paste(base_img, weapon_img, (100, 70), "cc")
 
@@ -308,7 +325,7 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     img.paste(main4_img, (0, 1880), main4_img)
 
     score_list = detail["historyScores"]
-    if len(score_list) > 0:
+    if len(score_list) > 1:
         score_list = score_list[:10]
         max_score = max(score_list)
         min_score = min(score_list)
