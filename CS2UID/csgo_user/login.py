@@ -76,7 +76,7 @@ async def check_qr_status(access_token: str) -> dict:
 async def handle_qr_login(bot: Bot, ev: Event):
     path = get_res_path(["CS2UID", "qr"]) / f"cs2_qr_{ev.user_id}.png"
     try:
-        await bot.send("正在申请二维码...")
+        logger.info("正在申请二维码...")
         qr_url, access_token = await apply_qr_code()
 
         img_data = await get_qrcode_base64(qr_url, path, ev.bot_id)
@@ -84,10 +84,11 @@ async def handle_qr_login(bot: Bot, ev: Event):
             [
                 MessageSegment.text("请使用完美世界电竞APP扫描下方二维码登录："),
                 MessageSegment.image(img_data),
+                MessageSegment.text("扫描后请在APP中确认登录... (等待时间约60秒)"),
             ]
         )
 
-        await bot.send("请在APP中确认登录... (等待时间约60秒)")
+        logger.info("请在APP中确认登录... (等待时间约60秒)")
 
         for i in range(MAX_POLL_COUNT):
             result = await check_qr_status(access_token)
