@@ -182,26 +182,29 @@ async def simple_paste_img(
 async def assign_rank(rank_score: int, is_rank: bool = True):
     if not is_rank:
         return "未定级", 0
-    if rank_score < 1000:
+
+    if rank_score <= 1000:
         return "D", rank_score / 1000
-    elif 1000 <= rank_score < 1200:
-        return "D+", (rank_score - 1000) / 200
-    elif 1200 <= rank_score < 1400:
-        return "C", (rank_score - 1200) / 200
-    elif 1400 <= rank_score < 1600:
-        return "C+", (rank_score - 1400) / 200
-    elif 1600 <= rank_score < 1800:
-        return "B", (rank_score - 1600) / 200
-    elif 1800 <= rank_score < 2000:
-        return "B+", (rank_score - 1800) / 200
-    elif 2000 <= rank_score < 2200:
-        return "A", (rank_score - 2000) / 200
-    elif 2200 <= rank_score < 2400:
-        return "A+", (rank_score - 2200) / 200
-    elif rank_score > 2400:
-        return "S", (rank_score - 2400) / 200
+    elif rank_score <= 1150:
+        return "C", (rank_score - 1001) / 150
+    elif rank_score <= 1300:
+        return "C+", (rank_score - 1151) / 150
+    elif rank_score <= 1450:
+        return "金C+", (rank_score - 1301) / 150
+    elif rank_score <= 1600:
+        return "B-", (rank_score - 1451) / 150
+    elif rank_score <= 1750:
+        return "B", (rank_score - 1601) / 150
+    elif rank_score <= 1900:
+        return "B+", (rank_score - 1751) / 150
+    elif rank_score <= 2050:
+        return "A-", (rank_score - 1901) / 150
+    elif rank_score <= 2200:
+        return "A", (rank_score - 2051) / 150
+    elif rank_score <= 2400:
+        return "A+", (rank_score - 2201) / 150
     else:
-        return "未定级", 0
+        return "S", (rank_score - 2401) / 200
 
 
 async def resize_image_to_percentage(img: Image.Image, percentage: float):

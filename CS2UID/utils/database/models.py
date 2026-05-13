@@ -6,12 +6,12 @@ from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
 from gsuid_core.utils.database.startup import exec_list
 from gsuid_core.utils.database.base_models import Bind, User, with_session
 
-exec_list.extend(
-    [
-        'ALTER TABLE CS2Bind ADD COLUMN platform TEXT DEFAULT "pf"',
-        'ALTER TABLE CS2Bind ADD COLUMN domain TEXT DEFAULT ""',
-    ]
-)
+for stmt in [
+    'ALTER TABLE CS2Bind ADD COLUMN platform TEXT DEFAULT "pf"',
+    'ALTER TABLE CS2Bind ADD COLUMN domain TEXT DEFAULT ""',
+]:
+    if stmt not in exec_list:
+        exec_list.append(stmt)
 
 
 class CS2Bind(Bind, table=True):

@@ -20,6 +20,8 @@
 
 **现已将指令`csgo`改为`cs`**
 
+可以使用**扫码登录**无需抓包
+
 + [常见问题](question.md)
 
 ## 丨安装方式
@@ -45,7 +47,11 @@ poetry run core
 
 ## 丨功能 (全部指令见帮助指令内)
 
-绑定切换删除UID - 命令:cs绑定UID、cs删除UID、cs切换UID、cs绑定UID5e、cs删除UID5e、cs切换UID5e</
+绑定切换删除UID - 命令:cs绑定UID、cs删除UID、cs切换UID、cs绑定UID5e、cs删除UID5e、cs切换UID5e
+
+扫码登录 - 命令: cs扫码登录 / cs登录 (推荐使用，可自动获取token和绑定UID)
+
+帮助 - 命令: cs帮助</
 
 帮助 - 命令: cs帮助
 
