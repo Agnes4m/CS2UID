@@ -1,36 +1,22 @@
-from pathlib import Path
+from gsuid_core.utils.fonts.fonts import core_font
 
-from PIL import ImageFont
-
-FONT_MAIN_PATH = Path(__file__).parent / "fonts/loli.ttf"
-FONT_TIELE_PATH = Path(__file__).parent / "fonts/title.ttf"
-
-
-def csgo_font_main(size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(str(FONT_MAIN_PATH), size=size)
-
-
-def csgo_font_title(size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(str(FONT_TIELE_PATH), size=size)
-
-
-csgo_font_12 = csgo_font_main(12)
-csgo_font_14 = csgo_font_main(14)
-csgo_font_15 = csgo_font_main(15)
-csgo_font_18 = csgo_font_main(18)
-csgo_font_20 = csgo_font_main(20)
-csgo_font_22 = csgo_font_main(22)
-csgo_font_23 = csgo_font_main(23)
-csgo_font_24 = csgo_font_main(24)
-csgo_font_25 = csgo_font_main(25)
-csgo_font_26 = csgo_font_main(26)
-csgo_font_28 = csgo_font_main(28)
-csgo_font_30 = csgo_font_main(30)
-csgo_font_32 = csgo_font_main(32)
-csgo_font_34 = csgo_font_main(34)
-csgo_font_36 = csgo_font_main(36)
-csgo_font_38 = csgo_font_main(38)
-csgo_font_40 = csgo_font_main(40)
-csgo_font_42 = csgo_font_main(42)
-csgo_font_44 = csgo_font_main(44)
-csgo_font_50 = csgo_font_main(50)
+csgo_font_12 = core_font(12)
+csgo_font_14 = core_font(14)
+csgo_font_15 = core_font(15)
+csgo_font_18 = core_font(18)
+csgo_font_20 = core_font(20)
+csgo_font_22 = core_font(22)
+csgo_font_23 = core_font(23)
+csgo_font_24 = core_font(24)
+csgo_font_25 = core_font(25)
+csgo_font_26 = core_font(26)
+csgo_font_28 = core_font(28)
+csgo_font_30 = core_font(30)
+csgo_font_32 = core_font(32)
+csgo_font_34 = core_font(34)
+csgo_font_36 = core_font(36)
+csgo_font_38 = core_font(38)
+csgo_font_40 = core_font(40)
+csgo_font_42 = core_font(42)
+csgo_font_44 = core_font(44)
+csgo_font_50 = core_font(50)

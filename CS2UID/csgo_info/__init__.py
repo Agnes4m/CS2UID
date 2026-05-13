@@ -50,6 +50,21 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
                 uid = uid.replace("5e", "").replace("5E", "").strip()
             else:
                 return await try_send(bot, UID_HINT)
+    if "官匹" in arg or "gp" in arg or "gf" in arg:
+        platform = "官匹"
+
+        # 提取后续参数作为 uid
+        parts = arg.split()
+        if len(parts) > 1:
+            uid = parts[1].strip()  # 获取 "官匹" 后面的参数作为 uid
+            s = parse_s_value(arg)  # 尝试提取 s 值
+        else:
+            # 如果没有后续参数，则尝试获取 uid 官匹
+            uid = await CS2Bind.get_domain(ev.user_id)
+            if uid is None:
+                uid = await CS2Bind.get_domain(ev.user_id)
+            if uid is None:
+                return await try_send(bot, UID_HINT)
 
     else:
         uid = await get_uid(bot, ev, CS2Bind)

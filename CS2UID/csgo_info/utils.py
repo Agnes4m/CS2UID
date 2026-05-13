@@ -2,10 +2,11 @@ import asyncio
 from typing import Tuple, Union, Optional
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from gsuid_core.logger import logger
 from gsuid_core.data_store import get_res_path
+from gsuid_core.utils.fonts.fonts import core_font
 from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import (
     draw_text_by_line,
@@ -13,12 +14,12 @@ from gsuid_core.utils.image.image_tools import (
 )
 
 from .csgo_path import TEXTURE
-from ..utils.csgo_font import FONT_MAIN_PATH, FONT_TIELE_PATH, csgo_font_30
+from ..utils.csgo_font import csgo_font_30
 from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
 
 ICON_PATH = Path(__file__).parent / "texture2d/icon"
-font_head = ImageFont.truetype(str(FONT_TIELE_PATH), 20)
-font_main = ImageFont.truetype(str(FONT_MAIN_PATH), 20)
+font_head = core_font(20)
+font_main = core_font(20)
 
 
 async def save_img(img_url: str, img_type: str, size: Optional[Tuple[int, int]] = None):
@@ -160,10 +161,7 @@ async def paste_img(
     # draw = ImageDraw.Draw(img)
 
     # 字体
-    if fonts == "head":
-        font = ImageFont.truetype(str(FONT_TIELE_PATH), size)
-    else:
-        font = ImageFont.truetype(str(FONT_MAIN_PATH), size)
+    font = core_font(size)
 
     # 行数
     aa, ab, ba, bb = font.getbbox(msg)
@@ -205,15 +203,9 @@ async def simple_paste_img(
 ):
     """无白框贴文字"""
     if size == 20:
-        if fonts == "head":
-            font = font_head
-        else:
-            font = font_main
+        font = font_main
     else:
-        if fonts == "head":
-            font = ImageFont.truetype(str(FONT_TIELE_PATH), size)
-        else:
-            font = ImageFont.truetype(str(FONT_MAIN_PATH), size)
+        font = core_font(size)
     draw = ImageDraw.Draw(img)
     draw.text(site, msg, fill=color, font=font)
     # 以后替换
