@@ -3,6 +3,14 @@
     "desc": "需要先绑定uid",
     "data": [
       {
+        "name": "登录",
+        "desc": "完美平台登录",
+        "eg": "登录",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
         "name": "绑定uid",
         "desc": "绑定你的steam UID",
         "eg": "绑定uid 123456",

@@ -23,6 +23,7 @@ from .api import (
     UserSeasonScoreAPI,
 )
 from .perf import get_pool, token_manager
+from ..cache import cs2_cache
 from .models import (
     UserInfo,
     MatchTitel,
@@ -151,6 +152,12 @@ class PerfectWorldApi:
         return cast(UserInfo, data)
 
     async def get_userdetail(self, uid: str, season: str = ""):
+        # 先检查缓存
+        cached = cs2_cache.get("pf", uid, "get_userdetail", season=season)
+        if cached is not None:
+            logger.info(f"[CS2][PF][Cache] get_userdetail 命中缓存 uid={uid}")
+            return cached
+
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
@@ -173,9 +180,18 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
+
+        # 缓存结果 (5分钟)
+        cs2_cache.set("pf", uid, "get_userdetail", data, ttl=300, season=season)
         return cast(UserDetailRequest, data)
 
     async def get_steamgoods(self, uid: str):
+        # 先检查缓存
+        cached = cs2_cache.get("pf", uid, "get_steamgoods")
+        if cached is not None:
+            logger.info(f"[CS2][PF][Cache] get_steamgoods 命中缓存 uid={uid}")
+            return cached
+
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
@@ -191,6 +207,9 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
+
+        # 缓存结果 (5分钟)
+        cs2_cache.set("pf", uid, "get_steamgoods", data, ttl=300)
         return cast(SteamGetRequest, data)
 
     async def get_csgohomematch(self, uid: str, search_number: int = 11):
@@ -250,6 +269,12 @@ class PerfectWorldApi:
 
     async def get_csgohomedetail(self, uid: str, search_number: int = 11):
         """国服个人信息"""
+        # 先检查缓存
+        cached = cs2_cache.get("pf", uid, "get_csgohomedetail")
+        if cached is not None:
+            logger.info(f"[CS2][PF][Cache] get_csgohomedetail 命中缓存 uid={uid}")
+            return cached
+
         uid_token = await self.get_token()
         if uid_token is None:
             return -1
@@ -270,6 +295,9 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
+
+        # 缓存结果 (5分钟)
+        cs2_cache.set("pf", uid, "get_csgohomedetail", data, ttl=300)
         return cast(UserHomedetailRequest, data)
 
     async def get_fall(self, uid: str):
@@ -476,6 +504,12 @@ class FiveEApi:
 
     async def get_user_detail(self, domain: str):
         """获取玩家信息"""
+        # 先检查缓存
+        cached = cs2_cache.get("5e", domain, "get_user_detail")
+        if cached is not None:
+            logger.info(f"[CS2][5E][Cache] get_user_detail 命中缓存 domain={domain}")
+            return cached
+
         header = self._HEADER
         # uid_token = await self.get_stoken()
         # if uid_token is None:
@@ -490,6 +524,9 @@ class FiveEApi:
         # logger.info(data)
         if isinstance(data, int):
             return data
+
+        # 缓存结果 (5分钟)
+        cs2_cache.set("5e", domain, "get_user_detail", data, ttl=300)
         return cast(UserHomeDetail5, data["data"])
 
     async def get_user_homepage(self, domain: str):

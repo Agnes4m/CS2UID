@@ -153,9 +153,7 @@ class ResponseCache:
             wrapper.__doc__ = func.__doc__
 
             # 提供手动清除缓存的方法
-            wrapper.invalidate = lambda *a, **kw: self.delete(
-                self._make_key(namespace, *a, **kw)
-            )
+            wrapper.invalidate = lambda *a, **kw: self.delete(self._make_key(namespace, *a, **kw))
             wrapper.clear = self.clear
 
             return wrapper
