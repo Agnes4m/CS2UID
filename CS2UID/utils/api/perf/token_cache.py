@@ -116,7 +116,9 @@ class TokenManager:
         cache_key = cls._make_cache_key(uid, platform)
         if cache_key in cls._cache:
             del cls._cache[cache_key]
-            logger.debug(f"[CS2][TokenCache] 已失效 uid={uid[:4]}*** platform={platform}")
+            logger.debug(
+                f"[CS2][TokenCache] 已失效 uid={uid[:4]}*** platform={platform}"
+            )
 
     @classmethod
     def invalidate_all(cls) -> None:
