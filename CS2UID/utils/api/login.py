@@ -67,7 +67,9 @@ class CS2Login:
             tuple[str, str]: (access_url, access_token)
         """
         if not self.client:
-            raise RuntimeError("Client not initialized. Use 'async with CS2Login()' context manager.")
+            raise RuntimeError(
+                "Client not initialized. Use 'async with CS2Login()' context manager."
+            )
 
         resp = await self.client.post(
             QR_APPLY_URL,
@@ -96,7 +98,9 @@ class CS2Login:
             dict: 包含 status, accountItem, token 等字段的响应
         """
         if not self.client:
-            raise RuntimeError("Client not initialized. Use 'async with CS2Login()' context manager.")
+            raise RuntimeError(
+                "Client not initialized. Use 'async with CS2Login()' context manager."
+            )
 
         if not self.access_token:
             logger.warning("[CS2][QR] access_token 不存在，请先调用 apply_qr")
@@ -138,7 +142,9 @@ class CS2Login:
                 steam_id = account_item.get("steamId", "")
                 token = result.get("token", "")
 
-                logger.info(f"[CS2][QR] 登录成功! steam_id: {steam_id}, token: {token[:10]}***")
+                logger.info(
+                    f"[CS2][QR] 登录成功! steam_id: {steam_id}, token: {token[:10]}***"
+                )
                 return QRLoginResult(
                     steam_id=steam_id,
                     token=token,

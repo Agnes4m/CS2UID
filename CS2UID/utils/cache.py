@@ -64,15 +64,27 @@ class CS2Cache:
         logger.debug(f"[CS2][Cache] 命中: {key}")
         return entry.value
 
-    def set(self, platform: str, uid: str, method: str, value: Any, ttl: Optional[int] = None, **kwargs):
+    def set(
+        self,
+        platform: str,
+        uid: str,
+        method: str,
+        value: Any,
+        ttl: Optional[int] = None,
+        **kwargs,
+    ):
         """设置缓存值"""
         key = self._make_key(platform, uid, method, **kwargs)
         ttl = ttl or self._default_ttl
 
-        self._cache[key] = CacheEntry(value=value, created_at=time.time(), ttl=time.time() + ttl)
+        self._cache[key] = CacheEntry(
+            value=value, created_at=time.time(), ttl=time.time() + ttl
+        )
         logger.debug(f"[CS2][Cache] 设置: {key} (TTL: {ttl}s)")
 
-    def invalidate(self, platform: str, uid: str, method: Optional[str] = None, **kwargs):
+    def invalidate(
+        self, platform: str, uid: str, method: Optional[str] = None, **kwargs
+    ):
         """使缓存失效"""
         if method:
             key = self._make_key(platform, uid, method, **kwargs)
@@ -130,7 +142,9 @@ def cached_query(platform: str, ttl: int = 300):
             @wraps(func)
             async def async_wrapper(self, uid: str, *args, **kwargs):
                 # 先检查缓存
-                cached = cs2_cache.get(platform, uid, func.__name__, args=args, kwargs=kwargs)
+                cached = cs2_cache.get(
+                    platform, uid, func.__name__, args=args, kwargs=kwargs
+                )
                 if cached is not None:
                     return cached
 
@@ -139,7 +153,15 @@ def cached_query(platform: str, ttl: int = 300):
 
                 # 缓存结果
                 if result is not None and not isinstance(result, int):
-                    cs2_cache.set(platform, uid, func.__name__, result, ttl, args=args, kwargs=kwargs)
+                    cs2_cache.set(
+                        platform,
+                        uid,
+                        func.__name__,
+                        result,
+                        ttl,
+                        args=args,
+                        kwargs=kwargs,
+                    )
 
                 return result
 
@@ -149,7 +171,9 @@ def cached_query(platform: str, ttl: int = 300):
             @wraps(func)
             def sync_wrapper(self, uid: str, *args, **kwargs):
                 # 先检查缓存
-                cached = cs2_cache.get(platform, uid, func.__name__, args=args, kwargs=kwargs)
+                cached = cs2_cache.get(
+                    platform, uid, func.__name__, args=args, kwargs=kwargs
+                )
                 if cached is not None:
                     return cached
 
@@ -158,7 +182,15 @@ def cached_query(platform: str, ttl: int = 300):
 
                 # 缓存结果
                 if result is not None and not isinstance(result, int):
-                    cs2_cache.set(platform, uid, func.__name__, result, ttl, args=args, kwargs=kwargs)
+                    cs2_cache.set(
+                        platform,
+                        uid,
+                        func.__name__,
+                        result,
+                        ttl,
+                        args=args,
+                        kwargs=kwargs,
+                    )
 
                 return result
 

@@ -90,7 +90,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     # 主信息
     main2_img = Image.open(TEXTURE / "base" / "base_bg.png")
     if detail["stars"] < 10:
-        rank_img = Image.open(TEXTURE / "base" / "rank_logo.png").convert("RGBA").resize((120, 120))
+        rank_img = (
+            Image.open(TEXTURE / "base" / "rank_logo.png")
+            .convert("RGBA")
+            .resize((120, 120))
+        )
         rank_draw = ImageDraw.Draw(rank_img)
         rank_draw.text((58, 58), rank[0], (255, 255, 255, 255), csgo_font_30, "mm")
     else:
@@ -101,7 +105,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         else:
             pj_img = "1.png"
 
-        rank_img = Image.open(TEXTURE / "rank" / pj_img).convert("RGBA").resize((100, 120))
+        rank_img = (
+            Image.open(TEXTURE / "rank" / pj_img).convert("RGBA").resize((100, 120))
+        )
 
     easy_paste(main2_img, rank_img, (100, 100), "cc")
     if detail["stars"] > 0:
@@ -151,7 +157,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         csgo_font_42,
         "mm",
     )
-    main2_draw.text((105, 230), str(rank_scoce), (255, 255, 255, 255), csgo_font_42, "mm")
+    main2_draw.text(
+        (105, 230), str(rank_scoce), (255, 255, 255, 255), csgo_font_42, "mm"
+    )
     main2_draw.text(
         (260, 230),
         str(detail["cnt"]),
@@ -203,12 +211,16 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         # map_layer = Image.new("RGBA", (480, 180), (0, 0, 0, 0))
         # 750*480
 
-        map_img = downloaded_images.get(usr_map["mapImage"], Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
+        map_img = downloaded_images.get(
+            usr_map["mapImage"], Image.new("RGBA", (200, 600), (0, 0, 0, 255))
+        )
         map_img = map_img.resize((470, 180))
         new_alpha = Image.new("L", map_img.size, 90)
         map_img = Image.merge("RGBA", (map_img.split()[:3] + (new_alpha,)))
 
-        map_logo = downloaded_images.get(usr_map["mapLogo"], Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
+        map_logo = downloaded_images.get(
+            usr_map["mapLogo"], Image.new("RGBA", (200, 600), (0, 0, 0, 255))
+        )
         map_logo = map_logo.resize((50, 50))
         easy_paste(map_img, map_logo, (40, 100), "cc")
         map_draw = ImageDraw.Draw(map_img)
@@ -265,8 +277,12 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         usr_weapon = detail["hotWeapons2"][i]
 
         base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize((500, 110))
-        weapon_img = downloaded_images.get(usr_weapon["image"], Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
-        weapon_img = weapon_img.resize((int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2)))
+        weapon_img = downloaded_images.get(
+            usr_weapon["image"], Image.new("RGBA", (200, 600), (0, 0, 0, 255))
+        )
+        weapon_img = weapon_img.resize(
+            (int(weapon_img.size[0] * 0.2), int(weapon_img.size[1] * 0.2))
+        )
         easy_paste(base_img, weapon_img, (100, 70), "cc")
 
         weapon_draw = ImageDraw.Draw(base_img)
@@ -291,7 +307,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             csgo_font_20,
             "mm",
         )
-        fsa = f"{usr_weapon['firstShotAccuracy'] * 100:.2f}%" if usr_weapon["firstShotAccuracy"] is not None else "N/A"
+        fsa = (
+            f"{usr_weapon['firstShotAccuracy'] * 100:.2f}%"
+            if usr_weapon["firstShotAccuracy"] is not None
+            else "N/A"
+        )
         if usr_weapon["sprayAccuracy"] is None:
             weapon_draw.text(
                 (285, 60),
@@ -308,7 +328,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
                 csgo_font_20,
                 "mm",
             )
-        hdr = f"{usr_weapon['headshotRate'] * 100:.2f}" if usr_weapon["headshotRate"] is not None else 0
+        hdr = (
+            f"{usr_weapon['headshotRate'] * 100:.2f}"
+            if usr_weapon["headshotRate"] is not None
+            else 0
+        )
         weapon_draw.text((430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm")
 
         if i % 2 == 0:
@@ -448,7 +472,9 @@ def create_background(img_bg: Image.Image) -> Image.Image:
     return Image.merge("RGBA", img_bg.split()[:3] + (new_alpha,))
 
 
-def place_avatar_in_title(titel_img: Image.Image, round_head: Image.Image, name: str, uid: str) -> None:
+def place_avatar_in_title(
+    titel_img: Image.Image, round_head: Image.Image, name: str, uid: str
+) -> None:
     """在标题图像中放置头像和文本信息"""
     easy_paste(titel_img, round_head, (112, 108), "cc")
     head_draw = ImageDraw.Draw(titel_img)
@@ -462,7 +488,9 @@ async def add_summary_and_stars(titel_img: Image.Image, detail: UserDetailData) 
     pj_img = Image.open(TEXTURE / "base" / "blue.png")
     pj_text = detail["summary"]
     pj_draw = ImageDraw.Draw(pj_img)
-    pj_draw.text((118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm")
+    pj_draw.text(
+        (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), csgo_font_30, "mm"
+    )
     titel_img.paste(pj_img, (235, 170), pj_img)
 
     if detail["stars"] > 0:

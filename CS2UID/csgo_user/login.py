@@ -29,7 +29,9 @@ MAX_POLL_COUNT = 30
 
 
 async def get_qrcode_base64(url: str, path: Path, bot_id: str) -> bytes | str:
-    qr = qrcode.QRCode(version=1, error_correction=ERROR_CORRECT_L, box_size=10, border=4)
+    qr = qrcode.QRCode(
+        version=1, error_correction=ERROR_CORRECT_L, box_size=10, border=4
+    )
     qr.add_data(url)
     qr.make(fit=True)
     img = qr.make_image(fill_color=(255, 134, 36), back_color="white")
@@ -37,7 +39,9 @@ async def get_qrcode_base64(url: str, path: Path, bot_id: str) -> bytes | str:
 
     if bot_id == "onebot":
         img = img.resize((700, 700))
-        img.save(path, format="PNG", save_all=True, append_images=[img], duration=100, loop=0)
+        img.save(
+            path, format="PNG", save_all=True, append_images=[img], duration=100, loop=0
+        )
         async with aiofiles.open(path, "rb") as fp:
             img = await fp.read()
     else:
@@ -49,7 +53,9 @@ async def get_qrcode_base64(url: str, path: Path, bot_id: str) -> bytes | str:
 
 async def save_qr_login(ev: Event, steam_id: str, token: str) -> str:
     await CS2User.insert_data(ev.user_id, ev.bot_id, cookie=token, uid=steam_id)
-    await CS2Bind.insert_uid(ev.user_id, ev.bot_id, steam_id, ev.group_id, is_digit=False)
+    await CS2Bind.insert_uid(
+        ev.user_id, ev.bot_id, steam_id, ev.group_id, is_digit=False
+    )
     logger.info(f"[CS2][QR] 绑定成功 steam_id={steam_id}")
     return f"扫码登录成功！\nSteamID: {steam_id}\n已自动绑定"
 
@@ -57,7 +63,13 @@ async def save_qr_login(ev: Event, steam_id: str, token: str) -> str:
 async def apply_qr_code() -> tuple[str, str]:
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            QR_APPLY_URL, json={"appId": APP_ID, "qrType": QR_TYPE, "redirect": False, "website": WEBSITE}
+            QR_APPLY_URL,
+            json={
+                "appId": APP_ID,
+                "qrType": QR_TYPE,
+                "redirect": False,
+                "website": WEBSITE,
+            },
         ) as resp:
             data = await resp.json()
     qr_url = data["result"]["accessUrl"]
@@ -67,7 +79,9 @@ async def apply_qr_code() -> tuple[str, str]:
 
 async def check_qr_status(access_token: str) -> dict:
     async with aiohttp.ClientSession() as session:
-        async with session.post(QR_CHECK_URL, json={"appId": APP_ID, "accessToken": access_token}) as resp:
+        async with session.post(
+            QR_CHECK_URL, json={"appId": APP_ID, "accessToken": access_token}
+        ) as resp:
             data = await resp.json()
     return data.get("result", {})
 

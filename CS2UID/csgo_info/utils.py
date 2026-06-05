@@ -64,7 +64,9 @@ async def save_img(img_url: str, img_type: str, size: Optional[Tuple[int, int]] 
     return map_img
 
 
-async def batch_download_images(url_list: list[tuple[str, str]]) -> dict[str, Image.Image]:
+async def batch_download_images(
+    url_list: list[tuple[str, str]],
+) -> dict[str, Image.Image]:
     seen = set()
     unique_urls = {}
     for url, typ in url_list:
@@ -95,7 +97,10 @@ async def batch_download_images(url_list: list[tuple[str, str]]) -> dict[str, Im
         return img_url, Image.new("RGBA", (200, 600), (0, 0, 0, 255))
 
     return {
-        url: img for url, img in await asyncio.gather(*[download_one(url, typ) for url, typ in unique_urls.items()])
+        url: img
+        for url, img in await asyncio.gather(
+            *[download_one(url, typ) for url, typ in unique_urls.items()]
+        )
     }
 
 
@@ -233,7 +238,9 @@ async def load_groudback(bg_img_path: Path | Image.Image, alpha_percent: float =
             first_img = first_img.convert("RGBA")
     else:
         first_img = bg_img_path
-    transparent_img = Image.new("RGBA", first_img.size, (255, 255, 255, int(255 * alpha_percent)))
+    transparent_img = Image.new(
+        "RGBA", first_img.size, (255, 255, 255, int(255 * alpha_percent))
+    )
     first_img.paste(transparent_img, None, transparent_img)
 
     return first_img
@@ -378,7 +385,11 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
     await simple_paste_img(out_img, usr_weapon["weaponName"], (10, 70), size=30)
 
     avkill = usr_weapon["weaponKill"] / usr_weapon["totalMatch"]
-    hs = usr_weapon["weaponHeadShot"] / usr_weapon["weaponKill"] if usr_weapon["weaponKill"] else 0
+    hs = (
+        usr_weapon["weaponHeadShot"] / usr_weapon["weaponKill"]
+        if usr_weapon["weaponKill"]
+        else 0
+    )
     hs_out = f"{(hs * 100):.2f}%" if hs else "0%"
 
     print_msg = [
