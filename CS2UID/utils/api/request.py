@@ -9,6 +9,7 @@ from gsuid_core.logger import logger
 from ..cache import cs2_cache
 from .api import (
     CsgoFall,
+    EventMatchListAPI,
     HomeDetailAPI,
     HomePageAPI,
     HomeSeason,
@@ -27,6 +28,7 @@ from .api import (
 )
 from .models import (
     AccountInfo,
+    EventMatchListResponse,
     MatchAdvance,
     MatchTitel,
     MatchTotal,
@@ -509,6 +511,50 @@ class PerfectWorldApi:
         if data.get("statusCode") != 0:
             return cast(str, data.get("data", NETWORK_ERROR))
         return cast(AccountInfo, data["result"]["accountInfo"])
+
+    async def get_event_match_list(
+        self, match_time: str = ""
+    ) -> EventMatchListResponse | int:
+        """获取赛事对局列表。
+
+        Args:
+            match_time: 时间范围,格式 ``"2026-06-24 00:00:00"``。
+                       默认留空由服务端决定最近时间。
+        """
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["token"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["appTheme"] = "0"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        params: dict[str, str] = {}
+        if match_time:
+            params["matchTime"] = match_time
+
+        data = await self._pf_request(
+            EventMatchListAPI,
+            header=header,
+            params=params,
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(EventMatchListResponse, data)
 
 
 class FiveEApi:

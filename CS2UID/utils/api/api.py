@@ -24,8 +24,15 @@ MatchAdvanceAPI = f"{APIHOST}/api/v1/csgo/mvp/advance"
 # login
 LoginAPI = "https://passport.pwesports.cn/account/login"
 
-# 5e search
+# event-center (get)
+EventMatchListAPI = f"{STEAMCNHOST}/eventcenter/app/csgo/event/getMatchList"
 SearchAPI = "https://app.5eplay.com/api/csgo/data/search"
-HomeDetailAPI = "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"
-HomePageAPI = "https://ya-api-app.5eplay.com/v1/user/steam/inventory/homepage/record"
-HomeSeason = "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1"
+HomeDetailAPI = (
+    "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"
+)
+HomePageAPI = (
+    "https://ya-api-app.5eplay.com/v1/user/steam/inventory/homepage/record"
+)
+HomeSeason = (
+    "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1"
+)

@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 class UsrInfo(TypedDict):
@@ -948,3 +948,107 @@ class LoginDetail(TypedDict):
     """成功位`Success`，失败则输出报错信息"""
     result: LoginResult
     """登录结果"""
+
+
+class EventTeamDTO(TypedDict):
+    id: int
+    teamId: int
+    name: str
+    vrsRank: int
+    logoBlack: str
+    logoWhite: str
+    rank: int | None
+    location: str | None
+    talkId: int | None
+    isSupportTeam: int
+    dataMapStatistics: str | None
+    playerDTOList: list[Any]
+
+
+class EventCsgoEventDTO(TypedDict):
+    id: int
+    eventId: int
+    name: str
+    thumbnail: str
+    logo: str
+    startTime: int
+    endTime: int
+    prize: str
+    regionDTO: Any
+    teamNumber: Any
+    publishType: int
+    scheduledTime: Any
+    weight: int
+    publishTime: Any
+    status: int
+    teamDTOList: Any
+    type: int
+    topic: Any
+    nameZh: str
+    eventType: int
+    hot: bool
+    important: bool
+    subImportant: bool
+    background: str | None
+    eventSubType: int
+    liveType: int
+    description: str | None
+    level: str | None
+    prizeList: list[Any]
+
+
+class EventMatchDTO(TypedDict):
+    id: int
+    matchId: int
+    namiMatchId: int
+    eventId: int
+    startTime: int
+    team1Id: int
+    namiTeam1Id: Any
+    team1DTO: EventTeamDTO
+    team2Id: int
+    namiTeam2Id: Any
+    team2DTO: EventTeamDTO
+    score1: int | None
+    score2: int | None
+    bo: str
+    star: int
+    winnerTeamId: int | None
+    matchType: int
+    status: int
+    statsDTOList: Any
+    csgoEventDTO: EventCsgoEventDTO
+    matchDetailDTO: Any
+    mapBPDTOS: Any
+    singleMatchDataDTOS: Any
+    subscribeStatus: Any
+    roomId: Any
+    platform: Any
+    liveRoomInfo: dict[str, Any]
+    liveRoomInfoList: list[Any]
+    stageId: Any
+    newsId: int
+    matchIdList: Any
+    completedStatus: Any
+    hasPredict: bool
+    performanceStatsList: Any
+    description: Any
+    endTime: int | None
+    venue: Any
+    teamSupportRateMap: dict[str, int]
+
+
+class EventMatchResponse(TypedDict):
+    dtoList: list[EventMatchDTO]
+    itemCount: int
+    csgoEventDTO: Any
+
+
+class EventMatchResult(TypedDict):
+    matchResponse: EventMatchResponse
+
+
+class EventMatchListResponse(TypedDict):
+    code: int
+    message: str
+    result: EventMatchResult

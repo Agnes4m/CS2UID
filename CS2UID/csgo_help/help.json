@@ -78,6 +78,14 @@
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
+      },
+      {
+        "name": "赛事",
+        "desc": "查询今日CS2赛事安排",
+        "eg": "赛事",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
       }
     ]
   },

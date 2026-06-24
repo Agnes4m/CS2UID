@@ -71,6 +71,8 @@ uv run core
 
 搜索用户 - 命令: cs搜索 + name
 
+查询今日赛事 - 命令: cs赛事 / cs比赛
+
 <details><summary>查询对局记录信息 - 命令: cs对局记录</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_对局信息"></a>
 </p></details>
@@ -139,6 +141,7 @@ uv run core
 + [x] 查询完美平台对局记录
 + [x] 查询官匹对局记录
 + [x] 通过名称搜索用户
++ [ ] 查询今日赛事安排
 + [x] 统一core的帮助图片
 + [x] gs站资源图片下载
 + [x] 5e等其他平台战绩查询(目前遇到core架构问题读取不出来5e平台)

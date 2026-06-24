@@ -103,7 +103,7 @@ async def batch_download_images(
         img_path.parent.mkdir(parents=True, exist_ok=True)
         for _ in range(3):
             try:
-                img = await download_pic_to_image(img_url)
+                img = await _download_img(img_url)
                 if img:
                     img.save(img_path)
                     return img_url, img.convert(
@@ -120,6 +120,18 @@ async def batch_download_images(
             *[download_one(url, typ) for url, typ in unique_urls.items()]
         )
     }
+
+
+async def _download_img(img_url: str) -> Image.Image | None:
+    """下载图片,对 wmpvp 域名自动添加 Referer。"""
+    if "wmpvp.com" in img_url:
+        async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
+            resp = await client.get(
+                img_url,
+                headers={"Referer": "https://www.wmpvp.com/"},
+            )
+            return Image.open(BytesIO(resp.content))
+    return await download_pic_to_image(img_url)
 
 
 async def paste_img(
