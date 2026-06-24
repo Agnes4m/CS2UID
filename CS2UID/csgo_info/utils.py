@@ -1,28 +1,31 @@
 import asyncio
-from typing import Tuple, Union, Optional
+from io import BytesIO
 from pathlib import Path
 
+import httpx
 from PIL import Image, ImageDraw
 
-from gsuid_core.logger import logger
 from gsuid_core.data_store import get_res_path
+from gsuid_core.logger import logger
 from gsuid_core.utils.fonts.fonts import core_font
-from gsuid_core.utils.image.utils import download_pic_to_image
 from gsuid_core.utils.image.image_tools import (
-    draw_text_by_line,
     draw_pic_with_ring,
+    draw_text_by_line,
 )
+from gsuid_core.utils.image.utils import download_pic_to_image
 
-from .csgo_path import TEXTURE
+from ..utils.api.models import UserDetailhotWeapons2, UserhomeWeapon
 from ..utils.csgo_font import csgo_font_30
-from ..utils.api.models import UserhomeWeapon, UserDetailhotWeapons2
+from .csgo_path import TEXTURE
 
 ICON_PATH = Path(__file__).parent / "texture2d/icon"
 font_head = core_font(20)
 font_main = core_font(20)
 
 
-async def save_img(img_url: str, img_type: str, size: Optional[Tuple[int, int]] = None):
+async def save_img(
+    img_url: str, img_type: str, size: tuple[int, int] | None = None
+):
     """下载图片并缓存以读取"""
     map_img = Image.new("RGBA", (200, 600), (0, 0, 0, 255))
     img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
@@ -38,7 +41,16 @@ async def save_img(img_url: str, img_type: str, size: Optional[Tuple[int, int]] 
         try:
             for i in range(3):
                 try:
-                    map_img = await download_pic_to_image(img_url)
+                    # 检查是否需要添加 Referer 头
+                    if "cdm.wmpvp.com" in img_url:
+                        headers = {"Referer": "https://www.wmpvp.com/"}
+                        async with httpx.AsyncClient(timeout=None) as client:
+                            resp = await client.get(
+                                url=img_url, headers=headers
+                            )
+                            map_img = Image.open(BytesIO(resp.content))
+                    else:
+                        map_img = await download_pic_to_image(img_url)
                     if map_img:
                         # 先保存原始图片，再转换模式返回
                         map_img.save(img_path)
@@ -74,13 +86,17 @@ async def batch_download_images(
             seen.add(url)
             unique_urls[url] = typ
 
-    async def download_one(img_url: str, img_type: str) -> tuple[str, Image.Image]:
+    async def download_one(
+        img_url: str, img_type: str
+    ) -> tuple[str, Image.Image]:
         img_path = get_res_path("CS2UID") / img_type / img_url.split("/")[-1]
 
         if img_path.is_file():
             try:
                 img = Image.open(img_path)
-                return img_url, img.convert("RGBA") if img.mode != "RGBA" else img
+                return img_url, img.convert(
+                    "RGBA"
+                ) if img.mode != "RGBA" else img
             except Exception:
                 pass
 
@@ -90,7 +106,9 @@ async def batch_download_images(
                 img = await download_pic_to_image(img_url)
                 if img:
                     img.save(img_path)
-                    return img_url, img.convert("RGBA") if img.mode != "RGBA" else img
+                    return img_url, img.convert(
+                        "RGBA"
+                    ) if img.mode != "RGBA" else img
             except Exception:
                 continue
 
@@ -108,11 +126,11 @@ async def paste_img(
     img: Image.Image,
     msg: str,
     size: int,
-    site: Tuple[int, int] = (0, 0),
+    site: tuple[int, int] = (0, 0),
     is_mid: bool = False,
-    fonts: Optional[str] = None,
-    long: Tuple[int, int] = (0, 900),
-    color: Union[Tuple[int, int, int, int], str] = (0, 0, 0, 255),
+    fonts: str | None = None,
+    long: tuple[int, int] = (0, 900),
+    color: tuple[int, int, int, int] | str = (0, 0, 0, 255),
     is_white: bool = True,
 ):
     """贴文字"""
@@ -123,15 +141,8 @@ async def paste_img(
 
     # 行数
     aa, ab, ba, bb = font.getbbox(msg)
-    if is_mid:
-        site_x = round((long[1] - long[0] - ba + aa) / 2)
-    else:
-        site_x = site[0]
-
-    if is_white:
-        s = 160
-    else:
-        s = 0
+    site_x = round((long[1] - long[0] - ba + aa) / 2) if is_mid else site[0]
+    s = 160 if is_white else 0
     # 绘制白色矩形遮罩
     rect_color = (255, 255, 255, 128)
     site_white = (
@@ -140,7 +151,9 @@ async def paste_img(
         site_x + ba + 5,
         site[1] + bb + 7,
     )
-    mask = Image.new("RGBA", (int(ba - aa + 5), int(bb - ab + 5)), (255, 255, 255, s))
+    mask = Image.new(
+        "RGBA", (int(ba - aa + 5), int(bb - ab + 5)), (255, 255, 255, s)
+    )
     draw_mask = ImageDraw.Draw(mask)
     draw_mask.rectangle(site_white, fill=rect_color)
 
@@ -151,19 +164,16 @@ async def paste_img(
 async def simple_paste_img(
     img: Image.Image,
     msg: str,
-    site: Tuple[int, int],
+    site: tuple[int, int],
     size: int = 20,
-    fonts: Optional[str] = None,
-    color: Union[Tuple[int, int, int, int], str] = (0, 0, 0, 255),
+    fonts: str | None = None,
+    color: tuple[int, int, int, int] | str = (0, 0, 0, 255),
     max_length: int = 1000,
     center: bool = False,
-    line_space: Optional[float] = None,
+    line_space: float | None = None,
 ):
     """无白框贴文字"""
-    if size == 20:
-        font = font_main
-    else:
-        font = core_font(size)
+    font = font_main if size == 20 else core_font(size)
     draw = ImageDraw.Draw(img)
     draw.text(site, msg, fill=color, font=font)
     # 以后替换
@@ -212,7 +222,9 @@ async def resize_image_to_percentage(img: Image.Image, percentage: float):
     width, height = img.size
     new_width = int(width * percentage / 100)
     new_height = int(height * percentage / 100)
-    out_img = Image.new("RGBA", (new_width, new_height), color=(255, 255, 255, 255))
+    out_img = Image.new(
+        "RGBA", (new_width, new_height), color=(255, 255, 255, 255)
+    )
     pic_new = img.resize((new_width, new_height))
     out_img.paste(pic_new)
     return out_img
@@ -232,7 +244,9 @@ async def add_detail(img: Image.Image):
     return img
 
 
-async def load_groudback(bg_img_path: Path | Image.Image, alpha_percent: float = 0.5):
+async def load_groudback(
+    bg_img_path: Path | Image.Image, alpha_percent: float = 0.5
+):
     """加载背景图
     透明一半"""
     if isinstance(bg_img_path, Path):
@@ -260,44 +274,57 @@ async def new_para_img(map_url: str, logo_url: str):
     if map_img.mode != "RGBA":
         map_img = map_img.convert("RGBA")
 
-    if map_img.mode != "RGBA":
-        map_img = map_img.convert("RGBA")
-
-    result_img = Image.new("RGBA", map_img.size, (0, 0, 0, 0))
-    pixels = result_img.load()
-
+    width, height = map_img.size
+    result_img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     gradient_length = 100
     start_y = 380
-    gradient_scale = 255 / gradient_length
+    alpha_band = [
+        min(255, int((y - start_y) * 255 / gradient_length))
+        for y in range(start_y, start_y + gradient_length)
+    ]
+    # numpy 向量化绘制底部黑色渐变
+    try:
+        import numpy as np
 
-    # 绘制渐变
-    for y in range(start_y, start_y + gradient_length):
-        alpha = int((y - start_y) * gradient_scale)
-        for x in range(map_img.size[0]):
-            pixels[x, y] = (0, 0, 0, alpha)
+        arr = np.array(result_img)
+        for offset, alpha in enumerate(alpha_band):
+            arr[start_y + offset, :, 3] = alpha
+        result_img = Image.fromarray(arr, mode="RGBA")
+    except ImportError:
+        pixels = result_img.load()
+        for offset, alpha in enumerate(alpha_band):
+            for x in range(width):
+                pixels[x, start_y + offset] = (0, 0, 0, alpha)
 
     map_img.paste(result_img, None, result_img)
 
     logo_img = await save_img(logo_url, "map")
 
     img = Image.new("RGBA", (200, 600), (0, 0, 0, 255))
-
     img.paste(map_img.resize((300, 192)))
 
     # 改成四边形形状
     mask = Image.new("L", img.size, 255)
     draw = ImageDraw.Draw(mask)
-
     draw.polygon([(0, 0), (200, 0), (0, 80)], fill=0)
     draw.polygon([(0, 600), (200, 520), (200, 600)], fill=0)
 
-    img_data = img.load()
-    mask_data = mask.load()
-    if img_data and mask_data:
-        for x in range(img.size[0]):
-            for y in range(img.size[1]):
-                if mask_data[x, y] == 0:
-                    img_data[x, y] = img_data[x, y][:3] + (0,)
+    # numpy 向量化应用遮罩 (alpha=0 即透明)
+    try:
+        import numpy as np
+
+        img_arr = np.array(img)
+        mask_arr = np.array(mask)
+        img_arr[mask_arr == 0, 3] = 0
+        img = Image.fromarray(img_arr, mode="RGBA")
+    except ImportError:
+        img_data = img.load()
+        mask_data = mask.load()
+        if img_data and mask_data:
+            for x in range(img.size[0]):
+                for y in range(img.size[1]):
+                    if mask_data[x, y] == 0:
+                        img_data[x, y] = img_data[x, y][:3] + (0,)
 
     bg = Image.open(ICON_PATH / "main2.png")
     img.paste(bg, (0, 0), bg)
@@ -385,7 +412,9 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
     # weap_out = await draw_pic_with_ring(weap_out, 5)
     out_img.paste(weap_out, (40, 25), weap_out)
 
-    await simple_paste_img(out_img, usr_weapon["weaponName"], (10, 70), size=30)
+    await simple_paste_img(
+        out_img, usr_weapon["weaponName"], (10, 70), size=30
+    )
 
     avkill = usr_weapon["weaponKill"] / usr_weapon["totalMatch"]
     hs = (
@@ -411,7 +440,9 @@ async def make_homeweapen_img(usr_weapon: UserhomeWeapon):
     return out_img
 
 
-async def rank_to_color(rank: str, green: str = "A", blue: str = "B", red: str = "C"):
+async def rank_to_color(
+    rank: str, green: str = "A", blue: str = "B", red: str = "C"
+):
     if rank.upper() == green:
         return "green"
     if rank.upper() == blue:
@@ -421,7 +452,9 @@ async def rank_to_color(rank: str, green: str = "A", blue: str = "B", red: str =
     return "black"
 
 
-async def scoce_to_color(rank: float, green: float, blue: float, red: float = 0):
+async def scoce_to_color(
+    rank: float, green: float, blue: float, red: float = 0
+):
     switch = {green: "green", blue: "blue", red: "red"}
     return switch.get(rank, "black")
 
@@ -444,7 +477,7 @@ async def percent_to_img(percent: float, size: tuple = (211, 46)):
 async def draw_card(
     img: Image.Image,
     txt: str,
-    site: Tuple[int, int],
+    site: tuple[int, int],
     color: str = "blue",
     font=csgo_font_30,
 ):
@@ -452,14 +485,18 @@ async def draw_card(
     pj_img = Image.open(TEXTURE / "base" / "color" / f"{color}.png")
     pj_text = txt
     pj_draw = ImageDraw.Draw(pj_img)
-    pj_draw.text((118, 24), f"评价：{pj_text}", (255, 255, 255, 255), font, "mm")
+    pj_draw.text(
+        (118, 24), f"评价：{pj_text}", (255, 255, 255, 255), font, "mm"
+    )
     img.paste(pj_img, site, pj_img)
 
 
 def parse_s_value(text: str) -> str:
     """解析 s 值，从文本中提取数字部分"""
     after_s = text.lower().split("s")[-1]
-    if after_s.isdigit() or (after_s.startswith(("+", "-")) and after_s[1:].isdigit()):
+    if after_s.isdigit() or (
+        after_s.startswith(("+", "-")) and after_s[1:].isdigit()
+    ):
         return after_s
 
     # 提取连续数字

@@ -1,15 +1,15 @@
 # from typing import Dict
 
 # from gsuid_core.message_models import Button
-from gsuid_core.sv import SV, Bot, Event
 from gsuid_core.logger import logger
+from gsuid_core.sv import SV, Bot, Event
 from gsuid_core.utils.message import send_diff_msg
 
-from .login import cs2_qr_login  # noqa: F401
+from ..utils.database.models import CS2Bind
 
 # from ..utils.error_reply import get_error
-from .add_ck import add_uid, add_token, add_stoken
-from ..utils.database.models import CS2Bind
+from .add_ck import add_stoken, add_token, add_uid
+from .login import cs2_qr_login  # noqa: F401
 
 csgo_user_bind = SV("CS2用户绑定")
 csgo_add_tk = SV("CS2添加TK", area="DIRECT")
@@ -51,10 +51,10 @@ async def send_csgo_bind_uid_msg(bot: Bot, ev: Event):
     uid = ev.text.strip()
     if "5e" in ev.text:
         uid = uid.replace("5e", "").strip()
-        logger.info("[cs][5e]正在绑定uid{}".format(uid))
-        await bot.logger.info("[CS2] 开始执行[绑定/解绑用户信息]")
+        logger.info(f"[cs][5e]正在绑定uid{uid}")
+        logger.info("[CS2] 开始执行[绑定/解绑用户信息]")
         qid = ev.user_id
-        await bot.logger.info("[CS2] [绑定/解绑]UserID: {}".format(qid))
+        logger.info(f"[CS2] [绑定/解绑]UserID: {qid}")
 
         if "绑定" in ev.command:
             if not uid:
@@ -94,12 +94,12 @@ async def send_csgo_bind_uid_msg(bot: Bot, ev: Event):
                 },
             )
     else:
-        logger.info("[cs][完美]正在绑定uid{}".format(uid))
-        await bot.logger.info("[CS2] 开始执行[绑定/解绑用户信息]")
+        logger.info(f"[cs][完美]正在绑定uid{uid}")
+        logger.info("[CS2] 开始执行[绑定/解绑用户信息]")
         qid = ev.user_id
-        await bot.logger.info("[CS2] [绑定/解绑]UserID: {}".format(qid))
+        logger.info(f"[CS2] [绑定/解绑]UserID: {qid}")
 
-        if uid and not uid.isdigit() or uid and len(uid) != 17:
+        if uid and (not uid.isdigit() or len(uid) != 17):
             return await bot.send(
                 "你输入了错误的格式!\n正确的UID是个人资料steam64位id\n可以使用[cs搜索 xxx]查询uid"
             )
@@ -150,7 +150,7 @@ async def send_csgo_switch_paltform_msg(bot: Bot, ev: Event):
     bot_id = ev.bot_id
     logger.info("[CS2] 开始执行[切换平台]")
     qid = ev.user_id
-    logger.info("[CS2] [切换平台]UserID: {} - {}".format(qid, paltform))
+    logger.info(f"[CS2] [切换平台]UserID: {qid} - {paltform}")
 
     if "pf" in paltform or "完美" in paltform:
         await CS2Bind.switch_paltform(qid, bot_id, "pf")

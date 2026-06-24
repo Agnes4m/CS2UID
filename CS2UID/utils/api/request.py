@@ -1,84 +1,113 @@
 import json as js
 from copy import deepcopy
-from typing import Any, Dict, List, Union, Literal, Optional, cast
+from typing import Any, Literal, cast
+
+import httpx
 
 from gsuid_core.logger import logger
 
+from ..cache import cs2_cache
 from .api import (
     CsgoFall,
-    LoginAPI,
-    SearchAPI,
-    HomeSeason,
-    HomePageAPI,
-    UserHomeApi,
-    UserInfoAPI,
     HomeDetailAPI,
-    MatchTitelAPI,
-    UserDetailAPI,
-    UserSearchApi,
-    MatchDetailAPI,
+    HomePageAPI,
+    HomeSeason,
+    LoginAPI,
     MatchAdvanceAPI,
+    MatchDetailAPI,
+    MatchTitelAPI,
+    SearchAPI,
+    UserDetailAPI,
+    UserHomeApi,
     UserHomematchApi,
-    UserSteamPreview,
+    UserInfoAPI,
+    UserSearchApi,
     UserSeasonScoreAPI,
+    UserSteamPreview,
 )
-from .perf import get_pool, token_manager
-from ..cache import cs2_cache
 from .models import (
-    UserInfo,
+    AccountInfo,
+    MatchAdvance,
     MatchTitel,
     MatchTotal,
-    AccountInfo,
-    UserSeason5,
-    MatchAdvance,
-    SearchRequest5,
     SteamGetRequest,
-    UserFallRequest,
-    UserHomeDetail5,
-    UserHomeRequest,
-    UserSeasonScore,
-    UserMatchRequest,
     UserDetailRequest,
-    UserSearchRequest,
+    UserFallRequest,
     UserHomedetailRequest,
+    UserHomeRequest,
+    UserInfo,
+    UserMatchRequest,
+    UserSearchRequest,
+    UserSeasonScore,
 )
+from .models_5e import SearchRequest5, UserHomeDetail5, UserSeason5
+from .perf import get_coalescer, get_pool, token_manager
+from .safe_log import safe_log_response
+
+# 网络错误码
+NETWORK_ERROR = -999
+TOKEN_MISSING = -1
 
 
-class PerfectWorldApi:
-    ssl_verify = False
-    _HEADER: Dict[str, str] = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36"
+def _is_success_response(data: Any) -> bool:
+    """仅当响应体表明业务成功时才缓存,避免缓存 4013 等错误响应。"""
+    if not isinstance(data, dict):
+        return False
+    code = data.get("statusCode")
+    return code is None or code == 0
+
+
+METHOD = Literal["GET", "POST"]
+
+_PF_HEADER: dict[str, str] = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36"
         "(KHTML, like Gecko) perfectworldarena/1.0.24060811   "
         "Chrome/80.0.3987.163"
         "Electron/8.5.5"
-        "Safari/537.36",
-        "Content-Type": "application/json;charset=UTF-8",
-    }
+        "Safari/537.36"
+    ),
+    "Content-Type": "application/json;charset=UTF-8",
+}
 
-    async def get_token(self) -> Optional[List[str]]:
-        # 使用TokenManager获取随机有效token（带缓存）
+_5E_HEADER: dict[str, str] = {
+    "User-Agent": "okhttp/3.14.9",
+    "version": "6.2.2",
+}
+
+
+def _parse_json(resp: httpx.Response) -> dict[str, Any] | int:
+    """解析响应 JSON,失败时返回 NETWORK_ERROR 包装。"""
+    text = resp.text
+    try:
+        return cast(dict[str, Any], resp.json())
+    except (ValueError, js.JSONDecodeError):
+        try:
+            return cast(dict[str, Any], js.loads(text))
+        except (ValueError, js.JSONDecodeError):
+            logger.warning(f"[CS2] 响应非 JSON: {text[:200]}")
+            return {
+                "result": {"error_code": NETWORK_ERROR, "data": text},
+            }
+
+
+class PerfectWorldApi:
+    """完美世界平台 API 客户端。"""
+
+    ssl_verify = False
+
+    async def get_token(self):
         return await token_manager.get_random_token("pf")
 
-    async def _pf_request(
+    async def _do_request(
         self,
+        method: METHOD,
         url: str,
-        method: Literal["GET", "POST"] = "GET",
-        header: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        pwasteamid: Optional[str] = None,
-        need_tk: bool = True,
-    ) -> Union[Dict, int]:
-        header = deepcopy(self._HEADER)
-
-        if pwasteamid:
-            header["pwasteamid"] = pwasteamid
-
-        if json:
-            method = "POST"
-
-        # 使用连接池替代每次创建新的AsyncClient
+        header: dict[str, str],
+        params: dict[str, Any] | None,
+        json: dict[str, Any] | None,
+        data: dict[str, Any] | None,
+    ) -> dict[str, Any] | int:
         pool = get_pool()
         resp = await pool.request(
             method,
@@ -88,50 +117,76 @@ class PerfectWorldApi:
             json=json,
             data=data,
         )
-        logger.info(f"[CS2][PF] Response: {resp.text}")
-        try:
-            raw_data = await resp.json()
-        except:  # noqa: E722
-            _raw_data = resp.text
-            try:
-                raw_data = js.loads(_raw_data)
-            except:  # noqa: E722
-                raw_data = {"result": {"error_code": -999, "data": _raw_data}}
-        try:
-            if not raw_data["result"]:
-                return raw_data
-        except Exception:
-            return raw_data
-        if "result" in raw_data and "error_code" in raw_data["result"]:
-            return raw_data["result"]["error_code"]
-        elif raw_data["code"] != 0 and raw_data["code"] != 1:
-            return raw_data["code"]
-        return raw_data
+        logger.debug(
+            f"[CS2][PF] {method} {url} -> {resp.status_code} {safe_log_response(resp.text)}"
+        )
 
-    async def get_season_scoce(self, uid: str):
+        raw = _parse_json(resp)
+        if isinstance(raw, int):
+            return raw
+
+        try:
+            if not raw.get("result"):
+                return raw
+        except AttributeError:
+            return raw
+
+        result = raw.get("result", {})
+        if "error_code" in result:
+            return result["error_code"]
+        if raw.get("code") not in (0, 1):
+            return raw["code"]
+        return raw
+
+    async def _pf_request(
+        self,
+        url: str,
+        method: METHOD = "GET",
+        header: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        pwasteamid: str | None = None,
+    ) -> dict[str, Any] | int:
+        merged_header = deepcopy(_PF_HEADER)
+        if pwasteamid:
+            merged_header["pwasteamid"] = pwasteamid
+        if json:
+            method = "POST"
+
+        async def _do() -> dict[str, Any] | int:
+            return await self._do_request(
+                method, url, merged_header, params, json, data
+            )
+
+        if method == "GET":
+            coalescer = get_coalescer()
+            return await coalescer.request(
+                _do, method, url, params or {}, merged_header.get("token")
+            )
+        return await _do()
+
+    async def get_season_scoce(self, uid: str) -> UserSeasonScore | int:
         uid_token = await self.get_token()
-
         if uid_token is None:
-            return -1
-        token = uid_token[-1]
-        params = {"uid": uid, "access_token": token}
+            return TOKEN_MISSING
         data = await self._pf_request(
             UserSeasonScoreAPI,
-            params=params,
+            params={"uid": uid, "access_token": uid_token[-1]},
             pwasteamid=uid,
         )
         if isinstance(data, int):
             return data
         return cast(UserSeasonScore, data)
 
-    async def get_userinfo(self, uid: str):
+    async def get_userinfo(self, uid: str) -> UserInfo | int:
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
         token = uid_token[-1]
         if token is None:
-            return -1
-        header = self._HEADER
+            return TOKEN_MISSING
+        header = deepcopy(_PF_HEADER)
         header["pwasteamid"] = uid
         header["Accept"] = "application/json, text/plain, */*"
         data = await self._pf_request(
@@ -151,20 +206,21 @@ class PerfectWorldApi:
             return data
         return cast(UserInfo, data)
 
-    async def get_userdetail(self, uid: str, season: str = ""):
-        # 先检查缓存
+    async def get_userdetail(
+        self, uid: str, season: str = ""
+    ) -> UserDetailRequest | int:
         cached = cs2_cache.get("pf", uid, "get_userdetail", season=season)
         if cached is not None:
-            logger.info(f"[CS2][PF][Cache] get_userdetail 命中缓存 uid={uid}")
+            logger.debug(f"[CS2][PF][Cache] get_userdetail 命中 uid={uid}")
             return cached
 
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
         if season:
             season = "S" + season
             logger.info(f"[CS2][PF] 赛季: {season}")
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         data = await self._pf_request(
@@ -181,22 +237,23 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
 
-        # 缓存结果 (5分钟)
-        cs2_cache.set("pf", uid, "get_userdetail", data, ttl=300, season=season)
+        if _is_success_response(data):
+            cs2_cache.set(
+                "pf", uid, "get_userdetail", data, ttl=300, season=season
+            )
         return cast(UserDetailRequest, data)
 
-    async def get_steamgoods(self, uid: str):
-        # 先检查缓存
+    async def get_steamgoods(self, uid: str) -> SteamGetRequest | int:
         cached = cs2_cache.get("pf", uid, "get_steamgoods")
         if cached is not None:
-            logger.info(f"[CS2][PF][Cache] get_steamgoods 命中缓存 uid={uid}")
+            logger.debug(f"[CS2][PF][Cache] get_steamgoods 命中 uid={uid}")
             return cached
 
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
@@ -208,17 +265,19 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
 
-        # 缓存结果 (5分钟)
-        cs2_cache.set("pf", uid, "get_steamgoods", data, ttl=300)
+        if _is_success_response(data):
+            cs2_cache.set("pf", uid, "get_steamgoods", data, ttl=300)
         return cast(SteamGetRequest, data)
 
-    async def get_csgohomematch(self, uid: str, search_number: int = 11):
-        """国服对战信息"""
+    async def get_csgohomematch(
+        self, uid: str, search_number: int = 11
+    ) -> UserHomeRequest | int:
+        """国服对战信息。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
@@ -237,13 +296,15 @@ class PerfectWorldApi:
             return data
         return cast(UserHomeRequest, data)
 
-    async def get_csgopfmatch(self, uid: str, csgoSeasonId: int, type: int):
-        """完美对战信息"""
+    async def get_csgopfmatch(
+        self, uid: str, csgoSeasonId: int, type: int
+    ) -> UserMatchRequest | int:
+        """完美对战信息。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
@@ -267,19 +328,20 @@ class PerfectWorldApi:
             return data
         return cast(UserMatchRequest, data)
 
-    async def get_csgohomedetail(self, uid: str, search_number: int = 11):
-        """国服个人信息"""
-        # 先检查缓存
+    async def get_csgohomedetail(
+        self, uid: str, search_number: int = 11
+    ) -> UserHomedetailRequest | int:
+        """国服个人信息。"""
         cached = cs2_cache.get("pf", uid, "get_csgohomedetail")
         if cached is not None:
-            logger.info(f"[CS2][PF][Cache] get_csgohomedetail 命中缓存 uid={uid}")
+            logger.debug(f"[CS2][PF][Cache] get_csgohomedetail 命中 uid={uid}")
             return cached
 
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
@@ -296,17 +358,17 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
 
-        # 缓存结果 (5分钟)
-        cs2_cache.set("pf", uid, "get_csgohomedetail", data, ttl=300)
+        if _is_success_response(data):
+            cs2_cache.set("pf", uid, "get_csgohomedetail", data, ttl=300)
         return cast(UserHomedetailRequest, data)
 
-    async def get_fall(self, uid: str):
-        """获取掉落箱子信息"""
+    async def get_fall(self, uid: str) -> UserFallRequest | int:
+        """获取掉落箱子信息。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
@@ -319,13 +381,13 @@ class PerfectWorldApi:
             return data
         return cast(UserFallRequest, data)
 
-    async def search_player(self, keyword: str):
-        """搜索玩家信息"""
+    async def search_player(self, keyword: str) -> UserSearchRequest | int:
+        """搜索玩家信息。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["User-Agent"] = "okhttp/4.11.0"
         header["token"] = uid_token[-1]
@@ -333,22 +395,19 @@ class PerfectWorldApi:
             UserSearchApi,
             header=header,
             method="POST",
-            json={
-                "keyword": keyword,
-                "page": 1,
-            },
+            json={"keyword": keyword, "page": 1},
         )
         if isinstance(data, int):
             return data
         return cast(UserSearchRequest, data)
 
-    async def get_match_mvp(self, matchid: str):
-        """搜索对局MVP信息"""
+    async def get_match_mvp(self, matchid: str) -> MatchTitel | int:
+        """搜索对局 MVP 信息。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["accesstoken"] = uid_token[-1]
         data = await self._pf_request(
@@ -358,17 +417,17 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
-        elif data["statusCode"] != 0:
-            return data["data"]
+        if data.get("statusCode") != 0:
+            return data.get("data", NETWORK_ERROR)
         return cast(MatchTitel, data["data"])
 
-    async def get_match_detail(self, matchid: str):
-        """搜索对局详情信息"""
+    async def get_match_detail(self, matchid: str) -> MatchTotal | int:
+        """搜索对局详情信息。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["accesstoken"] = uid_token[-1]
         data = await self._pf_request(
@@ -382,17 +441,17 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
-        elif data["statusCode"] != 0:
-            return cast(str, data["data"])
+        if data.get("statusCode") != 0:
+            return cast(str, data.get("data", NETWORK_ERROR))
         return cast(MatchTotal, data["data"])
 
-    async def get_match_advance(self, matchid: str):
-        """搜索对局其他数据"""
+    async def get_match_advance(self, matchid: str) -> MatchAdvance | int:
+        """搜索对局其他数据。"""
         uid_token = await self.get_token()
         if uid_token is None:
-            return -1
+            return TOKEN_MISSING
 
-        header = self._HEADER
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         header["accesstoken"] = uid_token[-1]
         data = await self._pf_request(
@@ -402,14 +461,15 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
-        elif data["statusCode"] != 0:
-            return cast(str, data["data"])
+        if data.get("statusCode") != 0:
+            return cast(str, data.get("data", NETWORK_ERROR))
         return cast(MatchAdvance, data["data"])
 
-    async def login_pf(self, phone_number: str, code: str):
-        """手机号和验证码登录"""
-
-        header = self._HEADER
+    async def login_pf(
+        self, phone_number: str, code: str
+    ) -> AccountInfo | int:
+        """手机号和验证码登录。"""
+        header = deepcopy(_PF_HEADER)
         header["appversion"] = "3.4.6.164"
         data = await self._pf_request(
             LoginAPI,
@@ -422,68 +482,58 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
-        elif data["statusCode"] != 0:
-            return cast(str, data["data"])
+        if data.get("statusCode") != 0:
+            return cast(str, data.get("data", NETWORK_ERROR))
         return cast(AccountInfo, data["result"]["accountInfo"])
 
 
 class FiveEApi:
-    ssl_verify = False
-    _HEADER: Dict[str, str] = {
-        "User-Agent": "okhttp/3.14.9",
-        "version": "6.2.2",
-    }
+    """5E 平台 API 客户端。"""
 
-    async def get_stoken(self) -> Optional[List[str]]:
-        # 使用TokenManager获取随机有效token（带缓存）
+    ssl_verify = False
+
+    async def get_stoken(self):
         return await token_manager.get_random_token("5e")
 
     async def _5e_request(
         self,
         url: str,
-        method: Literal["GET", "POST"] = "GET",
-        header: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        pwasteamid: Optional[str] = None,
-        need_sk: bool = True,
-    ) -> Union[Dict, int]:
-        header = deepcopy(self._HEADER)
-
+        method: METHOD = "GET",
+        header: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        pwasteamid: str | None = None,
+    ) -> dict[str, Any] | int:
+        merged_header = deepcopy(_5E_HEADER)
         if pwasteamid:
-            header["pwasteamid"] = pwasteamid
-
+            merged_header["pwasteamid"] = pwasteamid
         if json:
             method = "POST"
 
-        # 使用连接池替代每次创建新的AsyncClient
         pool = get_pool()
         resp = await pool.request(
             method,
             url=url,
-            headers=header,
+            headers=merged_header,
             params=params,
             json=json,
             data=data,
         )
-        # logger.info(resp.text)
-        try:
-            raw_data = await resp.json()
-        except:  # noqa: E722
-            _raw_data = resp.text
-            try:
-                raw_data = js.loads(_raw_data)
-            except:  # noqa: E722
-                raw_data = {"result": {"error_code": -999, "data": _raw_data}}
-        if raw_data["success"] is not True or raw_data["errcode"] != 0:
-            return raw_data["errcode"]
+        logger.debug(
+            f"[CS2][5E] {method} {url} -> {resp.status_code} {safe_log_response(resp.text)}"
+        )
 
-        return raw_data
+        raw = _parse_json(resp)
+        if isinstance(raw, int):
+            return raw
+        if raw.get("success") is not True or raw.get("errcode") != 0:
+            return raw.get("errcode", NETWORK_ERROR)
+        return raw
 
-    async def search_player(self, keyword: str):
-        """搜索玩家信息"""
-        header = self._HEADER
+    async def search_player(self, keyword: str) -> list[SearchRequest5] | int:
+        """搜索玩家信息。"""
+        header = deepcopy(_5E_HEADER)
         uid_token = await self.get_stoken()
         if uid_token is None:
             logger.info("[CS2][5E]找不到stoken")
@@ -493,45 +543,37 @@ class FiveEApi:
             SearchAPI,
             header=header,
             method="GET",
-            params={
-                "keywords": keyword,
-                "page": 1,
-            },
+            params={"keywords": keyword, "page": 1},
         )
         if isinstance(data, int):
             return data
-        return cast(List[SearchRequest5], data["data"]["list"])
+        return cast(list[SearchRequest5], data["data"]["list"])
 
-    async def get_user_detail(self, domain: str):
-        """获取玩家信息"""
-        # 先检查缓存
+    async def get_user_detail(self, domain: str) -> UserHomeDetail5 | int:
+        """获取玩家信息。"""
         cached = cs2_cache.get("5e", domain, "get_user_detail")
         if cached is not None:
-            logger.info(f"[CS2][5E][Cache] get_user_detail 命中缓存 domain={domain}")
+            logger.debug(
+                f"[CS2][5E][Cache] get_user_detail 命中 domain={domain}"
+            )
             return cached
 
-        header = self._HEADER
-        # uid_token = await self.get_stoken()
-        # if uid_token is None:
-        #     logger.info("[CS2][5E]找不到stoken")
-        #     return 1
-        # header["token"] = uid_token[1]
+        header = deepcopy(_5E_HEADER)
         data = await self._5e_request(
             f"{HomeDetailAPI}/{domain}",
             header=header,
             method="GET",
         )
-        # logger.info(data)
         if isinstance(data, int):
             return data
 
-        # 缓存结果 (5分钟)
-        cs2_cache.set("5e", domain, "get_user_detail", data, ttl=300)
+        if _is_success_response(data):
+            cs2_cache.set("5e", domain, "get_user_detail", data, ttl=300)
         return cast(UserHomeDetail5, data["data"])
 
-    async def get_user_homepage(self, domain: str):
-        """获取玩家库存信息"""
-        header = self._HEADER
+    async def get_user_homepage(self, domain: str) -> UserDetailRequest | int:
+        """获取玩家库存信息。"""
+        header = deepcopy(_5E_HEADER)
         uid_token = await self.get_stoken()
         if uid_token is None:
             logger.info("[CS2][5E]找不到stoken")
@@ -547,16 +589,17 @@ class FiveEApi:
             return data
         return cast(UserDetailRequest, data["data"])
 
-    async def get_user_homeall(self, domain: str, year: str, season: str):
-        """获取年度信息"""
-        header = self._HEADER
+    async def get_user_homeall(
+        self, domain: str, year: str, season: str
+    ) -> UserSeason5 | int:
+        """获取年度信息。"""
+        header = deepcopy(_5E_HEADER)
         data = await self._5e_request(
             f"{HomeSeason}/{domain}",
             header=header,
             method="GET",
             params={"matchType": "9", "year": year, "season": season},
         )
-        # logger.info(data)
         if isinstance(data, int):
             return data
         return cast(UserSeason5, data["data"])

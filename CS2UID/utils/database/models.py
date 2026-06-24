@@ -1,21 +1,25 @@
-from typing import Optional
+from pathlib import Path
 
 from sqlmodel import Field
 
-from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
-from gsuid_core.utils.database.startup import exec_list
 from gsuid_core.utils.database.base_models import Bind, User, with_session
+from gsuid_core.utils.database.startup import exec_list
+from gsuid_core.webconsole.mount_app import GsAdminModel, PageSchema, site
 
-for stmt in [
-    'ALTER TABLE CS2Bind ADD COLUMN platform TEXT DEFAULT "pf"',
-    'ALTER TABLE CS2Bind ADD COLUMN domain TEXT DEFAULT ""',
-]:
-    if stmt not in exec_list:
-        exec_list.append(stmt)
+# 数据库迁移 SQL 集中管理
+# 详见 migrations.sql
+_MIGRATIONS_FILE = Path(__file__).parent / "migrations.sql"
+if _MIGRATIONS_FILE.is_file():
+    for stmt in _MIGRATIONS_FILE.read_text(encoding="utf-8").split(";"):
+        cleaned = stmt.strip()
+        if not cleaned or cleaned.startswith("--"):
+            continue
+        if cleaned not in exec_list:
+            exec_list.append(cleaned)
 
 
 class CS2Bind(Bind, table=True):
-    uid: Optional[str] = Field(default=None, title="CS2UID")
+    uid: str | None = Field(default=None, title="CS2UID")
     platform: str = Field(default="pf", title="平台")
     domain: str = Field(default="", title="5e域名")
 
@@ -59,7 +63,7 @@ class CS2Bind(Bind, table=True):
 
 
 class CS2User(User, table=True):
-    uid: Optional[str] = Field(default=None, title="CS2UID")
+    uid: str | None = Field(default=None, title="CS2UID")
 
 
 @site.register_admin

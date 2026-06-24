@@ -4,12 +4,14 @@ CS2UID 查询缓存模块
 提供 API 返回数据的缓存功能，减少重复 API 调用
 """
 
+import hashlib
 import json
 import time
-import hashlib
-from typing import Any, Dict, Callable, Optional
-from functools import wraps
+from collections.abc import Callable
 from dataclasses import dataclass
+from functools import wraps
+from pathlib import Path
+from typing import Any
 
 from gsuid_core.logger import logger
 
@@ -34,7 +36,7 @@ class CS2Cache:
     """
 
     def __init__(self):
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry] = {}
         self._default_ttl = 300  # 默认 5 分钟
 
     def _make_key(self, platform: str, uid: str, method: str, **kwargs) -> str:
@@ -47,7 +49,9 @@ class CS2Cache:
         params_hash = hashlib.md5(params_str.encode()).hexdigest()[:8]
         return f"{platform}:{uid}:{method}:{params_hash}"
 
-    def get(self, platform: str, uid: str, method: str, **kwargs) -> Optional[Any]:
+    def get(
+        self, platform: str, uid: str, method: str, **kwargs
+    ) -> Any | None:
         """获取缓存值"""
         key = self._make_key(platform, uid, method, **kwargs)
         entry = self._cache.get(key)
@@ -70,7 +74,7 @@ class CS2Cache:
         uid: str,
         method: str,
         value: Any,
-        ttl: Optional[int] = None,
+        ttl: int | None = None,
         **kwargs,
     ):
         """设置缓存值"""
@@ -83,7 +87,7 @@ class CS2Cache:
         logger.debug(f"[CS2][Cache] 设置: {key} (TTL: {ttl}s)")
 
     def invalidate(
-        self, platform: str, uid: str, method: Optional[str] = None, **kwargs
+        self, platform: str, uid: str, method: str | None = None, **kwargs
     ):
         """使缓存失效"""
         if method:
@@ -107,7 +111,7 @@ class CS2Cache:
         if expired_keys:
             logger.debug(f"[CS2][Cache] 清理 {len(expired_keys)} 条过期缓存")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """获取缓存统计"""
         total = len(self._cache)
         expired = sum(1 for v in self._cache.values() if v.is_expired())
@@ -135,7 +139,9 @@ def cached_query(platform: str, ttl: int = 300):
     """
 
     def decorator(func: Callable):
-        is_coroutine = hasattr(func, "__code__") and func.__code__.co_flags & 0x80
+        is_coroutine = (
+            hasattr(func, "__code__") and func.__code__.co_flags & 0x80
+        )
 
         if is_coroutine:
 
@@ -206,3 +212,44 @@ def invalidate_user_cache(platform: str, uid: str):
     当用户数据更新时调用
     """
     cs2_cache.invalidate(platform, uid)
+
+
+def load_json_cached(
+    file_path: Path,
+    platform: str,
+    uid: str,
+    method: str,
+    ttl: int = 300,
+) -> Any | None:
+    """优先从内存缓存读 JSON,缓存未命中时尝试从文件读。"""
+    cached = cs2_cache.get(platform, uid, method)
+    if cached is not None:
+        return cached
+    if not file_path.is_file():
+        return None
+    try:
+        with file_path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning(f"[CS2][Cache] 读 JSON 失败: {e}")
+        return None
+    cs2_cache.set(platform, uid, method, data, ttl=ttl)
+    return data
+
+
+def save_json_cached(
+    data: Any,
+    file_path: Path,
+    platform: str,
+    uid: str,
+    method: str,
+    ttl: int = 300,
+) -> None:
+    """同时写入文件和内存缓存。"""
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with file_path.open("w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    except OSError as e:
+        logger.warning(f"[CS2][Cache] 写 JSON 失败: {e}")
+    cs2_cache.set(platform, uid, method, data, ttl=ttl)

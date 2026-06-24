@@ -1,5 +1,4 @@
 import math
-from typing import Union
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -8,17 +7,17 @@ from gsuid_core.logger import logger
 
 # from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring, easy_paste
 
-from .utils import save_img, resize_image_to_percentage
-from .csgo_path import TEXTURE
+from ..utils.api.models_5e import UserHomeDetail5, UserSeason5
 from ..utils.csgo_api import api_5e
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
-from ..utils.api.models import UserSeason5, UserHomeDetail5
 from ..utils.error_reply import get_error
+from .csgo_path import TEXTURE
+from .utils import resize_image_to_percentage, save_img
 
 
-async def get_csgo_5einfo_img(uid: str, season: str = "") -> Union[str, bytes]:
+async def get_csgo_5einfo_img(uid: str, season: str = "") -> str | bytes:
     detail = await api_5e.get_user_detail(uid)
 
     # logger.info(detail)
@@ -291,7 +290,9 @@ async def draw_csgo_5einfo_img(
         new_alpha = Image.new("L", map_img.size, 128)
         map_img = Image.merge("RGBA", (map_img.split()[:3] + (new_alpha,)))
 
-        map_logo = (await save_img(map_detail["icon"], "logo")).resize((50, 50))
+        map_logo = (await save_img(map_detail["icon"], "logo")).resize(
+            (50, 50)
+        )
         easy_paste(map_img, map_logo, (40, 100), "cc")
         map_draw = ImageDraw.Draw(map_img)
         map_draw.text(
@@ -317,7 +318,9 @@ async def draw_csgo_5einfo_img(
             csgo_font_30,
             "mm",
         )
-        map_draw.text((260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm")
+        map_draw.text(
+            (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
         avg_rat = map_detail["rating"]
         rws = map_detail["rws"]
         map_draw.text(
@@ -327,11 +330,10 @@ async def draw_csgo_5einfo_img(
             csgo_font_30,
             "mm",
         )
-        map_draw.text((380, 120), "RT/RWS", (255, 255, 255, 255), csgo_font_20, "mm")
-        if i % 2 == 0:
-            site_x = 20
-        else:
-            site_x = 520
+        map_draw.text(
+            (380, 120), "RT/RWS", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
+        site_x = 20 if i % 2 == 0 else 520
         site_y = 1470 + 200 * (i // 2 - 1)
         img.paste(map_img, (site_x, site_y), map_img)
 
@@ -347,7 +349,9 @@ async def draw_csgo_5einfo_img(
     for i in range(min(8, len(info["weapons_data"]))):
         usr_weapon = info["weapons_data"][i]
 
-        base_img = Image.open(TEXTURE / "base" / "weapon_5ebg.png").resize((500, 110))
+        base_img = Image.open(TEXTURE / "base" / "weapon_5ebg.png").resize(
+            (500, 110)
+        )
         weapon_img = await save_img(usr_weapon["weapons_url"], "weapon5e")
         weapon_img = weapon_img.resize(
             (int(weapon_img.size[0] * 0.5), int(weapon_img.size[1] * 0.5))
@@ -377,7 +381,9 @@ async def draw_csgo_5einfo_img(
             "mm",
         )
         fsa = (
-            f"{usr_weapon['per_kill']}" if usr_weapon["per_kill"] is not None else "N/A"
+            f"{usr_weapon['per_kill']}"
+            if usr_weapon["per_kill"] is not None
+            else "N/A"
         )
         if usr_weapon["avg_harm"] is None:
             weapon_draw.text(
@@ -400,12 +406,11 @@ async def draw_csgo_5einfo_img(
             if usr_weapon["per_headshot"] is not None
             else "0%"
         )
-        weapon_draw.text((430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm")
+        weapon_draw.text(
+            (430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
 
-        if i % 2 == 0:
-            site_x = 0
-        else:
-            site_x = 500
+        site_x = 0 if i % 2 == 0 else 500
         site_y = 1880 + 120 * (i // 2 - 1)
         img.paste(base_img, (site_x, site_y), base_img)
 
@@ -441,7 +446,9 @@ async def draw_csgo_5einfo_img(
             [(padding, height - padding), (width - padding, height - padding)],
             fill="black",
         )
-        draw.line([(padding, padding), (padding, height - padding)], fill="black")
+        draw.line(
+            [(padding, padding), (padding, height - padding)], fill="black"
+        )
 
         # 只绘制 10 个可读线
         for i in range(total_steps + 1):
@@ -471,7 +478,11 @@ async def draw_csgo_5einfo_img(
         points = []
         for i, score in enumerate(reversed(score_list)):
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
-            y = height - padding - (math.ceil(float(score["data"])) - y_start) * scale
+            y = (
+                height
+                - padding
+                - (math.ceil(float(score["data"])) - y_start) * scale
+            )
             points.append((x, y))
 
             draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill="blue")
@@ -504,11 +515,14 @@ async def draw_csgo_5einfo_img(
             "mvp_ratio": "道具",
             "per_assist": "助攻",
         }
-        filtered_data = {selected_keys[key]: filter_data[key] for key in selected_keys}
+        filtered_data = {
+            selected_keys[key]: filter_data[key] for key in selected_keys
+        }
 
         total_value = sum(filtered_data.values())
         normalized_data = {
-            label: value / total_value for label, value in filtered_data.items()
+            label: value / total_value
+            for label, value in filtered_data.items()
         }
 
         width = 400
@@ -523,7 +537,7 @@ async def draw_csgo_5einfo_img(
         angle = 2 * math.pi / num_vars
         points = []
 
-        for i, (label, value) in enumerate(normalized_data.items()):
+        for i, (_label, value) in enumerate(normalized_data.items()):
             radius = max_radius * value  # 使用归一化后的值计算半径
             x = center[0] + radius * math.cos(i * angle - math.pi / 2)
             y = center[1] + radius * math.sin(i * angle - math.pi / 2)
@@ -537,13 +551,19 @@ async def draw_csgo_5einfo_img(
             y = center[1] + max_radius * math.sin(i * angle - math.pi / 2)
             template_points.append((x, y))
 
-        draw.polygon(template_points, fill=(200, 200, 200, 255), outline="black")
+        draw.polygon(
+            template_points, fill=(200, 200, 200, 255), outline="black"
+        )
         draw.polygon(points, fill=(135, 206, 250, 128), outline="blue")
         draw.line(points + [points[0]], fill="blue", width=2)
 
         for i, (label, value) in enumerate(normalized_data.items()):
-            x = center[0] + (max_radius + 30) * math.cos(i * angle - math.pi / 2)
-            y = center[1] + (max_radius + 30) * math.sin(i * angle - math.pi / 2)
+            x = center[0] + (max_radius + 30) * math.cos(
+                i * angle - math.pi / 2
+            )
+            y = center[1] + (max_radius + 30) * math.sin(
+                i * angle - math.pi / 2
+            )
 
             text = f"{value:.2f}\n{label}"
 

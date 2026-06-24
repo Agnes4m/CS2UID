@@ -1,25 +1,24 @@
-# coding:utf-8
-import json
 from typing import cast
 
-from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
+from gsuid_core.data_store import get_res_path
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
-from gsuid_core.data_store import get_res_path
+from gsuid_core.sv import SV
 from gsuid_core.utils.database.api import get_uid
 
-from .utils import parse_s_value
+from ..utils.api.models import UserMatchRequest
+from ..utils.cache import load_json_cached
+from ..utils.database.models import CS2Bind
+from ..utils.error_reply import UID_HINT, try_send
+from ..utils.platform import resolve_uid_and_platform
 from .csgo_5e import get_csgo_5einfo_img
-from .csgo_info import get_csgo_info_img
 from .csgo_goods import get_csgo_goods_img
+from .csgo_info import get_csgo_info_img
 from .csgo_match import get_csgo_match_img
+from .csgo_matchdetail import get_csgo_match_detail_img
 from .csgo_search import get_search_players, get_search_players5e
 from .csgohome_info import get_csgohome_info_img
-from .csgo_matchdetail import get_csgo_match_detail_img
-from ..utils.api.models import UserMatchRequest
-from ..utils.error_reply import UID_HINT, try_send
-from ..utils.database.models import CS2Bind
 
 csgo_user_info = SV("CS2用户信息查询")
 
@@ -27,77 +26,23 @@ csgo_user_info = SV("CS2用户信息查询")
 @csgo_user_info.on_command(("查询"), block=True)
 async def send_csgo_info_msg(bot: Bot, ev: Event):
     logger.info(ev)
-    arg = ev.text.strip()
+    uid, platform, s = await resolve_uid_and_platform(
+        bot,
+        ev,
+        ev.user_id,
+        ev.text.strip(),
+    )
 
-    # 初始化 uid 和 platform
-    uid = None
-    platform = None
-    s = ""
+    if uid is None or platform is None:
+        return await try_send(bot, UID_HINT)
 
-    # 判断平台
-    if "5E" in arg.upper():
-        platform = "5e"
-
-        # 提取后续参数作为 uid
-        parts = arg.split()
-        if len(parts) > 1:
-            uid = parts[1].strip()  # 获取 "5E" 后面的参数作为 uid
-            s = parse_s_value(arg)  # 尝试提取 s 值
-        else:
-            # 如果没有后续参数，则尝试获取 uid5e
-            uid = await CS2Bind.get_domain(ev.user_id)
-            if uid is not None:
-                uid = uid.replace("5e", "").replace("5E", "").strip()
-            else:
-                return await try_send(bot, UID_HINT)
-    if "官匹" in arg or "gp" in arg or "gf" in arg:
-        platform = "官匹"
-
-        # 提取后续参数作为 uid
-        parts = arg.split()
-        if len(parts) > 1:
-            uid = parts[1].strip()  # 获取 "官匹" 后面的参数作为 uid
-            s = parse_s_value(arg)  # 尝试提取 s 值
-        else:
-            # 如果没有后续参数，则尝试获取 uid 官匹
-            uid = await CS2Bind.get_domain(ev.user_id)
-            if uid is None:
-                uid = await CS2Bind.get_domain(ev.user_id)
-            if uid is None:
-                return await try_send(bot, UID_HINT)
-
-    else:
-        uid = await get_uid(bot, ev, CS2Bind)
-
-        if uid is None:
-            return await try_send(bot, UID_HINT)
-
-        # 获取平台
-        try:
-            platform = await CS2Bind.get_platform(ev.user_id) or "pf"
-        except Exception as e:
-            logger.warning(f"{e}\n获取CS2Bind数据失败，将使用默认值：pf")
-            platform = "pf"
-
-    # 如果 platform 仍然是 None，设置默认值
-    if platform is None:
-        logger.warning("平台是空，默认使用pf")
-        platform = "pf"
-
-    # 如果 platform 仍然是 None，设置默认值
-    if platform is None:
-        logger.warning("平台是空，默认使用pf")
-        platform = "pf"
-
-    s = parse_s_value(arg)
     logger.info(f"[CS2]当前平台是：{platform}")
 
-    # 发送对应信息
-    if platform in ["官匹", "gp", "gf"]:
+    if platform == "gf":
         await try_send(bot, await get_csgohome_info_img(uid))
-    elif platform in ["pf", "完美"]:
+    elif platform == "pf":
         await try_send(bot, await get_csgo_info_img(uid, s))
-    elif platform in ["5e", "5E"]:
+    else:
         logger.info(f"[CS2][5E]正在查询uid: {uid}")
         await try_send(bot, await get_csgo_5einfo_img(uid, s))
 
@@ -140,11 +85,14 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
         return
 
     detail_path = get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
-    if not detail_path.is_file():
-        return await try_send(bot, "没有对局缓存，请使用指令 cs对局记录 生成数据")
-
-    with detail_path.open("r", encoding="utf-8") as f:  # 使用标准的 with
-        match_detail = cast(UserMatchRequest, json.load(f))
+    cached = load_json_cached(
+        detail_path, platform="pf", uid=ev.user_id, method="match_list"
+    )
+    if cached is None:
+        return await try_send(
+            bot, "没有对局缓存，请使用指令 cs对局记录 生成数据"
+        )
+    match_detail = cast(UserMatchRequest, cached)
 
     # 获取比赛 ID
     try:
@@ -161,9 +109,10 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
 
 
 def determine_match_type(text: str) -> int:
-    """根据输入文本确定比赛类型"""
-    match_types = {"天梯": 12, "pro": 41, "巅峰": 20, "周末": 27, "自定义": 14}
+    """根据输入文本确定比赛类型,默认 -1 (全部)。"""
+    from ..utils.csgo_config import get_match_types
 
+    match_types = get_match_types()
     matched_key = next((key for key in match_types if key in text), None)
     return match_types.get(matched_key, -1) if matched_key is not None else -1
 
@@ -177,18 +126,22 @@ async def send_csgo_match_detail_msg(bot: Bot, ev: Event):
             await try_send(bot, "序号错误")
             return
         index = resp.text
-    index = cast(int, int(index) - 1)
+    idx = int(index) - 1
     detail_path = get_res_path("CS2UID") / "match" / ev.user_id / "match.json"
-    print(detail_path)
-    if not detail_path.is_file():
-        await try_send(bot, "没有对局缓存，请使用指令 cs对局记录 生成数据")
-    with detail_path.open("r", encoding="utf-8") as f:
-        f.seek(0)
-        match_detail = cast(UserMatchRequest, json.load(f))
-    print(match_detail["data"]["matchList"])
-    print(int(index))
-    match_id = match_detail["data"]["matchList"][int(index)]["matchId"]
-    print(match_id)
+    cached = load_json_cached(
+        detail_path, platform="pf", uid=ev.user_id, method="match_list"
+    )
+    if cached is None:
+        return await try_send(
+            bot, "没有对局缓存，请使用指令 cs对局记录 生成数据"
+        )
+    match_detail = cast(UserMatchRequest, cached)
+
+    match_list = match_detail["data"]["matchList"]
+    if match_list is None or idx >= len(match_list):
+        return await try_send(bot, "比赛记录不完整或不存在。")
+
+    match_id = match_list[idx]["matchId"]
     match_detail_out = await get_csgo_match_detail_img(match_id)
     await try_send(bot, match_detail_out)
 
@@ -199,10 +152,10 @@ async def send_csgo_search(bot: Bot, ev: Event):
 
     if "5e" in name.lower():
         name = name.replace("5e", "").strip()
-        logger.info("[cs][5e] 正在搜索 {}".format(name))
+        logger.info(f"[cs][5e] 正在搜索 {name}")
         response = await get_search_players5e(name)
     else:
-        logger.info("[cs][完美] 正在搜索 {}".format(name))
+        logger.info(f"[cs][完美] 正在搜索 {name}")
         response = await get_search_players(name)
 
     await try_send(bot, response)

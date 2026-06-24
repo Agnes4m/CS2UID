@@ -1,78 +1,69 @@
-"""CS2 二维码登录 - 异步实现"""
+"""CS2 二维码登录 — 异步实现 (统一登录入口)。"""
 
 import asyncio
-from typing import Optional
+import io
 from dataclasses import dataclass
+from pathlib import Path
 
-import httpx
+import qrcode
+from qrcode.constants import ERROR_CORRECT_L
+from qrcode.image.pil import PilImage
 
 from gsuid_core.logger import logger
 
-# API 端点
-QR_APPLY_URL = "https://passport.pwesports.cn/qrAuth/applyToken"
-QR_CHECK_URL = "https://passport.pwesports.cn/qrAuth/check"
+from .perf.pool import get_pool
 
-# 请求配置
+API_BASE = "https://passport.pwesports.cn"
+QR_APPLY_URL = f"{API_BASE}/qrAuth/applyToken"
+QR_CHECK_URL = f"{API_BASE}/qrAuth/check"
+
 APP_ID = "5"
 QR_TYPE = "1"
 WEBSITE = "pvp"
-
-# 轮询配置
-POLL_INTERVAL = 2  # 秒
-MAX_POLL_COUNT = 30  # 最多轮询30次 = 60秒
+POLL_INTERVAL = 2
+MAX_POLL_COUNT = 30
 
 
 @dataclass
 class QRLoginResult:
-    """二维码登录结果"""
+    """二维码登录结果。"""
 
     steam_id: str
-    """Steam64位ID"""
     token: str
-    """完美平台Token"""
     success: bool
-    """是否成功"""
     message: str
-    """结果消息"""
+
+
+def generate_qrcode_image(url: str, bot_id: str = "") -> bytes:
+    """生成登录二维码图片 (bytes)。"""
+    qr = qrcode.QRCode(
+        version=1, error_correction=ERROR_CORRECT_L, box_size=10, border=4
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color=(255, 134, 36), back_color="white")
+    assert isinstance(img, PilImage)
+
+    if bot_id == "onebot":
+        img = img.resize((700, 700))
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
 
 
 class CS2Login:
-    """CS2 二维码登录类"""
+    """CS2 二维码登录(走项目统一连接池)。"""
 
-    def __init__(self):
-        self.client: Optional[httpx.AsyncClient] = None
-        self.access_token: Optional[str] = None
+    def __init__(self) -> None:
+        self.access_token: str | None = None
 
-    async def __aenter__(self):
-        """异步上下文管理器入口"""
-        self.client = httpx.AsyncClient(verify=False, timeout=30.0)
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """异步上下文管理器退出"""
-        if self.client:
-            await self.client.aclose()
-        return False
-
-    async def close(self):
-        """关闭HTTP客户端"""
-        if self.client:
-            await self.client.aclose()
-
-    async def apply_qr(self) -> tuple[str, str]:
-        """
-        申请二维码
-
-        Returns:
-            tuple[str, str]: (access_url, access_token)
-        """
-        if not self.client:
-            raise RuntimeError(
-                "Client not initialized. Use 'async with CS2Login()' context manager."
-            )
-
-        resp = await self.client.post(
-            QR_APPLY_URL,
+    async def apply_qr(self) -> str:
+        """申请二维码,返回 access_url。"""
+        pool = get_pool()
+        resp = await pool.request(
+            "POST",
+            url=QR_APPLY_URL,
             json={
                 "appId": APP_ID,
                 "qrType": QR_TYPE,
@@ -81,49 +72,29 @@ class CS2Login:
             },
         )
         data = resp.json()
-
-        qr_url = data["result"]["accessUrl"]
-        # 从URL中提取access_token
-        access_token = qr_url.split("accessToken=")[1].split("&")[0]
-        self.access_token = access_token
-
-        logger.info(f"[CS2][QR] 申请二维码成功, access_token: {access_token[:10]}***")
-        return qr_url, access_token
+        qr_url: str = data["result"]["accessUrl"]
+        self.access_token = qr_url.split("accessToken=")[1].split("&")[0]
+        logger.info(
+            f"[CS2][QR] 申请二维码成功, access_token: {self.access_token[:10]}***"
+        )
+        return qr_url
 
     async def check_qr_status(self) -> dict:
-        """
-        检查二维码状态
-
-        Returns:
-            dict: 包含 status, accountItem, token 等字段的响应
-        """
-        if not self.client:
-            raise RuntimeError(
-                "Client not initialized. Use 'async with CS2Login()' context manager."
-            )
-
+        """检查二维码状态。"""
         if not self.access_token:
             logger.warning("[CS2][QR] access_token 不存在，请先调用 apply_qr")
-            return {"result": {"status": -1}}
+            return {"status": -1}
 
-        resp = await self.client.post(
-            QR_CHECK_URL,
-            json={
-                "appId": APP_ID,
-                "accessToken": self.access_token,
-            },
+        pool = get_pool()
+        resp = await pool.request(
+            "POST",
+            url=QR_CHECK_URL,
+            json={"appId": APP_ID, "accessToken": self.access_token},
         )
-        data = resp.json()
-
-        return data.get("result", {})
+        return resp.json().get("result", {})
 
     async def wait_for_scan(self) -> QRLoginResult:
-        """
-        轮询等待扫码完成
-
-        Returns:
-            QRLoginResult: 登录结果
-        """
+        """轮询等待扫码完成。"""
         if not self.access_token:
             return QRLoginResult(
                 steam_id="",
@@ -137,11 +108,9 @@ class CS2Login:
             status = result.get("status")
 
             if status == 2:
-                # 扫码成功
                 account_item = result.get("accountItem", {})
                 steam_id = account_item.get("steamId", "")
                 token = result.get("token", "")
-
                 logger.info(
                     f"[CS2][QR] 登录成功! steam_id: {steam_id}, token: {token[:10]}***"
                 )
@@ -152,8 +121,7 @@ class CS2Login:
                     message="登录成功",
                 )
 
-            elif status == 3:
-                # 二维码过期
+            if status == 3:
                 logger.info("[CS2][QR] 二维码已过期")
                 return QRLoginResult(
                     steam_id="",
@@ -162,16 +130,15 @@ class CS2Login:
                     message="二维码已过期，请重新扫码",
                 )
 
-            elif status == 1:
-                # 等待扫码
-                logger.debug(f"[CS2][QR] 等待扫码... [{i + 1}/{MAX_POLL_COUNT}]")
-
+            if status == 1:
+                logger.debug(
+                    f"[CS2][QR] 等待扫码... [{i + 1}/{MAX_POLL_COUNT}]"
+                )
             else:
                 logger.warning(f"[CS2][QR] 未知状态: {status}")
 
             await asyncio.sleep(POLL_INTERVAL)
 
-        # 超时
         logger.info("[CS2][QR] 扫码超时")
         return QRLoginResult(
             steam_id="",
@@ -181,16 +148,16 @@ class CS2Login:
         )
 
     async def login_by_qr(self) -> QRLoginResult:
-        """
-        完整二维码登录流程
-
-        Returns:
-            QRLoginResult: 登录结果
-        """
-        # 1. 申请二维码
+        """完整二维码登录流程。"""
         await self.apply_qr()
+        return await self.wait_for_scan()
 
-        # 2. 轮询等待扫码
-        result = await self.wait_for_scan()
 
-        return result
+def build_qrcode_payload(url: str, save_path: Path, bot_id: str) -> bytes:
+    """生成二维码图片,onebot 平台保存到磁盘,其他平台返回 bytes。"""
+    if bot_id == "onebot":
+        payload = generate_qrcode_image(url, bot_id)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        save_path.write_bytes(payload)
+        return payload
+    return generate_qrcode_image(url, bot_id)

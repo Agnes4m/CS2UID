@@ -40,7 +40,7 @@ git clone https://github.com/Agnes4m/CS2UID.
 cd ../
 
 # 启动Bot（如此时GsCore正在运行，请先使用Ctrl+C快捷键关闭GsCore，无需重启Bot（如NoneBot2））
-poetry run core
+uv run core
 ```
 
 </p></details>
@@ -75,7 +75,7 @@ poetry run core
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_对局信息"></a>
 </p></details>
 
-<details><summary>查询地图道具点位 - 命令: cs道具</summary><p>
+<details><summary>查询地图道具点位 - 命令: cs道具（已过时)</summary><p>
 
 + 参数以空格间隔，参数数量为0-4
 + 如果参数为0，返回地图
@@ -133,14 +133,13 @@ poetry run core
 ## 丨当前进度
 
 + [x] 查询完美基本信息
-+ [x] 查询官匹基本信息
++ [ ] 查询官匹基本信息
 + [x] 查询steam饰品库存
 + [x] 查询好友码
 + [x] 查询完美平台对局记录
 + [x] 查询官匹对局记录
 + [x] 通过名称搜索用户
 + [x] 统一core的帮助图片
-+ [x] 查询道具点位（目前完成7个地图，未完成地图包括小镇、新两图，以及改版后小镇和大厦点位）
 + [x] gs站资源图片下载
 + [x] 5e等其他平台战绩查询(目前遇到core架构问题读取不出来5e平台)
 

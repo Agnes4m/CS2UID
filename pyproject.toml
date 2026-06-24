@@ -1,66 +1,74 @@
-[tool.black]
-line-length = 79
-target-version = ["py38", "py39", "py310"]
-include = '\.pyi?$'
-skip-string-normalization = true
-extend-exclude = '''
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 79
-length_sort = true
-skip_gitignore = true
-force_sort_within_sections = true
-extra_standard_library = ["typing_extensions"]
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-
 [build-system]
-requires = ["poetry-core>=1.2.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
-name = "CS2UID"
-version = "0.2.0"
-description = "基于GsCore, 支持OneBot(QQ)、OneBotV12、QQ频道、微信、KOOK（开黑啦）、Telegram（电报）、FeiShu（飞书）、DoDo、Discord的全功能HoshinoBot/NoneBot2/Koishi/yunzai/ZeroBot的CS2游戏机器人插件"
-authors = ["Agnes Digital <735803792@qq.com>"]
-license = "GPL-3.0-or-later"
-readme = "README.md"
-homepage = "https://github.com/Agnes4m/CS2UID"
-repository = "https://github.com/Agnes4m/CS2UID"
-documentation = "https://docs.sayu-bot.com/"
-packages = [
-    { include = "CS2UID" }
-]
-exclude = ["tests", "deploy"]
-
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/Agnes4m/CS2UID/issues"
-
-[tool.poetry.dependencies]
-python = "^3.8.1"
-[[tool.poetry.source]]
-name = "USTC"
-url = "https://pypi.mirrors.ustc.edu.cn/simple"
-priority = "default"
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^6.0.0"
-black = "^23.1.0"
-isort = "^5.12.0"
-pre-commit = "^2.21.0"
-pycln = "^2.1.2"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.2.0"
-pytest-asyncio = "^0.20.3"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "CS2UID"
 version = "0.2.0"
 description = "基于GsCore, 支持OneBot(QQ)、OneBotV12、QQ频道、微信、KOOK（开黑啦）、Telegram（电报）、FeiShu（飞书）、DoDo、Discord的全功能HoshinoBot/NoneBot2/Koishi/yunzai/ZeroBot的CS2游戏机器人插件"
 authors = [{ name = "Agnes4m", email = "Z735803792@163.com" }]
-dependencies = []
 readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+requires-python = ">=3.12"
+dependencies = [
+    "gsuid-core",
+    "httpx>=0.27",
+    "qrcode>=7.4",
+    "sqlmodel>=0.0.16",
+    "Pillow>=10.0",
+    "aiofiles>=23.2",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/Agnes4m/CS2UID/issues"
+"Homepage" = "https://github.com/Agnes4m/CS2UID"
+"Repository" = "https://github.com/Agnes4m/CS2UID"
+"Documentation" = "https://docs.sayu-bot.com/"
+
+[tool.hatch.build.targets.wheel]
+packages = ["CS2UID"]
+exclude = ["tests", "deploy"]
+
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+extend-exclude = ["test/test/py", "img", "CS2UID/texture2d"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line-too-long (依赖 ruff format)
+    "B008",  # function call in default argument (FastAPI / pydantic 场景)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["CS2UID", "gsuid_core"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.2",
+    "pytest-asyncio>=0.20",
+    "ruff>=0.15",
+    "pre-commit>=3.5",
+]
+
+[[tool.uv.index]]
+name = "USTC"
+url = "https://pypi.mirrors.ustc.edu.cn/simple"
+default = true
+
+[tool.uv.sources]
+gsuid-core = { path = "/home/jxhh/Apps/gsuid_core", editable = true }
