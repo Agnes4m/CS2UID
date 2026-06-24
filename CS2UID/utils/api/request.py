@@ -57,6 +57,16 @@ def _is_success_response(data: Any) -> bool:
     return code is None or code == 0
 
 
+def _check_api_error(data: Any) -> int | None:
+    """如果响应体中 statusCode != 0,返回 int 错误码;否则返回 None。"""
+    if not isinstance(data, dict):
+        return None
+    code = data.get("statusCode")
+    if isinstance(code, int) and code != 0:
+        return code
+    return None
+
+
 METHOD = Literal["GET", "POST"]
 
 _PF_HEADER: dict[str, str] = {
@@ -148,7 +158,9 @@ class PerfectWorldApi:
         data: dict[str, Any] | None = None,
         pwasteamid: str | None = None,
     ) -> dict[str, Any] | int:
-        merged_header = deepcopy(_PF_HEADER)
+        merged_header = (
+            deepcopy(header) if header is not None else deepcopy(_PF_HEADER)
+        )
         if pwasteamid:
             merged_header["pwasteamid"] = pwasteamid
         if json:
@@ -237,6 +249,10 @@ class PerfectWorldApi:
         if isinstance(data, int):
             return data
 
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+
         if _is_success_response(data):
             cs2_cache.set(
                 "pf", uid, "get_userdetail", data, ttl=300, season=season
@@ -264,6 +280,10 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
+
+        err = _check_api_error(data)
+        if err is not None:
+            return err
 
         if _is_success_response(data):
             cs2_cache.set("pf", uid, "get_steamgoods", data, ttl=300)
@@ -357,6 +377,10 @@ class PerfectWorldApi:
         )
         if isinstance(data, int):
             return data
+
+        err = _check_api_error(data)
+        if err is not None:
+            return err
 
         if _is_success_response(data):
             cs2_cache.set("pf", uid, "get_csgohomedetail", data, ttl=300)
@@ -505,7 +529,9 @@ class FiveEApi:
         data: dict[str, Any] | None = None,
         pwasteamid: str | None = None,
     ) -> dict[str, Any] | int:
-        merged_header = deepcopy(_5E_HEADER)
+        merged_header = (
+            deepcopy(header) if header is not None else deepcopy(_5E_HEADER)
+        )
         if pwasteamid:
             merged_header["pwasteamid"] = pwasteamid
         if json:
@@ -566,6 +592,10 @@ class FiveEApi:
         )
         if isinstance(data, int):
             return data
+
+        err = _check_api_error(data)
+        if err is not None:
+            return err
 
         if _is_success_response(data):
             cs2_cache.set("5e", domain, "get_user_detail", data, ttl=300)

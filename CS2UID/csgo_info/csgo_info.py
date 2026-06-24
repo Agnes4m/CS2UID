@@ -1,23 +1,21 @@
 import math
 
 # from pathlib import Path
-from typing import Union
-
 from PIL import Image, ImageDraw
 
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
-from gsuid_core.utils.image.image_tools import easy_paste, draw_pic_with_ring
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring, easy_paste
 
-from .utils import assign_rank, batch_download_images
-from .csgo_path import TEXTURE
+from ..utils.api.models import UserDetailData
 from ..utils.csgo_api import pf_api
 from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
-from ..utils.api.models import UserDetailData
-from ..utils.error_reply import not_msg, get_error
+from ..utils.error_reply import get_error, not_msg
+from .csgo_path import TEXTURE
+from .utils import assign_rank, batch_download_images
 
 
-async def get_csgo_info_img(uid: str, season: str = "") -> Union[str, bytes]:
+async def get_csgo_info_img(uid: str, season: str = "") -> str | bytes:
     detail = await pf_api.get_userdetail(uid, season)
 
     # logger.info(detail)
@@ -31,7 +29,11 @@ async def get_csgo_info_img(uid: str, season: str = "") -> Union[str, bytes]:
         logger.warning("获取用户详情失败！")
 
     if len(detail["data"]["scoreList"]) == 0:
-        return not_msg
+        from gsuid_core.utils.image.convert import text2pic
+
+        return await text2pic(
+            f"⚠️ {not_msg}\nSteamID: {uid}\n请确认该账号是否在完美平台打过天梯/对战",
+        )
     return await draw_csgo_info_img(detail["data"])
 
 
@@ -67,7 +69,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
 
     # 标题
     titel_img = Image.open(TEXTURE / "base" / "title_bg.png")
-    head = downloaded_images.get(avatar, Image.new("RGBA", (200, 600), (0, 0, 0, 255)))
+    head = downloaded_images.get(
+        avatar, Image.new("RGBA", (200, 600), (0, 0, 0, 255))
+    )
     round_head = await draw_pic_with_ring(head, 100)
 
     place_avatar_in_title(titel_img, round_head, name, uid)
@@ -96,7 +100,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             .resize((120, 120))
         )
         rank_draw = ImageDraw.Draw(rank_img)
-        rank_draw.text((58, 58), rank[0], (255, 255, 255, 255), csgo_font_30, "mm")
+        rank_draw.text(
+            (58, 58), rank[0], (255, 255, 255, 255), csgo_font_30, "mm"
+        )
     else:
         if detail["stars"] >= 50:
             pj_img = "3.png"
@@ -106,7 +112,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             pj_img = "1.png"
 
         rank_img = (
-            Image.open(TEXTURE / "rank" / pj_img).convert("RGBA").resize((100, 120))
+            Image.open(TEXTURE / "rank" / pj_img)
+            .convert("RGBA")
+            .resize((100, 120))
         )
 
     easy_paste(main2_img, rank_img, (100, 100), "cc")
@@ -247,7 +255,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             csgo_font_30,
             "mm",
         )
-        map_draw.text((260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm")
+        map_draw.text(
+            (260, 120), "胜率", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
         avg_rat = usr_map["ratingSum"] / usr_map["totalMatch"]
         adr = usr_map["totalAdr"] / usr_map["totalMatch"]
         map_draw.text(
@@ -257,11 +267,10 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             csgo_font_30,
             "mm",
         )
-        map_draw.text((380, 120), "RT/ADR", (255, 255, 255, 255), csgo_font_20, "mm")
-        if i % 2 == 0:
-            site_x = 20
-        else:
-            site_x = 520
+        map_draw.text(
+            (380, 120), "RT/ADR", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
+        site_x = 20 if i % 2 == 0 else 520
         site_y = 1090 + 200 * (i // 2 - 1)
         img.paste(map_img, (site_x, site_y), map_img)
 
@@ -276,7 +285,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     for i in range(min(8, len(detail["hotWeapons2"]))):
         usr_weapon = detail["hotWeapons2"][i]
 
-        base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize((500, 110))
+        base_img = Image.open(TEXTURE / "base" / "weapon_bg.png").resize(
+            (500, 110)
+        )
         weapon_img = downloaded_images.get(
             usr_weapon["image"], Image.new("RGBA", (200, 600), (0, 0, 0, 255))
         )
@@ -333,12 +344,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             if usr_weapon["headshotRate"] is not None
             else 0
         )
-        weapon_draw.text((430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm")
+        weapon_draw.text(
+            (430, 31), f"{hdr}", (255, 255, 255, 255), csgo_font_20, "mm"
+        )
 
-        if i % 2 == 0:
-            site_x = 0
-        else:
-            site_x = 500
+        site_x = 0 if i % 2 == 0 else 500
         site_y = 1510 + 120 * (i // 2 - 1)
         img.paste(base_img, (site_x, site_y), base_img)
 
@@ -368,12 +378,16 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             [(padding, height - padding), (width - padding, height - padding)],
             fill="black",
         )
-        draw.line([(padding, padding), (padding, height - padding)], fill="black")
+        draw.line(
+            [(padding, padding), (padding, height - padding)], fill="black"
+        )
 
         for i in range(y_start, y_end + 1, 10):
             y = height - padding - (i - y_start) * scale
             draw.line([(padding - 5, y), (padding, y)], fill="black")
-            draw.text((padding - 50, y - 15), str(i), fill="white", font=csgo_font_20)
+            draw.text(
+                (padding - 50, y - 15), str(i), fill="white", font=csgo_font_20
+            )
 
         for i in range(len(score_list)):
             x = padding + i * (width - 2 * padding) / (len(score_list) - 1)
@@ -395,7 +409,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
             points.append((x, y))
 
             draw.ellipse((x - 6, y - 6, x + 6, y + 6), fill="blue")
-            draw.text((x - 15, y - 30), str(score), fill="white", font=csgo_font_20)
+            draw.text(
+                (x - 15, y - 30), str(score), fill="white", font=csgo_font_20
+            )
 
         draw.line(points, fill="yellow", width=3)
         img.paste(img_line, (0, 1900), img_line)
@@ -410,7 +426,9 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
         "snipe": "狙杀",
         "prop": "道具",
     }
-    filtered_data = {selected_keys[key]: filter_data[key] for key in selected_keys}
+    filtered_data = {
+        selected_keys[key]: filter_data[key] for key in selected_keys
+    }
     width = 400
     height = 400
     padding = 50
@@ -424,9 +442,13 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
     angle = 2 * math.pi / num_vars
     points = []
 
-    for i, (label, value) in enumerate(filtered_data.items()):
-        x = center[0] + radius * (value / 10) * math.cos(i * angle - math.pi / 2)
-        y = center[1] + radius * (value / 10) * math.sin(i * angle - math.pi / 2)
+    for i, (_label, value) in enumerate(filtered_data.items()):
+        x = center[0] + radius * (value / 10) * math.cos(
+            i * angle - math.pi / 2
+        )
+        y = center[1] + radius * (value / 10) * math.sin(
+            i * angle - math.pi / 2
+        )
         points.append((x, y))
 
         draw.line([center, (x, y)], fill="black", width=2)
@@ -443,11 +465,11 @@ async def draw_csgo_info_img(detail: UserDetailData) -> bytes | str:
 
     draw.line(points + [points[0]], fill="blue", width=2)
 
-    for i, (label, value) in enumerate(filtered_data.items()):
+    for i, (_label, value) in enumerate(filtered_data.items()):
         x = center[0] + (radius + 30) * math.cos(i * angle - math.pi / 2)
         y = center[1] + (radius + 30) * math.sin(i * angle - math.pi / 2)
 
-        text = f"{value:.2f}\n{label}"
+        text = f"{value:.2f}\n{_label}"
 
         text_size = draw.textbbox((0, 0), text, font=csgo_font_20)
         text_width = text_size[2] - text_size[0]
@@ -483,7 +505,9 @@ def place_avatar_in_title(
     head_draw.line([(250, 150), (550, 150)], fill="white", width=2)
 
 
-async def add_summary_and_stars(titel_img: Image.Image, detail: UserDetailData) -> None:
+async def add_summary_and_stars(
+    titel_img: Image.Image, detail: UserDetailData
+) -> None:
     """在标题图像中添加评价和星级"""
     pj_img = Image.open(TEXTURE / "base" / "blue.png")
     pj_text = detail["summary"]
