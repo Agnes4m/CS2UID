@@ -118,13 +118,27 @@ def _draw_match_card(
     if t1_logo_url:
         logo1 = logos.get(t1_logo_url)
         if logo1:
+            lx = card_x + PADDING
+            ly = y + 40
+            draw.rounded_rectangle(
+                (lx - 2, ly - 2, lx + LOGO_SIZE[0] + 2, ly + LOGO_SIZE[1] + 2),
+                radius=8,
+                fill=(255, 255, 255, 240),
+            )
             logo1_resized = logo1.resize(LOGO_SIZE)
-            img.paste(logo1_resized, (card_x + PADDING, y + 40), logo1_resized)
+            img.paste(logo1_resized, (lx, ly), logo1_resized)
     if t2_logo_url:
         logo2 = logos.get(t2_logo_url)
         if logo2:
+            lx = cx + 75
+            ly = y + 40
+            draw.rounded_rectangle(
+                (lx - 2, ly - 2, lx + LOGO_SIZE[0] + 2, ly + LOGO_SIZE[1] + 2),
+                radius=8,
+                fill=(255, 255, 255, 240),
+            )
             logo2_resized = logo2.resize(LOGO_SIZE)
-            img.paste(logo2_resized, (cx + 75, y + 40), logo2_resized)
+            img.paste(logo2_resized, (lx, ly), logo2_resized)
 
     draw.text(
         (card_x + PADDING + 90, y + 48),
@@ -149,9 +163,15 @@ def _draw_match_card(
     )
 
 
-async def get_csgo_event_img(dto_list: list) -> bytes:
-    now = datetime.now(tz_cn)
-    date_str = now.strftime("%m-%d")
+async def get_csgo_event_img(dto_list: list, query_date: str = "") -> bytes:
+    if query_date:
+        parts = query_date.split("-")
+        if len(parts) >= 2:
+            date_str = f"{parts[1]}-{parts[2]}"
+        else:
+            date_str = query_date[-5:]
+    else:
+        date_str = datetime.now(tz_cn).strftime("%m-%d")
 
     events: dict[str, list] = {}
     for m in dto_list:

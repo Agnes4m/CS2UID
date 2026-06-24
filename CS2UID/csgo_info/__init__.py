@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta, timezone
 from typing import cast
 
@@ -167,11 +168,65 @@ async def send_csgo_search(bot: Bot, ev: Event):
 tz_cn = timezone(timedelta(hours=8))
 sv_event_match = SV("CS2赛事")
 
+_DAY_KEYS = {
+    "今天": 0,
+    "今日": 0,
+    "昨天": -1,
+    "昨日": -1,
+    "前天": -2,
+    "前日": -2,
+    "明天": 1,
+    "明日": 1,
+    "后天": 2,
+    "后日": 2,
+}
+_RE_DATE = re.compile(r"(\d{1,2})[月/-](\d{1,2})(?:日)?$")
+
+
+def _clean_text(text: str) -> str:
+    """去除 @ 前缀及空白。"""
+    # 删除 @xxx 格式
+    text = re.sub(r"@\S+\s*", "", text)
+    return text.strip()
+
+
+def _parse_date(text: str) -> str | None:
+    text = _clean_text(text)
+    if not text:
+        now = datetime.now(tz_cn)
+        return now.strftime("%Y-%m-%d 00:00:00")
+
+    offset = _DAY_KEYS.get(text)
+    if offset is not None:
+        dt = datetime.now(tz_cn) + timedelta(days=offset)
+        return dt.strftime("%Y-%m-%d 00:00:00")
+    for key, offset in _DAY_KEYS.items():
+        if key in text:
+            dt = datetime.now(tz_cn) + timedelta(days=offset)
+            return dt.strftime("%Y-%m-%d 00:00:00")
+
+    m = _RE_DATE.search(text)
+    if m:
+        month, day = int(m.group(1)), int(m.group(2))
+        year = datetime.now(tz_cn).year
+        try:
+            dt = datetime(year, month, day, tzinfo=tz_cn)
+            return dt.strftime("%Y-%m-%d 00:00:00")
+        except ValueError:
+            return None
+
+    return None
+
 
 @sv_event_match.on_command(("赛事", "比赛"), block=True)
 async def send_event_match_msg(bot: Bot, ev: Event):
-    now = datetime.now(tz_cn).strftime("%Y-%m-%d 00:00:00")
-    resp = await pf_api.get_event_match_list(now)
+    date_str = _parse_date(ev.text)
+    if date_str is None:
+        return await try_send(
+            bot, "日期格式错误，支持: 今天/昨天/前天/明天/后天/6月24日"
+        )
+
+    resp = await pf_api.get_event_match_list(date_str)
     if isinstance(resp, int):
         return await try_send(bot, get_error(resp))
 
@@ -179,7 +234,7 @@ async def send_event_match_msg(bot: Bot, ev: Event):
         resp.get("result", {}).get("matchResponse", {}).get("dtoList", [])
     )
     if not dto_list:
-        return await try_send(bot, "今天暂无赛事对局")
+        return await try_send(bot, f"{date_str[:10]} 暂无赛事对局")
 
-    img = await get_csgo_event_img(dto_list)
+    img = await get_csgo_event_img(dto_list, date_str[:10])
     await try_send(bot, img)
