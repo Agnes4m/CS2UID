@@ -16,7 +16,7 @@ from ..utils.database.models import CS2Bind
 from ..utils.error_reply import UID_HINT, get_error, try_send
 from ..utils.platform import resolve_uid_and_platform
 from .csgo_5e import get_csgo_5einfo_img
-from .csgo_event import get_csgo_event_img
+from .csgo_event import get_csgo_calendar_img, get_csgo_event_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_info import get_csgo_info_img
 from .csgo_match import get_csgo_match_img
@@ -218,8 +218,8 @@ def _parse_date(text: str) -> str | None:
     return None
 
 
-@sv_event_match.on_command(("赛事", "比赛"), block=True)
-async def send_event_match_msg(bot: Bot, ev: Event):
+@sv_event_match.on_command(("赛程",), block=True)
+async def send_event_schedule_msg(bot: Bot, ev: Event):
     date_str = _parse_date(ev.text)
     if date_str is None:
         return await try_send(
@@ -237,4 +237,28 @@ async def send_event_match_msg(bot: Bot, ev: Event):
         return await try_send(bot, f"{date_str[:10]} 暂无赛事对局")
 
     img = await get_csgo_event_img(dto_list, date_str[:10])
+    await try_send(bot, img)
+
+
+sv_event_calendar = SV("CS2赛事日历")
+
+
+@sv_event_calendar.on_command(("赛事", "比赛"), block=True)
+async def send_event_calendar_msg(bot: Bot, ev: Event):
+    now = datetime.now(tz_cn)
+    start = now.strftime("%Y-%m")
+    end_month = now.month + 5
+    end_year = now.year + (end_month - 1) // 12
+    end_month = (end_month - 1) % 12 + 1
+    end = f"{end_year}-{end_month:02d}"
+
+    resp = await pf_api.get_event_card_detail(start, end)
+    if isinstance(resp, int):
+        return await try_send(bot, get_error(resp))
+
+    groups = resp.get("result", [])
+    if not groups:
+        return await try_send(bot, "暂无赛事日历")
+
+    img = await get_csgo_calendar_img(groups, start, end)
     await try_send(bot, img)

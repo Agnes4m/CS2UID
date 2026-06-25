@@ -9,7 +9,9 @@ from gsuid_core.logger import logger
 from ..cache import cs2_cache
 from .api import (
     CsgoFall,
+    EventCardDetailAPI,
     EventMatchListAPI,
+    EventVrsInvitesAPI,
     HomeDetailAPI,
     HomePageAPI,
     HomeSeason,
@@ -28,7 +30,9 @@ from .api import (
 )
 from .models import (
     AccountInfo,
+    EventCardDetailResponse,
     EventMatchListResponse,
+    EventVrsInvitesResponse,
     MatchAdvance,
     MatchTitel,
     MatchTotal,
@@ -555,6 +559,81 @@ class PerfectWorldApi:
         if err is not None:
             return err
         return cast(EventMatchListResponse, data)
+
+    async def get_event_card_detail(
+        self, start_date: str, end_date: str
+    ) -> EventCardDetailResponse | int:
+        """获取赛事日历(按月分组)。"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["token"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["sec-ch-ua-platform"] = "Android"
+        header["sec-ch-ua"] = (
+            '"Not)A;Brand";v="8", "Chromium";v="138", "Android WebView";v="138"'
+        )
+        header["sec-ch-ua-mobile"] = "?1"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        data = await self._pf_request(
+            EventCardDetailAPI,
+            header=header,
+            params={"startDate": start_date, "endDate": end_date},
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(EventCardDetailResponse, data)
+
+    async def get_vrs_invites(self) -> EventVrsInvitesResponse | int:
+        """获取 VRS 邀请赛事列表。"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["token"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["sec-ch-ua-platform"] = "Android"
+        header["sec-ch-ua"] = (
+            '"Not)A;Brand";v="8", "Chromium";v="138", "Android WebView";v="138"'
+        )
+        header["sec-ch-ua-mobile"] = "?1"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        data = await self._pf_request(
+            EventVrsInvitesAPI,
+            header=header,
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(EventVrsInvitesResponse, data)
 
 
 class FiveEApi:

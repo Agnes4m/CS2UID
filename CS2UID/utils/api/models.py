@@ -1052,3 +1052,61 @@ class EventMatchListResponse(TypedDict):
     code: int
     message: str
     result: EventMatchResult
+
+
+class EventCardRegion(TypedDict):
+    id: int | None
+    location: str | None
+    locationCn: str | None
+    image: str | None
+
+
+class EventCardDetailDTO(TypedDict):
+    eventId: int
+    name: str
+    startTime: int
+    region: EventCardRegion | None
+    endTime: int
+    prize: str
+    thumbnail: str
+    teamNumber: int
+    level: str | None
+    logo: str
+    teamDTOList: list[EventTeamDTO]
+    sourceEventInfoList: list[Any]
+    targetEventInfoList: list[Any]
+
+
+class EventMonthCardGroup(TypedDict):
+    matchDate: str
+    eventCardDetails: list[EventCardDetailDTO]
+
+
+class EventCardDetailResponse(TypedDict):
+    code: int
+    message: str
+    result: list[EventMonthCardGroup]
+
+
+class VrsInviteSpotBreakdown(TypedDict):
+    count: int
+    label: str
+    regionClass: str
+
+
+class VrsInviteEvent(TypedDict):
+    eventId: int
+    eventHref: str
+    valveRankingEventUrl: str
+    name: str
+    eventNameAlt: str
+    invitesSummary: str
+    inviteDateText: str
+    spotBreakdown: list[VrsInviteSpotBreakdown]
+    logoUrl: str | None
+
+
+class EventVrsInvitesResponse(TypedDict):
+    code: int
+    message: str
+    result: list[VrsInviteEvent]

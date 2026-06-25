@@ -78,10 +78,23 @@
         "need_ck": true,
         "need_sk": false,
         "need_admin": false
+      }
+    ]
+  },
+  "赛事服务": {
+    "desc": "查询CS2赛事信息和赛程",
+    "data": [
+      {
+        "name": "赛程",
+        "desc": "查询某天的赛事对局列表，支持今天/昨天/明天/日期",
+        "eg": "赛程 今天",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
       },
       {
         "name": "赛事",
-        "desc": "查询今日CS2赛事安排",
+        "desc": "查询CS2赛事日历(近半年)，包含赛事详情和参赛队伍",
         "eg": "赛事",
         "need_ck": false,
         "need_sk": false,

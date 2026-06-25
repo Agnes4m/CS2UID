@@ -26,6 +26,10 @@ LoginAPI = "https://passport.pwesports.cn/account/login"
 
 # event-center (get)
 EventMatchListAPI = f"{STEAMCNHOST}/eventcenter/app/csgo/event/getMatchList"
+EventCardDetailAPI = f"{STEAMCNHOST}/eventcenter/app/csgo/event/card/detail"
+EventVrsInvitesAPI = (
+    f"{STEAMCNHOST}/eventcenter/app/csgo/event/vrs/invites/events"
+)
 SearchAPI = "https://app.5eplay.com/api/csgo/data/search"
 HomeDetailAPI = (
     "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"

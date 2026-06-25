@@ -7,6 +7,8 @@ from PIL import Image, ImageDraw
 from gsuid_core.utils.image.convert import convert_img
 
 from ..utils.csgo_font import (
+    csgo_font_14,
+    csgo_font_18,
     csgo_font_20,
     csgo_font_24,
     csgo_font_30,
@@ -109,6 +111,14 @@ def _draw_match_card(
     draw.text(
         (card_x + PADDING + 240, y + 10), bo, fill=TEXT_GRAY, font=csgo_font_20
     )
+    match_id = m.get("matchId", "")
+    if match_id:
+        draw.text(
+            (card_x + PADDING + 310, y + 10),
+            f"ID: {match_id}",
+            fill=TEXT_GREEN,
+            font=csgo_font_20,
+        )
 
     t1_color = WINNER_GOLD if t1_win else TEXT_WHITE
     t2_color = WINNER_GOLD if t2_win else TEXT_WHITE
@@ -140,17 +150,21 @@ def _draw_match_card(
             logo2_resized = logo2.resize(LOGO_SIZE)
             img.paste(logo2_resized, (lx, ly), logo2_resized)
 
+    t1_full = f"{t1_prefix}{t1_name}"
+    t2_full = f"{t2_prefix}{t2_name}"
+    t1_font = csgo_font_18 if len(t1_name) > 16 else csgo_font_24
+    t2_font = csgo_font_18 if len(t2_name) > 16 else csgo_font_24
     draw.text(
         (card_x + PADDING + 90, y + 48),
-        f"{t1_prefix}{t1_name}",
+        t1_full,
         fill=t1_color,
-        font=csgo_font_24,
+        font=t1_font,
     )
     draw.text(
         (cx + 165, y + 48),
-        f"{t2_prefix}{t2_name}",
+        t2_full,
         fill=t2_color,
-        font=csgo_font_24,
+        font=t2_font,
     )
 
     score_color = TEXT_YELLOW if is_finished else TEXT_WHITE
@@ -202,7 +216,8 @@ async def get_csgo_event_img(dto_list: list, query_date: str = "") -> bytes:
     for _, matches in events.items():
         total_h += HEADER_H + 10
         total_h += len(matches) * (CARD_H + 8)
-    total_h += 40
+    FOOTER_H = 60
+    total_h += FOOTER_H
 
     img = Image.new("RGBA", (WIDTH, total_h), BG_COLOR)
     draw = ImageDraw.Draw(img)
@@ -244,6 +259,256 @@ async def get_csgo_event_img(dto_list: list, query_date: str = "") -> bytes:
         for m in matches:
             _draw_match_card(img, draw, m, downloaded, y)
             y += CARD_H + 8
+
+    footer = Image.open(TEXTURE / "base" / "footer.png").resize((WIDTH, 50))
+    img.paste(footer, (0, total_h - 55), footer)
+
+    result = BytesIO()
+    img.save(result, format="PNG")
+    return await convert_img(result.getvalue())
+
+
+_EVENT_LOGO_SIZE = (50, 50)
+_TEAM_LOGO_SM = (36, 36)
+_CAL_CARD_PAD = 16
+
+
+def _format_dt(ms: int) -> str:
+    return (
+        datetime.fromtimestamp(ms / 1000, tz_cn).strftime("%m-%d")
+        if ms
+        else "TBD"
+    )
+
+
+def _draw_event_card(
+    img: Image.Image,
+    draw: ImageDraw,
+    evt: dict,
+    logos: dict[str, Image.Image],
+    y: int,
+) -> int:
+    name = evt.get("name", "未知")
+    level = evt.get("level") or ""
+    prize = evt.get("prize", "")
+    start = _format_dt(evt.get("startTime", 0))
+    end = _format_dt(evt.get("endTime", 0))
+    logo_url = evt.get("logo", "")
+    teams = evt.get("teamDTOList", [])
+    event_id = evt.get("eventId", "")
+    region = evt.get("region") or {}
+    location = region.get("location") or ""
+
+    card_x = MARGIN
+    card_w = WIDTH - 2 * MARGIN
+
+    team_lines = max(1, (len(teams) + 3) // 4) if teams else 0
+    card_h = 120 + team_lines * 46
+
+    _rounded_rect(
+        draw, (card_x, y, card_x + card_w, y + card_h), CARD_RADIUS, CARD_BG
+    )
+    draw.rounded_rectangle(
+        (card_x, y, card_x + card_w, y + card_h),
+        radius=CARD_RADIUS,
+        outline=CARD_BORDER,
+        width=1,
+    )
+
+    elx = card_x + _CAL_CARD_PAD
+    ely = y + _CAL_CARD_PAD
+    if logo_url:
+        ev_logo = logos.get(logo_url)
+        if ev_logo:
+            el_resized = ev_logo.resize(_EVENT_LOGO_SIZE)
+            draw.rounded_rectangle(
+                (
+                    elx - 2,
+                    ely - 2,
+                    elx + _EVENT_LOGO_SIZE[0] + 2,
+                    ely + _EVENT_LOGO_SIZE[1] + 2,
+                ),
+                radius=6,
+                fill=(255, 255, 255, 240),
+            )
+            img.paste(el_resized, (elx, ely), el_resized)
+
+    name_x = elx + _EVENT_LOGO_SIZE[0] + 12 if logo_url else elx
+    draw.text((name_x, ely), name, fill=TEXT_WHITE, font=csgo_font_24)
+
+    if level:
+        level_x = (
+            name_x + draw.textbbox((0, 0), name, font=csgo_font_24)[2] + 10
+        )
+        lv_color = TEXT_YELLOW if level in ("Major", "T1") else TEXT_BLUE
+        draw.text((level_x, ely + 2), level, fill=lv_color, font=csgo_font_18)
+        if level in ("Major", "T1"):
+            hot_x = (
+                level_x
+                + draw.textbbox((0, 0), level, font=csgo_font_18)[2]
+                + 6
+            )
+            draw.text((hot_x, ely + 2), "🔥", fill=TEXT_RED, font=csgo_font_18)
+
+    info_y1 = ely + 28
+    range_text = f"📅 {start} ~ {end}"
+    draw.text((name_x, info_y1), range_text, fill=TEXT_BLUE, font=csgo_font_20)
+    if location:
+        loc_x = (
+            name_x
+            + draw.textbbox((0, 0), range_text, font=csgo_font_20)[2]
+            + 16
+        )
+        draw.text(
+            (loc_x, info_y1),
+            f"🏟 {location}",
+            fill=TEXT_GREEN,
+            font=csgo_font_20,
+        )
+    info_y2 = ely + 52
+    id_text = f"ID: {event_id}"
+    if prize:
+        draw.text(
+            (name_x, info_y2),
+            f"💰 {prize}",
+            fill=TEXT_YELLOW,
+            font=csgo_font_20,
+        )
+        pw = draw.textbbox((0, 0), f"💰 {prize}", font=csgo_font_20)[2]
+        draw.text(
+            (name_x + pw + 16, info_y2),
+            id_text,
+            fill=(255, 150, 100),
+            font=csgo_font_20,
+        )
+    else:
+        draw.text(
+            (name_x, info_y2),
+            id_text,
+            fill=(255, 150, 100),
+            font=csgo_font_20,
+        )
+
+    if teams:
+        team_y = y + 96
+        for i, team in enumerate(teams):
+            tx = card_x + _CAL_CARD_PAD + (i % 4) * 210
+            ty = team_y + (i // 4) * 46
+            t_logo_url = team.get("logoBlack") or team.get("logoWhite")
+            if t_logo_url:
+                t_logo = logos.get(t_logo_url)
+                if t_logo:
+                    t_resized = t_logo.resize(_TEAM_LOGO_SM)
+                    draw.rounded_rectangle(
+                        (
+                            tx - 1,
+                            ty - 1,
+                            tx + _TEAM_LOGO_SM[0] + 1,
+                            ty + _TEAM_LOGO_SM[1] + 1,
+                        ),
+                        radius=4,
+                        fill=(255, 255, 255, 240),
+                    )
+                    img.paste(t_resized, (tx, ty), t_resized)
+            t_name = team.get("name", "")
+            t_font = csgo_font_14 if len(t_name) > 12 else csgo_font_18
+            draw.text(
+                (tx + _TEAM_LOGO_SM[0] + 6, ty + 6),
+                t_name,
+                fill=TEXT_GRAY,
+                font=t_font,
+            )
+
+    return card_h + 8
+
+
+async def get_csgo_calendar_img(groups: list, start: str, end: str) -> bytes:
+    logo_urls: list[str] = []
+    for group in groups:
+        for evt in group.get("eventCardDetails", []):
+            logo_url = evt.get("logo", "")
+            if logo_url:
+                logo_urls.append(logo_url)
+            for team in evt.get("teamDTOList", []):
+                t_logo = team.get("logoBlack") or team.get("logoWhite")
+                if t_logo:
+                    logo_urls.append(t_logo)
+
+    downloaded: dict[str, Image.Image] = {}
+    if logo_urls:
+        results = await asyncio.gather(
+            *[_download_img(url) for url in set(logo_urls)],
+            return_exceptions=True,
+        )
+        for url, img_obj in zip(set(logo_urls), results, strict=True):
+            if isinstance(img_obj, Image.Image):
+                downloaded[url] = (
+                    img_obj.convert("RGBA")
+                    if img_obj.mode != "RGBA"
+                    else img_obj
+                )
+
+    total_h = TITLE_H + 20
+    for group in groups:
+        details = group.get("eventCardDetails", [])
+        if not details:
+            continue
+        total_h += HEADER_H + 10
+        for evt in details:
+            teams = evt.get("teamDTOList", [])
+            team_lines = max(1, (len(teams) + 3) // 4) if teams else 0
+            total_h += 120 + team_lines * 46 + 8
+    FOOTER_H = 60
+    total_h += FOOTER_H
+
+    img = Image.new("RGBA", (WIDTH, total_h), BG_COLOR)
+    draw = ImageDraw.Draw(img)
+
+    bg_img = Image.open(TEXTURE / "bg" / "1.jpg").resize((WIDTH, total_h))
+    bg_img.putalpha(80)
+    img.paste(bg_img, (0, 0), bg_img)
+
+    draw.text((MARGIN, 30), "CS2 赛事日历", fill=TEXT_WHITE, font=csgo_font_36)
+    draw.text(
+        (MARGIN, 75),
+        f"{start} ~ {end}",
+        fill=TEXT_GRAY,
+        font=csgo_font_20,
+    )
+
+    y = TITLE_H
+    for group in groups:
+        month = group.get("matchDate", "")
+        details = group.get("eventCardDetails", [])
+        if not details:
+            continue
+
+        _rounded_rect(
+            draw,
+            (MARGIN, y, WIDTH - MARGIN, y + HEADER_H),
+            CARD_RADIUS,
+            (40, 45, 55),
+        )
+        draw.text(
+            (MARGIN + PADDING, y + 12),
+            month,
+            fill=TEXT_WHITE,
+            font=csgo_font_30,
+        )
+        draw.text(
+            (WIDTH - MARGIN - PADDING - 100, y + 15),
+            f"{len(details)} 赛事",
+            fill=TEXT_GRAY,
+            font=csgo_font_20,
+        )
+        y += HEADER_H + 10
+
+        for evt in details:
+            card_h = _draw_event_card(img, draw, evt, downloaded, y)
+            y += card_h
+
+    footer = Image.open(TEXTURE / "base" / "footer.png").resize((WIDTH, 50))
+    img.paste(footer, (0, total_h - 55), footer)
 
     result = BytesIO()
     img.save(result, format="PNG")
