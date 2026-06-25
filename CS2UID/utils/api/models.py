@@ -1148,3 +1148,107 @@ class EventListResponse(TypedDict):
     code: int
     message: str
     result: EventListResponseResult
+
+
+class EventMatchMapDTO(TypedDict):
+    nameEn: str
+    nameZh: str
+    image: str
+
+
+class EventMatchPlayer(TypedDict):
+    id: int
+    playerId: int
+    steamId: str
+    teamId: int
+    name: str
+    image: str
+    country: str | None
+    countryImage: str | None
+    coach: bool
+
+
+class EventMatchPlayerStats(TypedDict):
+    kills: int
+    deaths: int
+    assists: int
+    flashassists: int
+    kast: float
+    kddiff: int
+    adr: float
+    rating: float
+    hskills: int
+    openingKills: int
+    openingDeaths: int
+    playerDTO: EventMatchPlayer
+    mkRating: float | None
+
+
+class EventMatchStats(TypedDict):
+    mapDTO: EventMatchMapDTO
+    score1: int
+    score2: int
+    team1rating: float
+    team2rating: float
+    team1firstkills: int
+    team2firstkills: int
+    team1clutcheswon: int
+    team2clutcheswon: int
+    winnerTeamId: int
+    team1PlayerStatsDTOList: list[EventMatchPlayerStats]
+    team2PlayerStatsDTOList: list[EventMatchPlayerStats]
+    team1PlayerStatsCSiceDTOList: list[EventMatchPlayerStats]
+    team2PlayerStatsCSiceDTOList: list[EventMatchPlayerStats]
+    team1PlayerStatsCTSiceDTOList: list[EventMatchPlayerStats]
+    team2PlayerStatsCTSiceDTOList: list[EventMatchPlayerStats]
+
+
+class EventMatchDetailItem(TypedDict):
+    match: dict  # wraps match detail
+
+
+class EventMatchDetailResponse(TypedDict):
+    code: int
+    message: str
+    result: EventMatchDetailItem
+
+
+class PlayerAnalysisStats(TypedDict):
+    playerId: int
+    name: str
+    avatar: str
+    kast: str
+    kpr: float
+    dpr: float
+    adr: float
+    impact: Any
+    rating: float
+
+
+class TeamPlayerAnalysis(TypedDict):
+    teamId: int
+    playerStatsList: list[PlayerAnalysisStats]
+
+
+class EventPlayerAnalysisResponse(TypedDict):
+    code: int
+    message: str
+    result: list[TeamPlayerAnalysis]
+
+
+class MatchShareData(TypedDict):
+    namiId: int
+    title: str
+    summary: str
+    imgUrl: str
+    homeName: str
+    awayName: str
+    eventName: str
+    score1: int | None
+    score2: int | None
+
+
+class MatchShareResponse(TypedDict):
+    code: int
+    message: str
+    result: MatchShareData

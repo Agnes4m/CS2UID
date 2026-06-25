@@ -12,6 +12,7 @@ UserDetailAPI = f"{APIHOST}/api/csgo/home/pvp/detailStats"
 UserHomematchApi = f"{APIHOST}/api/csgo/home/match/list"
 UserHomeApi = f"{APIHOST}/api/csgo/home/official/detailStats"
 UserSearchApi = "https://appengine.wmpvp.com/steamcn/app/search/user"
+MatchShareAPI = "https://appengine.wmpvp.com/steamcn/live/getMatchShare"
 MatchDetailAPI = f"{APIHOST}/api/v1/csgo/match"
 
 # get
@@ -32,6 +33,12 @@ EventVrsInvitesAPI = (
 )
 ACTIVITY_HOST = "https://appactivity.wmpvp.com"
 EventListAPI = f"{ACTIVITY_HOST}/steamcn/app/csgo/event/getEventList"
+EventMatchDetailAPI = (
+    f"{STEAMCNHOST}/eventcenter/app/csgo/event/getMatchDetail"
+)
+EventPlayerAnalysisAPI = (
+    f"{STEAMCNHOST}/eventcenter/app/csgo/event/getPlayerAnalysisByMatch"
+)
 SearchAPI = "https://app.5eplay.com/api/csgo/data/search"
 HomeDetailAPI = (
     "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"

@@ -16,7 +16,11 @@ from ..utils.database.models import CS2Bind
 from ..utils.error_reply import UID_HINT, get_error, try_send
 from ..utils.platform import resolve_uid_and_platform
 from .csgo_5e import get_csgo_5einfo_img
-from .csgo_event import get_csgo_event_img, get_csgo_eventlist_img
+from .csgo_event import (
+    get_csgo_event_img,
+    get_csgo_eventlist_img,
+    get_csgo_match_analysis_img,
+)
 from .csgo_goods import get_csgo_goods_img
 from .csgo_info import get_csgo_info_img
 from .csgo_match import get_csgo_match_img
@@ -216,6 +220,21 @@ def _parse_date(text: str) -> str | None:
 
 @sv_event_match.on_command(("赛程",), block=True)
 async def send_event_schedule_msg(bot: Bot, ev: Event):
+    text = _clean_text(ev.text)
+    if text.isdigit():
+        match_id = int(text)
+        detail = await pf_api.get_event_match_detail(match_id)
+        if isinstance(detail, int):
+            return await try_send(bot, get_error(detail))
+        analysis = await pf_api.get_player_analysis(match_id)
+        if isinstance(analysis, int):
+            return await try_send(bot, get_error(analysis))
+        share = await pf_api.get_match_share(match_id)
+        if isinstance(share, int):
+            share = None
+        img = await get_csgo_match_analysis_img(detail, analysis, share)
+        return await try_send(bot, img)
+
     date_str = _parse_date(ev.text)
     if date_str is None:
         return await try_send(

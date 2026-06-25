@@ -11,7 +11,9 @@ from .api import (
     CsgoFall,
     EventCardDetailAPI,
     EventListAPI,
+    EventMatchDetailAPI,
     EventMatchListAPI,
+    EventPlayerAnalysisAPI,
     EventVrsInvitesAPI,
     HomeDetailAPI,
     HomePageAPI,
@@ -19,6 +21,7 @@ from .api import (
     LoginAPI,
     MatchAdvanceAPI,
     MatchDetailAPI,
+    MatchShareAPI,
     MatchTitelAPI,
     SearchAPI,
     UserDetailAPI,
@@ -33,9 +36,12 @@ from .models import (
     AccountInfo,
     EventCardDetailResponse,
     EventListResponse,
+    EventMatchDetailResponse,
     EventMatchListResponse,
+    EventPlayerAnalysisResponse,
     EventVrsInvitesResponse,
     MatchAdvance,
+    MatchShareResponse,
     MatchTitel,
     MatchTotal,
     SteamGetRequest,
@@ -636,6 +642,121 @@ class PerfectWorldApi:
         if err is not None:
             return err
         return cast(EventVrsInvitesResponse, data)
+
+    async def get_event_match_detail(
+        self, match_id: int
+    ) -> EventMatchDetailResponse | int:
+        """获取赛事对局详情(含地图、选手数据)。"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["token"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["sec-ch-ua-platform"] = "Android"
+        header["sec-ch-ua"] = (
+            '"Not)A;Brand";v="8", "Chromium";v="138", "Android WebView";v="138"'
+        )
+        header["sec-ch-ua-mobile"] = "?1"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        data = await self._pf_request(
+            EventMatchDetailAPI,
+            header=header,
+            params={"matchId": match_id},
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(EventMatchDetailResponse, data)
+
+    async def get_player_analysis(
+        self, match_id: int
+    ) -> EventPlayerAnalysisResponse | int:
+        """获取对局选手分析数据(KAST/KPR/ADR/rating)。"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["token"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["sec-ch-ua-platform"] = "Android"
+        header["sec-ch-ua"] = (
+            '"Not)A;Brand";v="8", "Chromium";v="138", "Android WebView";v="138"'
+        )
+        header["sec-ch-ua-mobile"] = "?1"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        data = await self._pf_request(
+            EventPlayerAnalysisAPI,
+            header=header,
+            params={"matchId": match_id},
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(EventPlayerAnalysisResponse, data)
+
+    async def get_match_share(self, match_id: int) -> MatchShareResponse | int:
+        """获取赛事分享信息(含eventName用作标题)。"""
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["token"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["sec-ch-ua-platform"] = "Android"
+        header["sec-ch-ua"] = (
+            '"Not)A;Brand";v="8", "Chromium";v="138", "Android WebView";v="138"'
+        )
+        header["sec-ch-ua-mobile"] = "?1"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        data = await self._pf_request(
+            MatchShareAPI,
+            header=header,
+            params={"gameType": 2, "matchId": match_id},
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(MatchShareResponse, data)
 
     async def get_event_list(
         self,
