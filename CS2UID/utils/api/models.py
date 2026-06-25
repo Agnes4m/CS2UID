@@ -1110,3 +1110,41 @@ class EventVrsInvitesResponse(TypedDict):
     code: int
     message: str
     result: list[VrsInviteEvent]
+
+
+class EventListItemDTO(TypedDict):
+    id: int
+    eventId: int
+    name: str
+    nameZh: str
+    thumbnail: str
+    logo: str
+    startTime: int
+    endTime: int
+    prize: str
+    regionDTO: EventCardRegion | None
+    teamNumber: int | None
+    teamDTOList: list[EventTeamDTO] | None
+    type: int
+    eventType: int
+    hot: bool
+    important: bool
+    eventSubType: int
+    description: str
+    status: int
+    background: str | None
+
+
+class EventListResponseData(TypedDict):
+    dtoList: list[EventListItemDTO]
+    itemCount: int
+
+
+class EventListResponseResult(TypedDict):
+    eventResponse: EventListResponseData
+
+
+class EventListResponse(TypedDict):
+    code: int
+    message: str
+    result: EventListResponseResult

@@ -4,8 +4,6 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from gsuid_core.logger import logger
-
-# from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 from gsuid_core.utils.image.image_tools import draw_pic_with_ring, easy_paste
 

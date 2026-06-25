@@ -513,3 +513,142 @@ async def get_csgo_calendar_img(groups: list, start: str, end: str) -> bytes:
     result = BytesIO()
     img.save(result, format="PNG")
     return await convert_img(result.getvalue())
+
+
+_SUBTYPE_NAMES = {
+    5: "热门",
+    4: "Major",
+    1: "Blast",
+    2: "ESL",
+    3: "IEM",
+    6: "PGL",
+    7: "PWE",
+    8: "SL",
+    9: "FISSURE",
+    10: "其他",
+    0: "全部",
+}
+
+
+async def get_csgo_eventlist_img(dto_list: list, label: str = "热门") -> bytes:
+    logo_urls = []
+    for evt in dto_list:
+        url = evt.get("logo", "")
+        if url:
+            logo_urls.append(url)
+
+    downloaded = {}
+    if logo_urls:
+        results = await asyncio.gather(
+            *[_download_img(url) for url in set(logo_urls)],
+            return_exceptions=True,
+        )
+        for url, img_obj in zip(set(logo_urls), results, strict=True):
+            if isinstance(img_obj, Image.Image):
+                downloaded[url] = (
+                    img_obj.convert("RGBA")
+                    if img_obj.mode != "RGBA"
+                    else img_obj
+                )
+
+    CARD_H = 100
+    FOOTER_H = 60
+    total_h = TITLE_H + 20 + len(dto_list) * (CARD_H + 8) + FOOTER_H
+
+    img = Image.new("RGBA", (WIDTH, total_h), BG_COLOR)
+    draw = ImageDraw.Draw(img)
+
+    bg_img = Image.open(TEXTURE / "bg" / "1.jpg").resize((WIDTH, total_h))
+    bg_img.putalpha(80)
+    img.paste(bg_img, (0, 0), bg_img)
+
+    draw.text(
+        (MARGIN, 30), f"CS2 {label}赛事", fill=TEXT_WHITE, font=csgo_font_36
+    )
+    draw.text(
+        (MARGIN, 75),
+        f"共 {len(dto_list)} 个赛事",
+        fill=TEXT_GRAY,
+        font=csgo_font_20,
+    )
+
+    y = TITLE_H
+    for evt in dto_list:
+        name = evt.get("nameZh", evt.get("name", "未知"))
+        logo_url = evt.get("logo", "")
+        start = _format_dt(evt.get("startTime", 0))
+        end = _format_dt(evt.get("endTime", 0))
+        prize = evt.get("prize", "")
+        region = evt.get("regionDTO") or {}
+        location = region.get("locationCn") or region.get("location") or ""
+        hot = evt.get("hot", False)
+        evt_sub = evt.get("eventSubType", 0)
+
+        _rounded_rect(
+            draw, (MARGIN, y, WIDTH - MARGIN, y + CARD_H), CARD_RADIUS, CARD_BG
+        )
+        draw.rounded_rectangle(
+            (MARGIN, y, WIDTH - MARGIN, y + CARD_H),
+            radius=CARD_RADIUS,
+            outline=CARD_BORDER,
+            width=1,
+        )
+
+        elx = MARGIN + PADDING
+        ely = y + 12
+        if logo_url:
+            ev_logo = downloaded.get(logo_url)
+            if ev_logo:
+                el_resized = ev_logo.resize((40, 40))
+                draw.rounded_rectangle(
+                    (elx - 2, ely - 2, elx + 42, ely + 42),
+                    radius=6,
+                    fill=(255, 255, 255, 240),
+                )
+                img.paste(el_resized, (elx, ely), el_resized)
+
+        name_x = elx + 52 if logo_url else elx
+        draw.text((name_x, ely), name, fill=TEXT_WHITE, font=csgo_font_24)
+
+        sub_tag = _SUBTYPE_NAMES.get(evt_sub, "")
+        nx2 = name_x + draw.textbbox((0, 0), name, font=csgo_font_24)[2] + 8
+        if sub_tag:
+            draw.text(
+                (nx2, ely + 2), sub_tag, fill=TEXT_BLUE, font=csgo_font_18
+            )
+            nx2 += draw.textbbox((0, 0), sub_tag, font=csgo_font_18)[2] + 6
+        if hot:
+            draw.text((nx2, ely + 2), "🔥", fill=TEXT_RED, font=csgo_font_18)
+
+        iy = ely + 30
+        range_text = f"📅 {start} ~ {end}"
+        draw.text((name_x, iy), range_text, fill=TEXT_BLUE, font=csgo_font_20)
+        seg_x = (
+            name_x
+            + draw.textbbox((0, 0), range_text, font=csgo_font_20)[2]
+            + 12
+        )
+        if location:
+            draw.text(
+                (seg_x, iy),
+                f"🏟 {location}",
+                fill=TEXT_GREEN,
+                font=csgo_font_20,
+            )
+            seg_x += (
+                draw.textbbox((0, 0), f"🏟 {location}", font=csgo_font_20)[2]
+                + 12
+            )
+        if prize:
+            draw.text(
+                (seg_x, iy), f"💰 {prize}", fill=TEXT_YELLOW, font=csgo_font_20
+            )
+
+        y += CARD_H + 8
+
+    footer = Image.open(TEXTURE / "base" / "footer.png").resize((WIDTH, 50))
+    img.paste(footer, (0, total_h - 55), footer)
+
+    result = BytesIO()
+    img.save(result, format="PNG")
+    return await convert_img(result.getvalue())

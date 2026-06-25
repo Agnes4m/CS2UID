@@ -10,6 +10,7 @@ from ..cache import cs2_cache
 from .api import (
     CsgoFall,
     EventCardDetailAPI,
+    EventListAPI,
     EventMatchListAPI,
     EventVrsInvitesAPI,
     HomeDetailAPI,
@@ -31,6 +32,7 @@ from .api import (
 from .models import (
     AccountInfo,
     EventCardDetailResponse,
+    EventListResponse,
     EventMatchListResponse,
     EventVrsInvitesResponse,
     MatchAdvance,
@@ -634,6 +636,61 @@ class PerfectWorldApi:
         if err is not None:
             return err
         return cast(EventVrsInvitesResponse, data)
+
+    async def get_event_list(
+        self,
+        event_sub_type: int = 0,
+        page_num: int = 1,
+        page_size: int = 10,
+        event_type: int = 1,
+    ) -> EventListResponse | int:
+        """获取赛事列表(按子类型筛选)。
+
+        event_type: 1=近期(未开始), 2=往期(已结束)
+        eventSubType: 0=全部, 4=Major, 5=热门, 1=Blast系列,
+                      2=ESL系列, 3=IEM系列, 6=PGL系列,
+                      7=PWE系列, 8=SL系列, 9=FISSURE系列, 10=其他
+        """
+        uid_token = await self.get_token()
+        if uid_token is None:
+            return TOKEN_MISSING
+
+        header = deepcopy(_PF_HEADER)
+        header["appversion"] = "4.0.9.215"
+        header["accessToken"] = uid_token[-1]
+        header["platform"] = "h5_android"
+        header["Referer"] = "https://news.wmpvp.com/"
+        header["Origin"] = "https://news.wmpvp.com"
+        header["sec-ch-ua-platform"] = "Android"
+        header["sec-ch-ua"] = (
+            '"Not)A;Brand";v="8", "Chromium";v="138", "Android WebView";v="138"'
+        )
+        header["sec-ch-ua-mobile"] = "?1"
+        header["X-Requested-With"] = "XMLHttpRequest"
+        header["device"] = "rGPSv1782353861kXAkUgT3R0c"
+        header["User-Agent"] = (
+            "Mozilla/5.0 (Linux; Android 16; V2329A Build/BP2A.250605.031.A3; wv) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/138.0.7204.179 Mobile Safari/537.36 "
+            "EsportsApp Version=4.0.9.215"
+        )
+
+        data = await self._pf_request(
+            EventListAPI,
+            header=header,
+            params={
+                "pageNum": page_num,
+                "pageSize": page_size,
+                "type": event_type,
+                "eventSubType": event_sub_type,
+            },
+        )
+        if isinstance(data, int):
+            return data
+        err = _check_api_error(data)
+        if err is not None:
+            return err
+        return cast(EventListResponse, data)
 
 
 class FiveEApi:

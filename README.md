@@ -51,8 +51,6 @@ uv run core
 
 扫码登录 - 命令: cs扫码登录 / cs登录 (推荐使用，可自动获取token和绑定UID)
 
-帮助 - 命令: cs帮助</
-
 帮助 - 命令: cs帮助
 
 <details><summary>查询基本信息 - 命令: cs查询</summary><p>
@@ -71,7 +69,9 @@ uv run core
 
 搜索用户 - 命令: cs搜索 + name
 
-查询今日赛事 - 命令: cs赛事 / cs比赛
+赛事服务:
+- `cs赛事` / `cs比赛` — 热门赛事列表，支持子类型(major/blast/esl/iem/pgl...)
+- `cs赛程` — 对局赛程，支持 今天/昨天/明天/日期
 
 <details><summary>查询对局记录信息 - 命令: cs对局记录</summary><p>
 <a href="https://github.com/Agnes4m/CS2UID/blob/main/img/test4.jpg"><img src="./img/test4.png" width="360" height="800" alt="CS2lUID_对局信息"></a>

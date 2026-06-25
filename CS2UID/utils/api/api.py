@@ -30,6 +30,8 @@ EventCardDetailAPI = f"{STEAMCNHOST}/eventcenter/app/csgo/event/card/detail"
 EventVrsInvitesAPI = (
     f"{STEAMCNHOST}/eventcenter/app/csgo/event/vrs/invites/events"
 )
+ACTIVITY_HOST = "https://appactivity.wmpvp.com"
+EventListAPI = f"{ACTIVITY_HOST}/steamcn/app/csgo/event/getEventList"
 SearchAPI = "https://app.5eplay.com/api/csgo/data/search"
 HomeDetailAPI = (
     "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_home"

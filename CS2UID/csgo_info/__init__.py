@@ -16,7 +16,7 @@ from ..utils.database.models import CS2Bind
 from ..utils.error_reply import UID_HINT, get_error, try_send
 from ..utils.platform import resolve_uid_and_platform
 from .csgo_5e import get_csgo_5einfo_img
-from .csgo_event import get_csgo_calendar_img, get_csgo_event_img
+from .csgo_event import get_csgo_event_img, get_csgo_eventlist_img
 from .csgo_goods import get_csgo_goods_img
 from .csgo_info import get_csgo_info_img
 from .csgo_match import get_csgo_match_img
@@ -77,7 +77,6 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
     tag = 1 if "官匹" in ev.text else 3
     type_i = determine_match_type(ev.text)
 
-    # 获取比赛信息
     resp = await bot.receive_resp(
         await get_csgo_match_img(ev.user_id, uid, tag, type_i)
     )
@@ -98,7 +97,6 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
         )
     match_detail = cast(UserMatchRequest, cached)
 
-    # 获取比赛 ID
     try:
         match_list = match_detail["data"]["matchList"]
         if match_list is None or len(match_list) < int(index):
@@ -184,8 +182,6 @@ _RE_DATE = re.compile(r"(\d{1,2})[月/-](\d{1,2})(?:日)?$")
 
 
 def _clean_text(text: str) -> str:
-    """去除 @ 前缀及空白。"""
-    # 删除 @xxx 格式
     text = re.sub(r"@\S+\s*", "", text)
     return text.strip()
 
@@ -243,22 +239,43 @@ async def send_event_schedule_msg(bot: Bot, ev: Event):
 sv_event_calendar = SV("CS2赛事日历")
 
 
+_EVENT_SUB_KEYS: dict[str, int] = {
+    "major": 4,
+    "热门": 5,
+    "hot": 5,
+    "blast": 1,
+    "esl": 2,
+    "iem": 3,
+    "pgl": 6,
+    "pwe": 7,
+    "sl": 8,
+    "fissure": 9,
+    "其他": 10,
+    "全部": 0,
+}
+
+
 @sv_event_calendar.on_command(("赛事", "比赛"), block=True)
 async def send_event_calendar_msg(bot: Bot, ev: Event):
-    now = datetime.now(tz_cn)
-    start = now.strftime("%Y-%m")
-    end_month = now.month + 5
-    end_year = now.year + (end_month - 1) // 12
-    end_month = (end_month - 1) % 12 + 1
-    end = f"{end_year}-{end_month:02d}"
+    from ..utils.csgo_config import majs_config
 
-    resp = await pf_api.get_event_card_detail(start, end)
+    text = _clean_text(ev.text).lower()
+    sub_type = _EVENT_SUB_KEYS.get(text, 5)
+    label = text if text else "热门"
+
+    page_size = int(majs_config.get_config("EventPageSize").data)
+    resp = await pf_api.get_event_list(
+        event_sub_type=sub_type,
+        page_size=page_size,
+    )
     if isinstance(resp, int):
         return await try_send(bot, get_error(resp))
 
-    groups = resp.get("result", [])
-    if not groups:
-        return await try_send(bot, "暂无赛事日历")
+    dto_list = (
+        resp.get("result", {}).get("eventResponse", {}).get("dtoList", [])
+    )
+    if not dto_list:
+        return await try_send(bot, f"暂无{label}赛事")
 
-    img = await get_csgo_calendar_img(groups, start, end)
+    img = await get_csgo_eventlist_img(dto_list, label)
     await try_send(bot, img)
