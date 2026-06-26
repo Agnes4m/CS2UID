@@ -1,13 +1,12 @@
 import json
-from typing import Dict
 from pathlib import Path
 
 import aiofiles
 from PIL import Image
 
-from gsuid_core.sv import get_plugin_available_prefix
-from gsuid_core.help.model import PluginHelp
 from gsuid_core.help.draw_new_plugin_help import get_new_help
+from gsuid_core.help.model import PluginHelp
+from gsuid_core.sv import get_plugin_available_prefix
 
 from ..version import CS2UID_version
 
@@ -23,7 +22,7 @@ def get_footer():
     return Image.open(TEXT_PATH / "footer.png")
 
 
-async def get_help_data() -> Dict[str, PluginHelp]:
+async def get_help_data() -> dict[str, PluginHelp]:
     async with aiofiles.open(HELP_DATA, "rb") as file:
         return json.loads(await file.read())
 

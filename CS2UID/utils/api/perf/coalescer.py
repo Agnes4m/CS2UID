@@ -2,7 +2,8 @@
 
 import asyncio
 import hashlib
-from typing import Any, Dict, Callable, Optional, Awaitable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from gsuid_core.logger import logger
 
@@ -18,9 +19,9 @@ class RequestCoalescer:
     """
 
     def __init__(self):
-        self._pending: Dict[str, asyncio.Task] = {}
+        self._pending: dict[str, asyncio.Task] = {}
         self._lock = asyncio.Lock()
-        self._results: Dict[str, Any] = {}
+        self._results: dict[str, Any] = {}
 
     def _make_key(self, *args, **kwargs) -> str:
         """
@@ -50,9 +51,14 @@ class RequestCoalescer:
         async with self._lock:
             # 检查是否有相同请求正在执行
             if key in self._pending:
-                logger.debug(f"[CS2][Coalescer] 请求合并，等待中: {key[:8]}...")
+                logger.debug(
+                    f"[CS2][Coalescer] 请求合并，等待中: {key[:8]}..."
+                )
                 # 返回正在执行的task的结果
                 return await self._pending[key]
+
+            if key in self._results:
+                return self._results[key]
 
             # 创建新task
             task = asyncio.create_task(coro())
@@ -60,16 +66,17 @@ class RequestCoalescer:
 
             logger.debug(f"[CS2][Coalescer] 新建请求: {key[:8]}...")
 
-            try:
-                result = await task
-                # 保存结果一段时间，以便后续相同请求可以直接获取
-                self._results[key] = result
-                return result
-            finally:
-                # 清理
-                self._pending.pop(key, None)
+        # 锁外等待，让其他并发请求能命中_pending
+        try:
+            result = await task
+            self._results[key] = result
+            return result
+        finally:
+            self._pending.pop(key, None)
 
-    async def request(self, coro: Callable[[], Awaitable[Any]], *args, **kwargs) -> Any:
+    async def request(
+        self, coro: Callable[[], Awaitable[Any]], *args, **kwargs
+    ) -> Any:
         """
         便捷方法，自动生成key并执行
 
@@ -83,18 +90,18 @@ class RequestCoalescer:
         key = self._make_key(*args, **kwargs)
         return await self.get(key, coro)
 
-    def get_cached(self, key: str) -> Optional[Any]:
+    def get_cached(self, key: str) -> Any | None:
         """直接获取已缓存的结果（不等待）"""
         return self._results.get(key)
 
-    def clear_cache(self, key: Optional[str] = None):
+    def clear_cache(self, key: str | None = None):
         """清除缓存结果"""
         if key:
             self._results.pop(key, None)
         else:
             self._results.clear()
 
-    def get_stats(self) -> Dict[str, int]:
+    def get_stats(self) -> dict[str, int]:
         """获取统计信息"""
         return {
             "pending_count": len(self._pending),
@@ -103,7 +110,7 @@ class RequestCoalescer:
 
 
 # 全局实例
-_coalescer: Optional[RequestCoalescer] = None
+_coalescer: RequestCoalescer | None = None
 
 
 def get_coalescer() -> RequestCoalescer:

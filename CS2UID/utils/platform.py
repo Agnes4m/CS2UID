@@ -76,7 +76,10 @@ async def resolve_uid_and_platform(
 
 def _parse_s_value(text: str) -> str:
     """提取 ``s<数字>`` 形式的赛季参数。"""
-    after_s = text.lower().split("s")[-1]
+    lowered = text.lower()
+    if "s" not in lowered:
+        return ""
+    after_s = lowered.split("s")[-1]
     if after_s.isdigit() or (
         after_s.startswith(("+", "-")) and after_s[1:].isdigit()
     ):

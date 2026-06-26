@@ -203,10 +203,12 @@ def _draw_match_card(
     )
 
 
-async def get_csgo_event_img(dto_list: list, query_date: str = "") -> bytes:
+async def get_csgo_event_img(
+    dto_list: list, query_date: str = "", title: str = "CS2 今日赛事"
+) -> bytes:
     if query_date:
         parts = query_date.split("-")
-        if len(parts) >= 2:
+        if len(parts) >= 3:
             date_str = f"{parts[1]}-{parts[2]}"
         else:
             date_str = query_date[-5:]
@@ -251,7 +253,7 @@ async def get_csgo_event_img(dto_list: list, query_date: str = "") -> bytes:
     bg_img = _load_cover_bg(total_h)
     img.paste(bg_img, (0, 0), bg_img)
 
-    draw.text((MARGIN, 30), "CS2 今日赛事", fill=TEXT_WHITE, font=csgo_font_36)
+    draw.text((MARGIN, 30), title, fill=TEXT_WHITE, font=csgo_font_36)
     draw.text(
         (MARGIN, 75),
         f"{date_str} 共 {len(dto_list)} 场对局",

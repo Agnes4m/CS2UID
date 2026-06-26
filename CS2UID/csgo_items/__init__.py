@@ -1,18 +1,18 @@
 import json
-from typing import Dict, List, NamedTuple
 from pathlib import Path
+from typing import NamedTuple
 
 from PIL import Image
 
-from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.server import on_core_start
-from gsuid_core.utils.image.convert import text2pic, convert_img
+from gsuid_core.sv import SV
+from gsuid_core.utils.image.convert import convert_img, text2pic
 
+from .message import find_map_key, map_dict
 from .utils import black_match, res_img_path
-from .message import map_dict, find_map_key
 
 res_img_path.parent.mkdir(parents=True, exist_ok=True)
 config_item_path = res_img_path / "item.json"
@@ -33,7 +33,7 @@ class CSGOItem(NamedTuple):
 @on_core_start
 async def build_directory_index():
     """初始化道具索引"""
-    index: Dict[str, Dict[str, List[str]]] = {}
+    index: dict[str, dict[str, list[str]]] = {}
     Path(res_img_path / "res").mkdir(parents=True, exist_ok=True)
     for first_dir in Path(res_img_path / "res").iterdir():
         if not first_dir.is_dir():
@@ -50,10 +50,16 @@ async def build_directory_index():
 
             for file in second_dir.glob("*"):
                 if file.is_file():
-                    prefix = file.name.split("_")[0] if "_" in file.name else file.name
+                    prefix = (
+                        file.name.split("_")[0]
+                        if "_" in file.name
+                        else file.name
+                    )
                     index_set.add(prefix)
                 if index_set:
-                    index[first_dir.name][second_dir.name] = sorted(list(index_set))  # noqa: E501
+                    index[first_dir.name][second_dir.name] = sorted(
+                        list(index_set)
+                    )  # noqa: E501
 
     for first_level, second_levels in index.items():
         for second_level, prefixes in second_levels.items():
@@ -88,12 +94,12 @@ async def csgo_item_all(bot: Bot, ev: Event):
     tag_list = texts.split()
 
     with config_item_path.open("r", encoding="utf-8") as f:
-        data: Dict[str, Dict[str, List[str]]] = json.load(f)
+        data: dict[str, dict[str, list[str]]] = json.load(f)
 
     # 查询地图点位
 
     print("关键词", tag_list)
-    map_all_list: List[str] = []
+    map_all_list: list[str] = []
     if len(tag_list) == 0:
         for _, one_map in map_dict.items():
             map_all_list.append(one_map[0])
@@ -117,7 +123,9 @@ async def csgo_item_all(bot: Bot, ev: Event):
             await bot.send(await text2pic(msg), at_sender=True)
             return
         else:
-            await bot.send(f"地图不存在: {map_name},请输入【csgo道具】获取全部地图")
+            await bot.send(
+                f"地图不存在: {map_name},请输入【csgo道具】获取全部地图"
+            )
             return
 
     elif len(tag_list) == 2:
@@ -135,7 +143,7 @@ async def csgo_item_all(bot: Bot, ev: Event):
 
             # 匹配点位
 
-            for i, one in map_post.items():
+            for i, _one in map_post.items():
                 if point_name == i:
                     maybe_pos = [point_name]
                     break
@@ -143,7 +151,9 @@ async def csgo_item_all(bot: Bot, ev: Event):
                     maybe_pos.append(i)
 
             if not maybe_pos:
-                await bot.send(f"没有该点位，请使用指令【csgo道具 {map_name}】查询点位")
+                await bot.send(
+                    f"没有该点位，请使用指令【csgo道具 {map_name}】查询点位"
+                )
                 return
 
         pos_list = map_post[maybe_pos[0]]

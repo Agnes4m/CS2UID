@@ -110,19 +110,18 @@ async def test_coalescer_different_keys_run_independently():
     co = RequestCoalescer()
     call_count = 0
 
-    async def slow_call():
+    async def slow_call(label: str):
         nonlocal call_count
         call_count += 1
         await asyncio.sleep(0.05)
-        return call_count
+        return label
 
     a, b = await asyncio.gather(
-        co.get("k1", slow_call),
-        co.get("k2", slow_call),
+        co.get("k1", lambda: slow_call("A")),
+        co.get("k2", lambda: slow_call("B")),
     )
     assert call_count == 2
-    assert a == 1
-    assert b == 2
+    assert sorted([a, b]) == ["A", "B"]
 
 
 @pytest.mark.asyncio

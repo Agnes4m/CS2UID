@@ -1,9 +1,9 @@
 """Token缓存管理 - 避免每次请求都查数据库"""
 
-import time
 import random
-from typing import Any, Dict, List, Optional
+import time
 from dataclasses import dataclass
+from typing import Any
 
 from gsuid_core.logger import logger
 
@@ -32,7 +32,7 @@ class TokenManager:
     """
 
     # Token缓存
-    _cache: Dict[str, CachedToken] = {}
+    _cache: dict[str, CachedToken] = {}
 
     # 缓存配置
     CACHE_TTL = 3600  # 缓存有效期1小时
@@ -48,7 +48,9 @@ class TokenManager:
         return f"{platform}:{uid}"
 
     @classmethod
-    async def get_token(cls, uid: str, platform: str = PLATFORM_PF) -> Optional[str]:
+    async def get_token(
+        cls, uid: str, platform: str = PLATFORM_PF
+    ) -> str | None:
         """
         获取有效token
 
@@ -66,7 +68,9 @@ class TokenManager:
             return cached.token
 
         # 2. 缓存未命中，查数据库
-        logger.debug(f"[CS2][TokenCache] 缓存未命中，查数据库 uid={uid[:4]}***")
+        logger.debug(
+            f"[CS2][TokenCache] 缓存未命中，查数据库 uid={uid[:4]}***"
+        )
 
         if platform == cls.PLATFORM_PF:
             token = await CS2User.get_user_cookie_by_uid(uid)
@@ -88,7 +92,9 @@ class TokenManager:
         return token
 
     @classmethod
-    async def get_random_token(cls, platform: str = PLATFORM_PF) -> Optional[List[str]]:
+    async def get_random_token(
+        cls, platform: str = PLATFORM_PF
+    ) -> list[str] | None:
         """
         获取随机有效token（用于不需要特定用户的场景）
         保持原有random.choice的行为
@@ -105,7 +111,9 @@ class TokenManager:
 
         token = await cls.get_token(user.uid, platform)
         if token is None:
-            logger.warning(f"[CS2][TokenCache] 用户 {user.uid[:4]}*** 无有效token")
+            logger.warning(
+                f"[CS2][TokenCache] 用户 {user.uid[:4]}*** 无有效token"
+            )
             return None
 
         return [user.uid, token]
@@ -128,7 +136,7 @@ class TokenManager:
         logger.info(f"[CS2][TokenCache] 已清空 {count} 条缓存")
 
     @classmethod
-    def get_cache_stats(cls) -> Dict[str, Any]:
+    def get_cache_stats(cls) -> dict[str, Any]:
         """获取缓存统计信息"""
         total = len(cls._cache)
         expired = sum(1 for t in cls._cache.values() if t.is_expired())

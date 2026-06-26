@@ -1,9 +1,9 @@
 """连接池实现 - 复用HTTP连接，减少TCP握手开销"""
 
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal, Optional
 
 import httpx
-from httpx import Limits, Timeout, AsyncClient
+from httpx import AsyncClient, Limits, Timeout
 
 from gsuid_core.logger import logger
 
@@ -15,7 +15,7 @@ class ConnectionPool:
     """
 
     _instance: Optional["ConnectionPool"] = None
-    _client: Optional[AsyncClient] = None
+    _client: AsyncClient | None = None
 
     # 连接池配置
     MAX_KEEPALIVE_CONNECTIONS = 20  # 保持多少个长连接
@@ -62,11 +62,11 @@ class ConnectionPool:
         self,
         method: Literal["GET", "POST"],
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        timeout: Optional[float] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        timeout: float | None = None,
     ) -> httpx.Response:
         """
         使用连接池发起请求
@@ -118,7 +118,7 @@ class ConnectionPool:
 
 
 # 全局单例
-_pool: Optional[ConnectionPool] = None
+_pool: ConnectionPool | None = None
 
 
 def get_pool() -> ConnectionPool:

@@ -1,12 +1,10 @@
-from typing import Union
-
 from gsuid_core.logger import logger
 
 from ..utils.csgo_api import api_5e, pf_api
 from ..utils.error_reply import get_error, not_player
 
 
-async def get_search_players(name: str) -> Union[str, bytes]:
+async def get_search_players(name: str) -> str | bytes:
     detail = await pf_api.search_player(name)
     logger.info(detail)
 
@@ -31,7 +29,7 @@ async def get_search_players(name: str) -> Union[str, bytes]:
     return "".join(out_msg)
 
 
-async def get_search_players5e(name: str) -> Union[str, bytes]:
+async def get_search_players5e(name: str) -> str | bytes:
     detail = await api_5e.search_player(name)
     logger.info(detail)
 

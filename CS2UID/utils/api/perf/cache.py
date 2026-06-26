@@ -1,8 +1,9 @@
 """响应缓存 - 基于TTL的LRU缓存"""
 
 import time
-from typing import Any, Dict, Tuple, Callable, Optional
 from collections import OrderedDict
+from collections.abc import Callable
+from typing import Any
 
 from gsuid_core.logger import logger
 
@@ -33,9 +34,11 @@ class ResponseCache:
         """
         self._maxsize = maxsize
         self._ttl = ttl
-        self._cache: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
+        self._cache: OrderedDict[str, tuple[Any, float]] = OrderedDict()
 
-        logger.info(f"[CS2][ResponseCache] 初始化 (maxsize={maxsize}, ttl={ttl}s)")
+        logger.info(
+            f"[CS2][ResponseCache] 初始化 (maxsize={maxsize}, ttl={ttl}s)"
+        )
 
     def _make_key(self, namespace: str, *args, **kwargs) -> str:
         """生成缓存key"""
@@ -44,7 +47,7 @@ class ResponseCache:
         parts.extend(f"{k}={v}" for k, v in sorted(kwargs.items()))
         return "|".join(parts)
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """
         获取缓存值
 
@@ -71,7 +74,7 @@ class ResponseCache:
         logger.debug(f"[CS2][ResponseCache] 命中: {key[:20]}...")
         return value
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None):
+    def set(self, key: str, value: Any, ttl: int | None = None):
         """
         设置缓存
 
@@ -116,7 +119,7 @@ class ResponseCache:
         self._cache.clear()
         logger.info(f"[CS2][ResponseCache] 已清空 {count} 条缓存")
 
-    def cached(self, namespace: str, ttl: Optional[int] = None):
+    def cached(self, namespace: str, ttl: int | None = None):
         """
         装饰器方式使用缓存
 
@@ -162,7 +165,7 @@ class ResponseCache:
 
         return decorator
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """获取缓存统计信息"""
         now = time.time()
         expired = sum(1 for _, (_, exp) in self._cache.items() if now > exp)
@@ -177,7 +180,7 @@ class ResponseCache:
 
 
 # 全局实例 - 默认配置
-_response_cache: Optional[ResponseCache] = None
+_response_cache: ResponseCache | None = None
 
 
 def get_response_cache(

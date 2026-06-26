@@ -1,6 +1,5 @@
-import sys
 import json
-from typing import Dict, List
+import sys
 from pathlib import Path
 
 from gsuid_core.data_store import get_res_path
@@ -10,8 +9,8 @@ MAIN_PATH = get_res_path() / "CS2UID"
 sys.path.append(str(MAIN_PATH))
 RESOURCE_PATH = MAIN_PATH / "res"
 
-with open(Path(__file__).parent / "item.json", mode="r", encoding="utf-8") as fp:
-    ITEM_DICT: Dict[str, Dict[str, List[str]]] = json.load(fp)
+with open(Path(__file__).parent / "item.json", encoding="utf-8") as fp:
+    ITEM_DICT: dict[str, dict[str, list[str]]] = json.load(fp)
 # 去除空值
 ITEM_DICT = {k: v for k, v in ITEM_DICT.items() if v}
 

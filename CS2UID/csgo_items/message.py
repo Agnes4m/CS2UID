@@ -1,5 +1,4 @@
 import re
-from typing import List
 
 map_dict = {
     "dust2": [
@@ -98,7 +97,7 @@ items = [
 async def build_map_pattern():
     # 将所有地图的别名转义并合并成一个大的选择组
     escaped_aliases = [
-        "(?:{})".format(re.escape(alias))
+        f"(?:{re.escape(alias)})"
         for aliases in map_dict.values()
         for alias in aliases
     ]
@@ -118,17 +117,20 @@ async def find_possible_items(text):
     if "快烟" in text:
         return ["快烟"]
 
-    possible_items: List[str] = []
+    possible_items: list[str] = []
     for item in items:
         if item == "快烟":
             continue
-        if "烟" in item and "烟" in text:
-            possible_items.append(item)
-        elif "闪" in item and "闪" in text:
-            possible_items.append(item)
-        elif "火" in item and "火" in text:
-            possible_items.append(item)
-        elif "雷" in item and "雷" in text:
+        if (
+            "烟" in item
+            and "烟" in text
+            or "闪" in item
+            and "闪" in text
+            or "火" in item
+            and "火" in text
+            or "雷" in item
+            and "雷" in text
+        ):
             possible_items.append(item)
 
     return list(set(possible_items))

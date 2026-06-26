@@ -505,7 +505,10 @@ async def draw_card(
 
 def parse_s_value(text: str) -> str:
     """解析 s 值，从文本中提取数字部分"""
-    after_s = text.lower().split("s")[-1]
+    lowered = text.lower()
+    if "s" not in lowered:
+        return ""
+    after_s = lowered.split("s")[-1]
     if after_s.isdigit() or (
         after_s.startswith(("+", "-")) and after_s[1:].isdigit()
     ):

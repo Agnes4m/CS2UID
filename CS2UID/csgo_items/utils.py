@@ -1,31 +1,30 @@
-import re
 import json
-from typing import Dict, List, Union
+import re
 from pathlib import Path
 
 from PIL import Image
 
 from gsuid_core.bot import Bot
-from gsuid_core.logger import logger
 from gsuid_core.data_store import get_res_path
+from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
 
 from .message import (
+    build_map_pattern,
+    custom_sort_key,
+    find_map_key,
+    find_possible_items,
     map_dict,
-    tag_lists,
     tag_list_1,
     tag_list_2,
-    find_map_key,
-    custom_sort_key,
-    build_map_pattern,
-    find_possible_items,
+    tag_lists,
 )
 
 res_img_path = get_res_path("CS2UID")
 config_item_path = res_img_path / "item.json"
 
 
-async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
+async def black_match(tag_list: list[str]) -> str | Image.Image:
     # 地图
     tag_list[1] = tag_list[1].replace("a", "A").replace("b", "B")
     tag_list[2] = tag_list[2].replace("a", "A").replace("b", "B")
@@ -35,14 +34,13 @@ async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
     # 点位
     tag_pos_1 = ""
     for item in img_map_path.iterdir():
-        if item.is_dir():
-            if tag_list[1] in item.name:
-                tag_pos_1 = item.name
-                break
+        if item.is_dir() and tag_list[1] in item.name:
+            tag_pos_1 = item.name
+            break
     if not tag_pos_1:
         return "暂时还没有该点位道具呢"
 
-    tag_pos_2_list: List[str] = []
+    tag_pos_2_list: list[str] = []
 
     for item in Path(img_map_path / tag_pos_1).iterdir():
         if tag_list[2] == item.name:
@@ -55,7 +53,7 @@ async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
         return "暂时还没有该目的点位道具呢"
 
     # 同目的点位多方式分类
-    grouped_tags: Dict[str, List[str]] = {}
+    grouped_tags: dict[str, list[str]] = {}
     for tag in tag_pos_2_list:
         prefix, _ = tag.split("_", 1)
         if prefix not in grouped_tags:
@@ -63,10 +61,10 @@ async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
         grouped_tags[prefix].append(tag)
 
     # 将字典的值（即分类后的列表）转换为列表的列表
-    grouped_lists: List[List[str]] = list(grouped_tags.values())
+    grouped_lists: list[list[str]] = list(grouped_tags.values())
 
     # 道具
-    item_list: List[List[str]] = []
+    item_list: list[list[str]] = []
     max_number = 0
     filter_keyword = tag_list[3]
 
@@ -77,7 +75,9 @@ async def black_match(tag_list: List[str]) -> Union[str, Image.Image]:
         else:
             # 如果关键词不是"快烟"，则排除含有"快烟"的项，同时保留包含filter_keyword的项
             filtered_group = [
-                one for one in one_group if "快烟" not in one and filter_keyword in one
+                one
+                for one in one_group
+                if "快烟" not in one and filter_keyword in one
             ]
 
         print("fil", len(filtered_group))
@@ -192,7 +192,9 @@ async def re_match(texts: str, bot: Bot):
                                 print(f"攻略路径{img_path}")
                                 await bot.send(await convert_img(img_path))
                                 return
-                        await bot.send("参数不正确，没有正确的道具信息（烟火闪雷）")
+                        await bot.send(
+                            "参数不正确，没有正确的道具信息（烟火闪雷）"
+                        )
             await bot.send("参数不正确,没有位置信息或者缺少（至少有两个位置）")
             return
         await bot.send("参数不正确,没有地图信息")
@@ -201,7 +203,7 @@ async def re_match(texts: str, bot: Bot):
 
 async def start_json():
     """初始化道具索引"""
-    index: Dict[str, Dict[str, List[str]]] = {}
+    index: dict[str, dict[str, list[str]]] = {}
 
     for first_dir in Path(res_img_path / "res").iterdir():
         if not first_dir.is_dir():
@@ -218,10 +220,16 @@ async def start_json():
 
             for file in second_dir.glob("*"):
                 if file.is_file():
-                    prefix = file.name.split("_")[0] if "_" in file.name else file.name
+                    prefix = (
+                        file.name.split("_")[0]
+                        if "_" in file.name
+                        else file.name
+                    )
                     index_set.add(prefix)
                 if index_set:
-                    index[first_dir.name][second_dir.name] = sorted(list(index_set))
+                    index[first_dir.name][second_dir.name] = sorted(
+                        list(index_set)
+                    )
 
     for first_level, second_levels in index.items():
         for second_level, prefixes in second_levels.items():
