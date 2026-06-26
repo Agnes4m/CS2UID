@@ -1,13 +1,12 @@
 from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.plugins_config.gs_config import StringConfig
-from gsuid_core.utils.plugins_config.models import GSC
+from gsuid_core.utils.plugins_config.models import GSC, GsIntConfig
 
 CONFIG_DEFAULT: dict[str, GSC] = {
-    "EventPageSize": GSC(
-        key="EventPageSize",
-        name="赛事列表请求数量",
-        description="cs赛事指令每次请求的赛事数量 (默认10)",
-        default_value=10,
+    "EventPageSize": GsIntConfig(
+        "赛事列表请求数量",
+        "cs赛事指令每次请求的赛事数量 (默认10)",
+        10,
     ),
 }
 
