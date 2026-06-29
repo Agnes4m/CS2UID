@@ -1,12 +1,21 @@
 from gsuid_core.data_store import get_res_path
 from gsuid_core.utils.plugins_config.gs_config import StringConfig
-from gsuid_core.utils.plugins_config.models import GSC, GsIntConfig
+from gsuid_core.utils.plugins_config.models import (
+    GSC,
+    GsIntConfig,
+    GsStrConfig,
+)
 
 CONFIG_DEFAULT: dict[str, GSC] = {
     "EventPageSize": GsIntConfig(
         "赛事列表请求数量",
         "cs赛事指令每次请求的赛事数量 (默认10)",
         10,
+    ),
+    "DefaultLoginPlatform": GsStrConfig(
+        "默认登录平台",
+        "使用【登录】时默认的平台 完美/5e (默认完美)",
+        "完美",
     ),
 }
 

@@ -81,21 +81,74 @@
       }
     ]
   },
-  "赛事服务": {
-    "desc": "查询CS2赛事信息和赛程",
+  "赛程": {
+    "desc": "按日期查看具体对局列表",
     "data": [
       {
         "name": "赛程",
-        "desc": "查询某天的赛事对局列表，支持今天/昨天/明天/日期",
+        "desc": "查看比赛对局列表，支持今天/昨天/明天/日期",
         "eg": "赛程 今天",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false
       },
       {
+        "name": "赛程 战队",
+        "desc": "查询该战队近5日比赛",
+        "eg": "赛程 猎鹰",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "赛程 战队+日期",
+        "desc": "查询该战队指定日期的比赛",
+        "eg": "赛程 猎鹰 昨天",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "订阅赛程",
+        "desc": "设置比赛开始前10分钟推送提醒（比赛ID见赛程列表）",
+        "eg": "订阅赛程 12345",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "取消订阅赛程",
+        "desc": "取消已设置的比赛提醒",
+        "eg": "取消订阅赛程 12345",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      }
+    ]
+  },
+  "赛事": {
+    "desc": "查看赛事列表 + 按战队搜索比赛",
+    "data": [
+      {
         "name": "赛事",
-        "desc": "查询CS2热门赛事列表，包含赛事详情",
+        "desc": "查看当前热门赛事列表",
         "eg": "赛事",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "赛事 major",
+        "desc": "查看Major/S级/s/blast/esl/iem/pgl等子类赛事",
+        "eg": "赛事 s",
+        "need_ck": false,
+        "need_sk": false,
+        "need_admin": false
+      },
+      {
+        "name": "赛事 战队",
+        "desc": "搜索该战队近期比赛",
+        "eg": "赛事 绿龙",
         "need_ck": false,
         "need_sk": false,
         "need_admin": false

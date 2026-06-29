@@ -16,6 +16,7 @@ from ..utils.csgo_api import pf_api
 from ..utils.database.models import CS2Bind
 from ..utils.error_reply import UID_HINT, get_error, try_send
 from ..utils.platform import resolve_uid_and_platform
+from ..utils.remind import add_reminder, remove_reminder
 from .csgo_5e import get_csgo_5einfo_img
 from .csgo_event import (
     get_csgo_event_img,
@@ -285,6 +286,24 @@ def _parse_date(text: str) -> str | None:
     return None
 
 
+def _match_list_text(matches: list[dict]) -> str:
+    lines = ["可订阅的比赛（发送 cs订阅赛程 <ID> 设置10分钟前提醒）："]
+    for m in matches:
+        mid = m.get("matchId", "?")
+        t1 = (m.get("team1DTO") or {}).get("name", "?")
+        t2 = (m.get("team2DTO") or {}).get("name", "?")
+        ts = m.get("startTime", 0)
+        time_str = (
+            datetime.fromtimestamp(ts / 1000, tz=tz_cn).strftime("%m-%d %H:%M")
+            if ts
+            else "?"
+        )
+        lines.append(f"  ID:{mid} | {t1} vs {t2} | {time_str}")
+    lines.append("")
+    lines.append("例：cs订阅赛程 12345")
+    return "\n".join(lines)
+
+
 @sv_event_match.on_command(("赛程",), block=True)
 async def send_event_schedule_msg(bot: Bot, ev: Event):
     text = _clean_text(ev.text)
@@ -333,7 +352,8 @@ async def send_event_schedule_msg(bot: Bot, ev: Event):
         if not dto_list:
             return await try_send(bot, f"{date_str[:10]} 暂无赛事对局")
         img = await get_csgo_event_img(dto_list, date_str[:10])
-        return await try_send(bot, img)
+        await try_send(bot, img)
+        return await try_send(bot, _match_list_text(dto_list))
 
     team_lower = team_part.lower()
     now = datetime.now(tz_cn)
@@ -379,13 +399,50 @@ async def send_event_schedule_msg(bot: Bot, ev: Event):
         title=f"CS2 {team_part} 比赛 ({'近5日' if not date_str else date_str[:10]})",
     )
     await try_send(bot, img)
+    await try_send(bot, _match_list_text(all_matches))
+
+
+sv_match_remind = SV("CS2比赛提醒")
+
+
+@sv_match_remind.on_command(("订阅赛程",), block=True)
+async def subscribe_match(bot: Bot, ev: Event):
+    text = _clean_text(ev.text)
+    if not text.isdigit():
+        return await try_send(bot, "请提供比赛ID，如：cs订阅赛程 12345")
+    match_id = int(text)
+    resp = await pf_api.get_event_match_detail(match_id)
+    if isinstance(resp, int):
+        return await try_send(bot, f"未找到比赛 {match_id}")
+    t1 = (resp.get("team1DTO") or {}).get("name", "?")
+    t2 = (resp.get("team2DTO") or {}).get("name", "?")
+    start_time = resp.get("startTime", 0)
+    if not start_time:
+        return await try_send(bot, "该比赛无开始时间，无法设置提醒")
+    msg = await add_reminder(
+        match_id, ev.user_id, ev.bot_id, t1, t2, start_time
+    )
+    await try_send(bot, msg)
+
+
+@sv_match_remind.on_command(("取消订阅赛程",), block=True)
+async def unsubscribe_match(bot: Bot, ev: Event):
+    text = _clean_text(ev.text)
+    if not text.isdigit():
+        return await try_send(bot, "请提供比赛ID，如：cs取消订阅赛程 12345")
+    msg = await remove_reminder(int(text), ev.user_id)
+    await try_send(bot, msg)
 
 
 sv_event_calendar = SV("CS2赛事日历")
 
 
+_S_LEVELS = frozenset({"Major", "T1"})
+
 _EVENT_SUB_KEYS: dict[str, int] = {
     "major": 4,
+    "s": 99,
+    "s级": 99,
     "热门": 5,
     "hot": 5,
     "blast": 1,
@@ -412,14 +469,19 @@ async def send_event_calendar_msg(bot: Bot, ev: Event):
         label = text if text else "热门"
         page_size = int(majs_config.get_config("EventPageSize").data)
         resp = await pf_api.get_event_list(
-            event_sub_type=sub_type,
-            page_size=page_size,
+            event_sub_type=0 if sub_type == 99 else sub_type,
+            page_size=50 if sub_type == 99 else page_size,
         )
         if isinstance(resp, int):
             return await try_send(bot, get_error(resp))
         dto_list = (
             resp.get("result", {}).get("eventResponse", {}).get("dtoList", [])
         )
+        if sub_type == 99:
+            dto_list = [
+                evt for evt in dto_list if evt.get("level") in _S_LEVELS
+            ]
+            label = "S级"
         if not dto_list:
             return await try_send(bot, f"暂无{label}赛事")
         img = await get_csgo_eventlist_img(dto_list, label)

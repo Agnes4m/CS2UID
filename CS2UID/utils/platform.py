@@ -49,7 +49,7 @@ async def resolve_uid_and_platform(
             if domain:
                 uid = domain.replace("5e", "").replace("5E", "").strip()
         if not uid:
-            uid = await get_uid(bot, ev, CS2Bind)
+            uid = await CS2Bind.get_uid_by_game(user_id, ev.bot_id)
         if not uid:
             return None, None, UID_HINT
         return uid, "5e", season
@@ -61,7 +61,7 @@ async def resolve_uid_and_platform(
             if domain:
                 uid = domain
         if not uid:
-            uid = await get_uid(bot, ev, CS2Bind)
+            uid = await CS2Bind.get_uid_by_game(user_id, ev.bot_id)
         if not uid:
             return None, None, UID_HINT
         return uid, "gf", season
