@@ -4,10 +4,10 @@ import pytest
 
 from CS2UID.csgo_info.utils import (
     assign_rank,
-    parse_s_value,
     rank_to_color,
     scoce_to_color,
 )
+from CS2UID.utils.platform import _parse_s_value as parse_s_value
 
 
 def test_parse_s_value():

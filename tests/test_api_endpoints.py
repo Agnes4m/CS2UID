@@ -16,7 +16,6 @@ def test_required_endpoints_defined():
         "CsgoFall",
         "MatchTitelAPI",
         "MatchAdvanceAPI",
-        "LoginAPI",
         "SearchAPI",
         "HomeDetailAPI",
         "HomePageAPI",
@@ -30,7 +29,6 @@ def test_endpoints_use_https():
         "UserInfoAPI",
         "UserDetailAPI",
         "MatchDetailAPI",
-        "LoginAPI",
         "SearchAPI",
         "HomeDetailAPI",
     ):
@@ -40,7 +38,7 @@ def test_endpoints_use_https():
 
 def test_pf_and_5e_hosts_separated():
     """完美域(wmpvp/pwesports)和 5E 域(5eplay)不能混淆。"""
-    pf_endpoints = [api.UserInfoAPI, api.UserDetailAPI, api.LoginAPI]
+    pf_endpoints = [api.UserInfoAPI, api.UserDetailAPI]
     for url in pf_endpoints:
         assert "wmpvp" in url or "pwesports" in url, f"PF 端点错了: {url}"
 

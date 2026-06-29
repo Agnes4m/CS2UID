@@ -18,7 +18,6 @@ from .api import (
     HomeDetailAPI,
     HomePageAPI,
     HomeSeason,
-    LoginAPI,
     MatchAdvanceAPI,
     MatchDetailAPI,
     MatchShareAPI,
@@ -33,7 +32,6 @@ from .api import (
     UserSteamPreview,
 )
 from .models import (
-    AccountInfo,
     EventCardDetailResponse,
     EventListResponse,
     EventMatchDetailResponse,
@@ -48,7 +46,6 @@ from .models import (
     UserDetailRequest,
     UserFallRequest,
     UserHomedetailRequest,
-    UserHomeRequest,
     UserInfo,
     UserMatchRequest,
     UserSearchRequest,
@@ -303,33 +300,6 @@ class PerfectWorldApi:
             cs2_cache.set("pf", uid, "get_steamgoods", data, ttl=300)
         return cast(SteamGetRequest, data)
 
-    async def get_csgohomematch(
-        self, uid: str, search_number: int = 11
-    ) -> UserHomeRequest | int:
-        """国服对战信息。"""
-        uid_token = await self.get_token()
-        if uid_token is None:
-            return TOKEN_MISSING
-
-        header = deepcopy(_PF_HEADER)
-        header["appversion"] = "3.4.6.164"
-        header["User-Agent"] = "okhttp/4.11.0"
-        header["token"] = uid_token[-1]
-        data = await self._pf_request(
-            UserHomematchApi,
-            header=header,
-            method="POST",
-            json={
-                "toSteamId": uid,
-                "dataSource": 0,
-                "mySteamId": uid_token[0],
-                "pageSize": search_number,
-            },
-        )
-        if isinstance(data, int):
-            return data
-        return cast(UserHomeRequest, data)
-
     async def get_csgopfmatch(
         self, uid: str, csgoSeasonId: int, type: int
     ) -> UserMatchRequest | int:
@@ -502,27 +472,6 @@ class PerfectWorldApi:
         if data.get("statusCode") != 0:
             return cast(str, data.get("data", NETWORK_ERROR))
         return cast(MatchAdvance, data["data"])
-
-    async def login_pf(
-        self, phone_number: str, code: str
-    ) -> AccountInfo | int:
-        """手机号和验证码登录。"""
-        header = deepcopy(_PF_HEADER)
-        header["appversion"] = "3.4.6.164"
-        data = await self._pf_request(
-            LoginAPI,
-            header=header,
-            json={
-                "appId": 2,
-                "mobilePhone": phone_number,
-                "securityCode": code,
-            },
-        )
-        if isinstance(data, int):
-            return data
-        if data.get("statusCode") != 0:
-            return cast(str, data.get("data", NETWORK_ERROR))
-        return cast(AccountInfo, data["result"]["accountInfo"])
 
     async def get_event_match_list(
         self, match_time: str = ""

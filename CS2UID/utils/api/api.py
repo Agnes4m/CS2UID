@@ -22,9 +22,6 @@ CsgoFall = f"{STEAMCNHOST}/appdatacenter/csgo/official/fall/userCsgoInfo"
 MatchTitelAPI = f"{APIHOST}/api/v1/csgo/mvp/stats"
 MatchAdvanceAPI = f"{APIHOST}/api/v1/csgo/mvp/advance"
 
-# login
-LoginAPI = "https://passport.pwesports.cn/account/login"
-
 # event-center (get)
 EventMatchListAPI = f"{STEAMCNHOST}/eventcenter/app/csgo/event/getMatchList"
 EventCardDetailAPI = f"{STEAMCNHOST}/eventcenter/app/csgo/event/card/detail"

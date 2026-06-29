@@ -357,55 +357,6 @@ class SteamGetRequest(TypedDict):
     result: SteamGet
 
 
-class UserHomeMatch(TypedDict):
-    matchId: str
-    playerId: str
-    honor: str
-    k4: int
-    k5: int
-    matchScore: float
-    mapUrl: str
-    """地图url"""
-    mapLogo: str
-    """地图logo url"""
-    mapName: str
-    """地图中文名"""
-    team: int
-    """1,2表示队伍"""
-    winTeam: int
-    score1: int
-    score2: int
-    rating: float
-    startTime: str
-    """2024-06-13 21:10:39"""
-    endTime: str
-    timeStamp: int
-    pageTimeStamp: int
-    kill: int
-    """击杀数"""
-    death: int
-    """死亡数"""
-    assist: int
-    """助攻数"""
-    duration: int
-    dataSource: int
-    mode: str
-    """游戏模式 国服竞技"""
-    mvp: bool
-    """是否是MVP"""
-
-
-class UserHomematchData(TypedDict):
-    dataPublic: bool
-    matchList: list[UserHomeMatch]
-
-
-class UserHomeRequest(TypedDict):
-    statusCode: int
-    errorMessage: str
-    data: UserHomematchData
-
-
 class UserhomeMap(TypedDict):
     map: str
     """地图英文名"""
@@ -908,46 +859,6 @@ class MatchAdvance(TypedDict):
     """拉枪率"""
     tradeFragRate: float
     """补枪率"""
-
-
-class AccountInfo(TypedDict):
-    """账号信息"""
-
-    userId: int
-    """账号id"""
-    steamId: int
-    """steam64位Id"""
-    mobilePhone: str
-    """手机号"""
-    token: str
-    """token"""
-    create: int
-
-
-class Logininfo(TypedDict):
-    userType: int
-    """用户类型，1为手机号登录"""
-    accountInfo: AccountInfo
-
-
-class LoginResult(TypedDict):
-    """登录结果"""
-
-    loginResult: Logininfo
-
-
-class LoginDetail(TypedDict):
-    """登录返回信息"""
-
-    code: int
-    """- 0:成功
-    - 20001: 验证码错误
-    - 1015: 手机号错误
-    - 90001: 服务器繁忙"""
-    description: str
-    """成功位`Success`，失败则输出报错信息"""
-    result: LoginResult
-    """登录结果"""
 
 
 class EventTeamDTO(TypedDict):
