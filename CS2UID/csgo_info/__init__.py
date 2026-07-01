@@ -117,7 +117,6 @@ async def send_csgo_match_msg(bot: Bot, ev: Event):
 
 
 def determine_match_type(text: str) -> int:
-    """根据输入文本确定比赛类型,默认 -1 (全部)。"""
     from ..utils.csgo_config import get_match_types
 
     match_types = get_match_types()
@@ -258,52 +257,6 @@ def _clean_text(text: str) -> str:
     return text.strip()
 
 
-def _parse_date(text: str) -> str | None:
-    text = _clean_text(text)
-    if not text:
-        now = datetime.now(tz_cn)
-        return now.strftime("%Y-%m-%d 00:00:00")
-
-    offset = _DAY_KEYS.get(text)
-    if offset is not None:
-        dt = datetime.now(tz_cn) + timedelta(days=offset)
-        return dt.strftime("%Y-%m-%d 00:00:00")
-    for key, offset in _DAY_KEYS.items():
-        if key in text:
-            dt = datetime.now(tz_cn) + timedelta(days=offset)
-            return dt.strftime("%Y-%m-%d 00:00:00")
-
-    m = _RE_DATE.search(text)
-    if m:
-        month, day = int(m.group(1)), int(m.group(2))
-        year = datetime.now(tz_cn).year
-        try:
-            dt = datetime(year, month, day, tzinfo=tz_cn)
-            return dt.strftime("%Y-%m-%d 00:00:00")
-        except ValueError:
-            return None
-
-    return None
-
-
-def _match_list_text(matches: list[dict]) -> str:
-    lines = ["可订阅的比赛（发送 cs订阅赛程 <ID> 设置10分钟前提醒）："]
-    for m in matches:
-        mid = m.get("matchId", "?")
-        t1 = (m.get("team1DTO") or {}).get("name", "?")
-        t2 = (m.get("team2DTO") or {}).get("name", "?")
-        ts = m.get("startTime", 0)
-        time_str = (
-            datetime.fromtimestamp(ts / 1000, tz=tz_cn).strftime("%m-%d %H:%M")
-            if ts
-            else "?"
-        )
-        lines.append(f"  ID:{mid} | {t1} vs {t2} | {time_str}")
-    lines.append("")
-    lines.append("例：cs订阅赛程 12345")
-    return "\n".join(lines)
-
-
 @sv_event_match.on_command(("赛程",), block=True)
 async def send_event_schedule_msg(bot: Bot, ev: Event):
     text = _clean_text(ev.text)
@@ -321,7 +274,6 @@ async def send_event_schedule_msg(bot: Bot, ev: Event):
         img = await get_csgo_match_analysis_img(detail, analysis, share)
         return await try_send(bot, img)
 
-    # 尝试从文本中提取日期和队伍名
     team_part = text
     date_str = None
     for key, offset in _DAY_KEYS.items():
@@ -352,8 +304,7 @@ async def send_event_schedule_msg(bot: Bot, ev: Event):
         if not dto_list:
             return await try_send(bot, f"{date_str[:10]} 暂无赛事对局")
         img = await get_csgo_event_img(dto_list, date_str[:10])
-        await try_send(bot, img)
-        return await try_send(bot, _match_list_text(dto_list))
+        return await try_send(bot, img)
 
     team_lower = team_part.lower()
     now = datetime.now(tz_cn)
@@ -399,7 +350,6 @@ async def send_event_schedule_msg(bot: Bot, ev: Event):
         title=f"CS2 {team_part} 比赛 ({'近5日' if not date_str else date_str[:10]})",
     )
     await try_send(bot, img)
-    await try_send(bot, _match_list_text(all_matches))
 
 
 sv_match_remind = SV("CS2比赛提醒")

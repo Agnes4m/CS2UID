@@ -1,4 +1,8 @@
+import base64
+import hashlib
+import hmac as _hmac
 import json as js
+import time
 from copy import deepcopy
 from typing import Any, Literal, cast
 
@@ -18,10 +22,13 @@ from .api import (
     HomeDetailAPI,
     HomePageAPI,
     HomeSeason,
+    InventoryAPI,
     MatchAdvanceAPI,
     MatchDetailAPI,
     MatchShareAPI,
     MatchTitelAPI,
+    MyV2API,
+    PlayerAdvancedAPI,
     SearchAPI,
     UserDetailAPI,
     UserHomeApi,
@@ -763,6 +770,43 @@ class PerfectWorldApi:
         return cast(EventListResponse, data)
 
 
+def _sign_5e(
+    method: str,
+    path: str,
+    headers: dict[str, str],
+    *,
+    body: str = "",
+    params: dict[str, str] | None = None,
+) -> str:
+    """HmacSHA256 签名 (x-ca-signature-headers + path + sorted query)."""
+    from urllib.parse import urlencode, urlparse
+
+    hdr_lower = {k.lower(): v for k, v in headers.items()}
+    keys = sorted(
+        h.strip().lower()
+        for h in headers.get("x-ca-signature-headers", "").split(",")
+        if h.strip()
+    )
+    canon = "".join(f"{k}:{hdr_lower.get(k, '')}\n" for k in keys)
+
+    md5 = ""
+    if body:
+        md5 = base64.b64encode(hashlib.md5(body.encode()).digest()).decode()
+        headers["content-md5"] = md5
+
+    resource = urlparse(path).path
+    if params:
+        resource += "?" + urlencode(sorted(params.items()))
+    to_sign = f"{method.upper()}\n{md5}\n{canon}{resource}"
+
+    # ponytail: AppSecret 未知 (x-ca-key=5eplay 对应的密钥),
+    # 需逆向 5eplay APK 提取, 当前用 key 本身占位
+    secret = hdr_lower.get("x-ca-key", "5eplay")
+    return base64.b64encode(
+        _hmac.new(secret.encode(), to_sign.encode(), hashlib.sha256).digest()
+    ).decode()
+
+
 class FiveEApi:
     """5E 平台 API 客户端。"""
 
@@ -885,3 +929,173 @@ class FiveEApi:
         if isinstance(data, int):
             return data
         return cast(UserSeason5, data["data"])
+
+    async def get_my_v2(
+        self,
+        token: str | None = None,
+        *,
+        device_code: str = "99999999-9999-9999-9999-999999999999",
+        mobile_model: str = '{"systemName":"Android","mobileFactory":"realme","platform":"RMX6688","systermVersion":"9"}',
+        in_id: str = "1782787382680_f7df19fb671ccafbd88260b7d9c85db7",
+        scid: str = '{"$identity_anonymous_id":"2df32669c5c3b8d8","$identity_android_id":"2df32669c5c3b8d8","identity_inid":"1782787382680_f7df19fb671ccafbd88260b7d9c85db7","identity_domain":"0709b4ytutuz"}',
+        channel: str = "offical",
+    ) -> dict[str, Any] | int:
+        """获取5e用户首页(含积分/任务/快捷入口)。
+
+        注意: 需要正确 AppSecret 才能生成有效签名,否则 401。
+        """
+        ts = str(int(time.time() * 1000))
+        if token is None:
+            uid_token = await self.get_stoken()
+            if uid_token is None:
+                return 1
+            token = uid_token[1]
+
+        header: dict[str, str] = {
+            "mobileModel": mobile_model,
+            "version": "7.1.6",
+            "inID": in_id,
+            "scid": scid,
+            "equipment": "android",
+            "token": token,
+            "channel": channel,
+            "dispmod": "0",
+            "school": "false",
+            "games": "",
+            "x-ca-timestamp": ts,
+            "x-ca-key": "5eplay",
+            "x-ca-signature-headers": (
+                "channel,dispmod,equipment,games,inID,mobileModel,"
+                "school,scid,token,version,x-ca-timestamp"
+            ),
+            "x-ca-signature-method": "HmacSHA256",
+        }
+        header["x-ca-signature"] = _sign_5e("GET", MyV2API, header)
+
+        return await self._5e_request(
+            MyV2API,
+            header=header,
+            method="GET",
+            params={"deviceCode": device_code},
+        )
+
+    async def get_inventory(
+        self,
+        domain: str,
+        token: str | None = None,
+        *,
+        page: int = 1,
+        limit: int = 10,
+        key_word: str = "",
+        first_type: list[str] | None = None,
+        sort_key: int = 0,
+        device_code: str = "99999999-9999-9999-9999-999999999999",
+        mobile_model: str = '{"systemName":"Android","mobileFactory":"realme","platform":"RMX6688","systermVersion":"9"}',
+        in_id: str = "1782787382680_f7df19fb671ccafbd88260b7d9c85db7",
+        scid: str = '{"$identity_anonymous_id":"2df32669c5c3b8d8","$identity_android_id":"2df32669c5c3b8d8","identity_inid":"1782787382680_f7df19fb671ccafbd88260b7d9c85db7","identity_domain":"0709b4ytutuz"}',
+        channel: str = "offical",
+    ) -> dict[str, Any] | int:
+        """获取5e库存(分页/搜索/筛类型)。"""
+        ts = str(int(time.time() * 1000))
+        if token is None:
+            uid_token = await self.get_stoken()
+            if uid_token is None:
+                return 1
+            token = uid_token[1]
+
+        body = js.dumps(
+            {
+                "first_type": first_type or [],
+                "domain": domain,
+                "limit": limit,
+                "key_word": key_word,
+                "page": page,
+                "sort_key": sort_key,
+            },
+            separators=(",", ":"),
+        )
+
+        header: dict[str, str] = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "mobilemodel": mobile_model,
+            "version": "7.1.6",
+            "inid": in_id,
+            "scid": scid,
+            "equipment": "android",
+            "token": token,
+            "channel": channel,
+            "dispmod": "0",
+            "school": "false",
+            "games": "",
+            "x-ca-timestamp": ts,
+            "x-ca-key": "5eplay",
+            "x-ca-signature-headers": (
+                "channel,dispmod,equipment,games,inID,mobileModel,"
+                "school,scid,token,version,x-ca-timestamp"
+            ),
+            "x-ca-signature-method": "HmacSHA256",
+            "date": time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime()),
+        }
+        header["x-ca-signature"] = _sign_5e(
+            "POST", InventoryAPI, header, body=body
+        )
+
+        return await self._5e_request(
+            InventoryAPI,
+            header=header,
+            method="POST",
+            data=body,
+        )
+
+    async def get_player_advanced(
+        self,
+        domain: str,
+        season: str,
+        token: str | None = None,
+        *,
+        device_code: str = "99999999-9999-9999-9999-999999999999",
+        mobile_model: str = '{"systemName":"Android","mobileFactory":"realme","platform":"RMX6688","systermVersion":"9"}',
+        in_id: str = "1782787382680_f7df19fb671ccafbd88260b7d9c85db7",
+        scid: str = '{"$identity_anonymous_id":"2df32669c5c3b8d8","$identity_android_id":"2df32669c5c3b8d8","identity_inid":"1782787382680_f7df19fb671ccafbd88260b7d9c85db7","identity_domain":"0709b4ytutuz"}',
+        channel: str = "offical",
+    ) -> dict[str, Any] | int:
+        """获取5e玩家赛季高级数据(elo/角色/评分/游戏理解等)。"""
+        ts = str(int(time.time() * 1000))
+        if token is None:
+            uid_token = await self.get_stoken()
+            if uid_token is None:
+                return 1
+            token = uid_token[1]
+
+        query: dict[str, str] = {"domain": domain, "season": season}
+        header: dict[str, str] = {
+            "mobilemodel": mobile_model,
+            "version": "7.1.6",
+            "inid": in_id,
+            "scid": scid,
+            "equipment": "android",
+            "token": token,
+            "channel": channel,
+            "dispmod": "0",
+            "school": "false",
+            "games": "",
+            "x-ca-timestamp": ts,
+            "x-ca-key": "5eplay",
+            "x-ca-signature-headers": (
+                "channel,dispmod,equipment,games,inID,mobileModel,"
+                "school,scid,token,version,x-ca-timestamp"
+            ),
+            "x-ca-signature-method": "HmacSHA256",
+            "date": time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime()),
+        }
+        header["x-ca-signature"] = _sign_5e(
+            "GET", PlayerAdvancedAPI, header, params=query
+        )
+
+        return await self._5e_request(
+            PlayerAdvancedAPI,
+            header=header,
+            method="GET",
+            params=query,
+        )

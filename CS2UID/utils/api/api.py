@@ -46,3 +46,10 @@ HomePageAPI = (
 HomeSeason = (
     "https://ya-api-app.5eplay.com/v0/mars/api/csgo/data/player_match_v1"
 )
+MyV2API = "https://app.5eplay.com/api/app/my_v2"
+InventoryAPI = (
+    "https://ya-api-app.5eplay.com/v1/user/steam/inventory/my/record"
+)
+PlayerAdvancedAPI = (
+    "https://gate.5eplay.com/crane/http/api/data/player/advanced"
+)

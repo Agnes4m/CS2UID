@@ -240,10 +240,12 @@ async def get_csgo_event_img(
                     img.convert("RGBA") if img.mode != "RGBA" else img
                 )
 
+    SUB_H = 80
     total_h = TITLE_H + 20
     for _, matches in events.items():
         total_h += HEADER_H + 10
         total_h += len(matches) * (CARD_H + 8)
+    total_h += SUB_H
     FOOTER_H = 60
     total_h += FOOTER_H
 
@@ -286,6 +288,18 @@ async def get_csgo_event_img(
         for m in matches:
             _draw_match_card(img, draw, m, downloaded, y)
             y += CARD_H + 8
+
+    y += 10
+    draw.text(
+        (MARGIN, y),
+        "可订阅的比赛：发送 cs订阅赛程 <matchId> 设置10分钟前提醒",
+        fill=TEXT_GRAY,
+        font=csgo_font_18,
+    )
+    y += 28
+    draw.text(
+        (MARGIN, y), "例：cs订阅赛程 12345", fill=TEXT_GRAY, font=csgo_font_18
+    )
 
     footer = Image.open(TEXTURE / "base" / "footer.png").resize((WIDTH, 50))
     img.paste(footer, (0, total_h - 55), footer)
