@@ -364,11 +364,15 @@ async def subscribe_match(bot: Bot, ev: Event):
     resp = await pf_api.get_event_match_detail(match_id)
     if isinstance(resp, int):
         return await try_send(bot, f"未找到比赛 {match_id}")
-    t1 = (resp.get("team1DTO") or {}).get("name", "?")
-    t2 = (resp.get("team2DTO") or {}).get("name", "?")
-    start_time = resp.get("startTime", 0)
-    if not start_time:
+    match_data: dict = resp.get("result", {}).get("match", {})
+    if not match_data.get("startTime"):
         return await try_send(bot, "该比赛无开始时间，无法设置提醒")
+    t1 = (match_data.get("team1DTO") or {}).get("name", "?")
+    t2 = (match_data.get("team2DTO") or {}).get("name", "?")
+    start_time = match_data["startTime"]
+    now_ms = int(datetime.now(tz_cn).timestamp() * 1000)
+    if match_data.get("status") == 3 or start_time < now_ms:
+        return await try_send(bot, f"{t1} vs {t2} 比赛已结束或已开始")
     msg = await add_reminder(
         match_id, ev.user_id, ev.bot_id, t1, t2, start_time
     )

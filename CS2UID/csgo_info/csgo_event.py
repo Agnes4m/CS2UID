@@ -135,12 +135,12 @@ def _draw_match_card(
         font=csgo_font_20,
     )
     draw.text(
-        (card_x + PADDING + 240, y + 10), bo, fill=TEXT_GRAY, font=csgo_font_20
+        (card_x + PADDING + 320, y + 10), bo, fill=TEXT_GRAY, font=csgo_font_20
     )
     match_id = m.get("matchId", "")
     if match_id:
         draw.text(
-            (card_x + PADDING + 310, y + 10),
+            (card_x + PADDING + 390, y + 10),
             f"ID: {match_id}",
             fill=TEXT_GREEN,
             font=csgo_font_20,
