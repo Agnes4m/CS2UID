@@ -105,6 +105,18 @@ class TokenManager:
             return None
 
         user = random.choice(user_list)
+
+        if platform == cls.PLATFORM_5E:
+            token = await CS2User.get_user_stoken_by_user_id(
+                user.user_id, user.bot_id
+            )
+            if token is None:
+                logger.warning(
+                    f"[CS2][TokenCache] 用户 {user.user_id} 无5E stoken"
+                )
+                return None
+            return [user.user_id, token]
+
         if user.uid is None:
             logger.warning("[CS2][TokenCache] 随机选中的用户无uid")
             return None

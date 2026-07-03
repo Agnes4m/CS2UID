@@ -3,19 +3,12 @@ from pathlib import Path
 from sqlmodel import Field
 
 from gsuid_core.utils.database.base_models import Bind, User, with_session
-from gsuid_core.utils.database.startup import exec_list
 from gsuid_core.webconsole.mount_app import GsAdminModel, PageSchema, site
 
-# 数据库迁移 SQL 集中管理
-# 详见 migrations.sql
-_MIGRATIONS_FILE = Path(__file__).parent / "migrations.sql"
+# 数据库迁移集中管理
+_MIGRATIONS_FILE = Path(__file__).parent / "migrations.py"
 if _MIGRATIONS_FILE.is_file():
-    for stmt in _MIGRATIONS_FILE.read_text(encoding="utf-8").split(";"):
-        cleaned = stmt.strip()
-        if not cleaned or cleaned.startswith("--"):
-            continue
-        if cleaned not in exec_list:
-            exec_list.append(cleaned)
+    exec(_MIGRATIONS_FILE.read_text(encoding="utf-8"))
 
 
 class CS2Bind(Bind, table=True):

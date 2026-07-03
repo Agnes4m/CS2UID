@@ -20,6 +20,9 @@ def test_required_endpoints_defined():
         "HomeDetailAPI",
         "HomePageAPI",
         "HomeSeason",
+        "MyV2API",
+        "InventoryAPI",
+        "PlayerAdvancedAPI",
     ):
         assert hasattr(api, name), f"missing endpoint: {name}"
 
@@ -42,5 +45,12 @@ def test_pf_and_5e_hosts_separated():
     for url in pf_endpoints:
         assert "wmpvp" in url or "pwesports" in url, f"PF 端点错了: {url}"
 
-    for url in (api.SearchAPI, api.HomeDetailAPI, api.HomeSeason):
+    for url in (
+        api.SearchAPI,
+        api.HomeDetailAPI,
+        api.HomeSeason,
+        api.MyV2API,
+        api.InventoryAPI,
+        api.PlayerAdvancedAPI,
+    ):
         assert "5eplay" in url, f"5E 端点错了: {url}"

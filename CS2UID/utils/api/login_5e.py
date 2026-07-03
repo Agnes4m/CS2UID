@@ -14,6 +14,7 @@ API_BASE = "https://www.5eplay.com"
 QR_APPLY_URL = f"{API_BASE}/api/user/scan_code_login_qr_code"
 QR_CHECK_URL = f"{API_BASE}/api/user/scan_code_login_result"
 CONFIRM_LOGIN_URL = f"{API_BASE}/api/user/login"
+MY_V2_URL = "https://app.5eplay.com/api/app/my_v2"
 
 POLL_INTERVAL = 2
 MAX_POLL_COUNT = 30
@@ -27,6 +28,11 @@ _HEADERS = {
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "origin": "https://www.5eplay.com",
     "referer": "https://www.5eplay.com/user/login",
+}
+
+_5E_APP_HEADER = {
+    "user-agent": "okhttp/3.14.9",
+    "version": "6.2.2",
 }
 
 
@@ -50,17 +56,21 @@ class LoginResult:
     """5E JWT token，确认登录后可用"""
 
 
-def _decode_jwt_uid(token: str) -> str:
-    """从JWT payload中提取 uid (不验签)。"""
+def _decode_jwt_payload(token: str) -> dict:
+    """从JWT payload中提取完整内容 (不验签)。"""
     try:
         payload_b64 = token.split(".")[1]
         padding = 4 - len(payload_b64) % 4
         if padding != 4:
             payload_b64 += "=" * padding
-        payload = json.loads(base64.b64decode(payload_b64))
-        return str(payload.get("uid", ""))
+        return json.loads(base64.b64decode(payload_b64))
     except Exception:
-        return ""
+        return {}
+
+
+def _decode_jwt_uid(token: str) -> str:
+    """从JWT payload中提取 uid (不验签)。"""
+    return str(_decode_jwt_payload(token).get("uid", ""))
 
 
 class CS25ELogin:
@@ -143,6 +153,21 @@ class CS25ELogin:
             )
         except Exception as e:
             return LoginResult(success=False, message=f"登录确认异常: {e}")
+
+    async def get_user_info(self, token: str) -> dict:
+        """登录后用 token 换取用户信息 (含 domain)。"""
+        pool = get_pool()
+        resp = await pool.request(
+            "GET",
+            url=MY_V2_URL,
+            headers={**_5E_APP_HEADER, "token": token},
+        )
+        data = resp.json()
+        user = data.get("data", {}).get("user", {}) if data.get("data") else {}
+        domain = user.get("domain", "")
+        username = user.get("username", "")
+        logger.info(f"[CS2][5E] my_v2 成功, user={username} domain={domain}")
+        return data
 
     async def login_by_qr(self) -> tuple[QRCodeResult, LoginResult]:
         qr = await self.apply_qr()

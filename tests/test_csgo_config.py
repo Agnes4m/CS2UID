@@ -30,8 +30,8 @@ def test_match_types_known_values():
     assert DEFAULT_MATCH_TYPES["自定义"] == 14
 
 
-def test_migrations_sql_exists_and_contains_alter():
-    fp = Path("CS2UID/utils/database/migrations.sql")
+def test_migrations_py_exists_and_contains_alter():
+    fp = Path("CS2UID/utils/database/migrations.py")
     assert fp.is_file()
     text = fp.read_text(encoding="utf-8")
     assert "ALTER TABLE CS2Bind" in text

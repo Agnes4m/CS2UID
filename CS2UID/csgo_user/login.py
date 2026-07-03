@@ -19,7 +19,11 @@ from ..utils.api.login import (
     CS2Login,
     build_qrcode_payload,
 )
-from ..utils.api.login_5e import CS25ELogin, _decode_jwt_uid
+from ..utils.api.login_5e import (
+    CS25ELogin,
+    _decode_jwt_payload,
+    _decode_jwt_uid,
+)
 from ..utils.csgo_config import majs_config
 from ..utils.database.models import CS2Bind, CS2User
 
@@ -82,18 +86,49 @@ async def _handle_5e_login(bot: Bot, ev: Event):
             return
 
         result = await login.confirm_login()
-        if result.success and result.token:
-            uid = _decode_jwt_uid(result.token)
-            await CS2User.insert_data(
-                ev.user_id, ev.bot_id, cookie=result.token, uid=uid
-            )
-            await CS2Bind.insert_uid(
-                ev.user_id, ev.bot_id, uid, ev.group_id, is_digit=False
-            )
-            await bot.send(f"✅ 5E登录成功！\n5E UID: {uid}\n已自动绑定")
-            logger.info(f"[CS2][5E] 登录成功 uid={uid}")
-        else:
+        if not (result.success and result.token):
             await bot.send(f"❌ {result.message}")
+            return
+
+        payload = _decode_jwt_payload(result.token)
+        logger.info(f"[CS2][5E] JWT payload: {payload}")
+        uid = str(payload.get("uid", ""))
+
+        user_info = await login.get_user_info(result.token)
+        domain = ""
+        username = ""
+        if isinstance(user_info, dict) and user_info.get("success"):
+            user_data = user_info.get("data", {})
+            if isinstance(user_data, dict):
+                domain = user_data.get("domain", "")
+                username = user_data.get("username", "")
+                if not domain:
+                    user_obj = user_data.get("user", {})
+                    if isinstance(user_obj, dict):
+                        domain = user_obj.get("domain", "")
+                        username = user_obj.get("username", username)
+
+        if not domain:
+            domain = _decode_jwt_uid(result.token)
+            logger.warning(
+                f"[CS2][5E] my_v2 未返回 domain, 回退 JWT uid: {domain}"
+            )
+
+        # 5E stoken: 已有CS2User行就只更新stoken,
+        # 没有就新插入(需要cookie=""满足NOT NULL约束)
+        if await CS2User.data_exist(user_id=ev.user_id, bot_id=ev.bot_id):
+            await CS2User.update_data(
+                ev.user_id, ev.bot_id, stoken=result.token
+            )
+        else:
+            await CS2User.insert_data(
+                ev.user_id, ev.bot_id, stoken=result.token, cookie=""
+            )
+        await CS2Bind.insert_data(ev.user_id, ev.bot_id, domain=f"5e{domain}")
+        await bot.send(
+            f"✅ 5E登录成功！\n用户名: {username}\nDomain: {domain}\n已自动绑定"
+        )
+        logger.info(f"[CS2][5E] 登录成功 uid={uid} domain={domain}")
 
     except Exception as e:
         logger.error(f"[CS2][5E] 登录异常: {e}")
