@@ -833,7 +833,11 @@ class FiveEApi:
             return data
         return cast(list[SearchRequest5], data["data"]["list"])
 
-    async def get_user_detail(self, domain: str) -> UserHomeDetail5 | int:
+    async def get_user_detail(
+        self,
+        domain: str,
+        token: str | None = None,
+    ) -> UserHomeDetail5 | int:
         """获取玩家信息。"""
         cached = cs2_cache.get("5e", domain, "get_user_detail")
         if cached is not None:
@@ -842,7 +846,13 @@ class FiveEApi:
             )
             return cached
 
-        header = deepcopy(_5E_HEADER)
+        if token is None:
+            uid_token = await self.get_stoken()
+            if uid_token is None:
+                return 1
+            token = uid_token[1]
+
+        header = {**_5E_HEADER, "token": token}
         data = await self._5e_request(
             f"{HomeDetailAPI}/{domain}",
             header=header,
@@ -854,29 +864,54 @@ class FiveEApi:
         cs2_cache.set("5e", domain, "get_user_detail", data, ttl=300)
         return cast(UserHomeDetail5, data["data"])
 
-    async def get_user_homepage(self, domain: str) -> UserDetailRequest | int:
-        """获取玩家库存信息。"""
-        header = deepcopy(_5E_HEADER)
-        uid_token = await self.get_stoken()
-        if uid_token is None:
-            logger.info("[CS2][5E]找不到stoken")
-            return 1
-        header["Content-Type"] = "application/x-www-form-urlencoded"
-        data = await self._5e_request(
+    async def get_user_homepage(
+        self,
+        domain: str,
+        token: str | None = None,
+    ) -> dict[str, Any] | int:
+        """获取5e玩家库存首页(POST form-urlencoded)。"""
+        if token is None:
+            uid_token = await self.get_stoken()
+            if uid_token is None:
+                return 1
+            token = uid_token[1]
+
+        header: dict[str, str] = {
+            **_5E_HEADER,
+            "token": token,
+            "content-type": "application/x-www-form-urlencoded",
+        }
+        return await self._5e_request(
             HomePageAPI,
             header=header,
             method="POST",
-            json={"domain": domain},
+            data={"domain": domain},
         )
-        if isinstance(data, int):
-            return data
-        return cast(UserDetailRequest, data["data"])
 
     async def get_user_homeall(
-        self, domain: str, year: str, season: str
+        self,
+        domain: str,
+        year: str,
+        season: str,
+        token: str | None = None,
     ) -> UserSeason5 | int:
         """获取年度信息。"""
-        header = deepcopy(_5E_HEADER)
+        cached = cs2_cache.get(
+            "5e", domain, "get_user_homeall", year=year, season=season
+        )
+        if cached is not None:
+            logger.debug(
+                f"[CS2][5E][Cache] get_user_homeall 命中 domain={domain}"
+            )
+            return cached
+
+        if token is None:
+            uid_token = await self.get_stoken()
+            if uid_token is None:
+                return 1
+            token = uid_token[1]
+
+        header = {**_5E_HEADER, "token": token}
         data = await self._5e_request(
             f"{HomeSeason}/{domain}",
             header=header,
@@ -885,6 +920,16 @@ class FiveEApi:
         )
         if isinstance(data, int):
             return data
+
+        cs2_cache.set(
+            "5e",
+            domain,
+            "get_user_homeall",
+            data,
+            ttl=300,
+            year=year,
+            season=season,
+        )
         return cast(UserSeason5, data["data"])
 
     async def get_my_v2(
@@ -948,7 +993,11 @@ class FiveEApi:
         season: str,
     ) -> dict[str, Any] | int:
         """获取5e玩家赛季高级数据(elo/角色/评分/游戏理解等)。"""
-        header = deepcopy(_5E_HEADER)
+        uid_token = await self.get_stoken()
+        if uid_token is None:
+            return 1
+
+        header = {**_5E_HEADER, "token": uid_token[1]}
         return await self._5e_request(
             PlayerAdvancedAPI,
             header=header,

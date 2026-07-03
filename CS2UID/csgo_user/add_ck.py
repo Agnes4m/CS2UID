@@ -9,7 +9,10 @@ async def add_token(ev: Event, tk: str):
 
 
 async def add_stoken(ev: Event, sk: str):
-    await CS2User.insert_data(ev.user_id, ev.bot_id, stoken=sk)
+    if await CS2User.data_exist(user_id=ev.user_id, bot_id=ev.bot_id):
+        await CS2User.update_data(ev.user_id, ev.bot_id, stoken=sk)
+    else:
+        await CS2User.insert_data(ev.user_id, ev.bot_id, stoken=sk, cookie="")
     return "5etoken添加成功！"
 
 

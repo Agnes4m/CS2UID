@@ -41,9 +41,19 @@ async def save_img(
         try:
             for i in range(3):
                 try:
-                    # 检查是否需要添加 Referer 头
-                    if "cdm.wmpvp.com" in img_url:
-                        headers = {"Referer": "https://www.wmpvp.com/"}
+                    # wmpvp CDN 防盗链需要 Referer + UA
+                    if "wmpvp.com" in img_url:
+                        headers = {
+                            "Referer": "https://www.wmpvp.com/",
+                            "User-Agent": (
+                                "Mozilla/5.0 (Windows NT 10.0; WOW64) "
+                                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                "perfectworldarena/1.0.24060811 "
+                                "Chrome/80.0.3987.163 "
+                                "Electron/8.5.5 "
+                                "Safari/537.36"
+                            ),
+                        }
                         async with httpx.AsyncClient(timeout=None) as client:
                             resp = await client.get(
                                 url=img_url, headers=headers
@@ -123,13 +133,21 @@ async def batch_download_images(
 
 
 async def _download_img(img_url: str) -> Image.Image | None:
-    """下载图片,对 wmpvp 域名自动添加 Referer。"""
+    """下载图片, 与 save_img 使用相同的 CDN 防盗链策略。"""
     if "wmpvp.com" in img_url:
-        async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
-            resp = await client.get(
-                img_url,
-                headers={"Referer": "https://www.wmpvp.com/"},
-            )
+        headers = {
+            "Referer": "https://www.wmpvp.com/",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; WOW64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "perfectworldarena/1.0.24060811 "
+                "Chrome/80.0.3987.163 "
+                "Electron/8.5.5 "
+                "Safari/537.36"
+            ),
+        }
+        async with httpx.AsyncClient(timeout=None) as client:
+            resp = await client.get(url=img_url, headers=headers)
             return Image.open(BytesIO(resp.content))
     return await download_pic_to_image(img_url)
 

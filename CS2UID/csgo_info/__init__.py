@@ -8,12 +8,10 @@ from gsuid_core.data_store import get_res_path
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.sv import SV
-from gsuid_core.utils.database.api import get_uid
 
 from ..utils.api.models import UserMatchRequest
 from ..utils.cache import load_json_cached
 from ..utils.csgo_api import pf_api
-from ..utils.database.models import CS2Bind
 from ..utils.error_reply import UID_HINT, get_error, try_send
 from ..utils.platform import resolve_uid_and_platform
 from ..utils.remind import add_reminder, remove_reminder
@@ -23,7 +21,7 @@ from .csgo_event import (
     get_csgo_eventlist_img,
     get_csgo_match_analysis_img,
 )
-from .csgo_goods import get_csgo_goods_img
+from .csgo_goods import get_csgo_goods_5e_img, get_csgo_goods_img
 from .csgo_info import get_csgo_info_img
 from .csgo_match import get_csgo_match_img
 from .csgo_matchdetail import get_csgo_match_detail_img
@@ -59,27 +57,45 @@ async def send_csgo_info_msg(bot: Bot, ev: Event):
 
 @csgo_user_info.on_command(("库存", "仓库", "饰品"), block=True)
 async def send_csgo_goods_msg(bot: Bot, ev: Event):
-    uid = await get_uid(bot, ev, CS2Bind)
-    if uid is None:
+    uid, platform, _s = await resolve_uid_and_platform(
+        bot, ev, ev.user_id, ev.text.strip()
+    )
+    if uid is None or platform is None:
         return await try_send(bot, UID_HINT)
 
-    await try_send(bot, await get_csgo_goods_img(uid))
+    if platform == "5e":
+        await try_send(bot, await get_csgo_goods_5e_img(uid))
+    else:
+        await try_send(bot, await get_csgo_goods_img(uid))
 
 
 @csgo_user_info.on_command(("好友码"), block=True)
 async def send_csgo_friend_msg(bot: Bot, ev: Event):
-    uid = await get_uid(bot, ev, CS2Bind)
-    if uid is None:
+    uid, platform, _s = await resolve_uid_and_platform(
+        bot, ev, ev.user_id, ev.text.strip()
+    )
+    if uid is None or platform is None:
         return await try_send(bot, UID_HINT)
 
-    await try_send(bot, await get_csgohome_info_img(uid, True))
+    if platform == "5e":
+        await try_send(bot, f"5E平台暂不支持好友码查询 (domain: {uid})")
+    else:
+        await try_send(bot, await get_csgohome_info_img(uid, True))
 
 
 @csgo_user_info.on_command(("对局记录", "对局信息", "对局查询"), block=True)
 async def send_csgo_match_msg(bot: Bot, ev: Event):
-    uid = await get_uid(bot, ev, CS2Bind)
-    if uid is None:
+    uid, platform, _s = await resolve_uid_and_platform(
+        bot, ev, ev.user_id, ev.text.strip()
+    )
+    if uid is None or platform is None:
         return await try_send(bot, UID_HINT)
+
+    if platform == "5e":
+        return await try_send(
+            bot, "5E平台暂不支持对局记录，请使用完美平台查询"
+        )
+
     tag = 1 if "官匹" in ev.text else 3
     type_i = determine_match_type(ev.text)
 

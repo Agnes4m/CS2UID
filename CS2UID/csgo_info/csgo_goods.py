@@ -1,21 +1,20 @@
+from contextlib import suppress
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from gsuid_core.logger import logger
 from gsuid_core.utils.image.convert import convert_img
+from gsuid_core.utils.image.image_tools import draw_pic_with_ring, easy_paste
 
-from ..utils.api.models import OneGet, SteamGet, UserHomedetailData
-from ..utils.csgo_api import pf_api
+from ..utils.api.models import SteamGet, UserHomedetailData
+from ..utils.csgo_api import api_5e, pf_api
+from ..utils.csgo_font import csgo_font_20, csgo_font_30, csgo_font_42
 from ..utils.error_reply import get_error
-from .csgo_path import ICON_PATH, TEXTURE
+from .csgo_path import TEXTURE
 from .utils import (
-    add_detail,
-    load_groudback,
-    make_head_img,
+    batch_download_images,
     resize_image_to_percentage,
-    save_img,
-    simple_paste_img,
 )
 
 quality_mapping = {
@@ -62,95 +61,167 @@ async def get_csgo_goods_img(uid: str) -> str | bytes:
         return get_error(base)
     if detail["result"] is None:
         return "该用户设置了steam隐私，无法查看"
-    # try:
     return await draw_csgo_goods_img(detail["result"], base["data"])
-    # except Exception as e:
-    #     logger.error(e)
-    #     return "出现意外错误，请重启core正常使用该功能"
 
 
 async def draw_csgo_goods_img(
     detail: SteamGet, base: UserHomedetailData
 ) -> bytes | str:
+    """绘制PF库存图片。"""
     if not detail:
         return "token已过期"
     if not detail["previewItem"]:
         return "你的库存空空如也"
+
     totalCount = detail["totalCount"]
     totalPrice = detail["totalPrice"]
     name = base["nickName"]
     uid = base["steamId"]
-    uid = uid[:4] + "********" + uid[12:]
+    uid_masked = f"{uid[:4]}********{uid[12:]}"
     avatar = base["avatar"]
+    items = detail["previewItem"]
 
-    # 背景图
-    img = await load_groudback(Path(TEXTURE / "bg" / "3.jpg"))
+    # 收集并下载图片
+    url_list: list[tuple[str, str]] = [(avatar, "avatar")]
+    for one_get in items:
+        pic = one_get.get("picUrl") or one_get.get("pic_url") or ""
+        if pic:
+            url_list.append((pic, "good"))
+    downloaded = await batch_download_images(url_list) if url_list else {}
 
-    # 头像
-    head_img = await make_head_img(f"uid：  {uid}", f"昵称：  {name}", avatar)
+    # 动态画布: 20px gap + 60px footer 紧贴底部
+    max_items = min(len(items), 24)
+    rows = (max_items + 2) // 3
+    grid_y = 560
+    footer_h = 60
+    canvas_h = grid_y + rows * 200 + 20 + footer_h
+    canvas_h = max(canvas_h, 900)
 
-    img.paste(head_img, (0, 0), head_img)
+    # 背景
+    img = Image.open(TEXTURE / "base" / "bg.jpg").resize((1000, canvas_h))
+    img_bg = Image.open(TEXTURE / "bg" / "3.jpg").resize((1000, canvas_h))
+    new_alpha = Image.new("L", img_bg.size, 128)
+    img_bg_out = Image.merge("RGBA", img_bg.split()[:3] + (new_alpha,))
+    img.paste(img_bg_out, (0, 0), img_bg_out)
 
-    # 主信息
-    level_img = Image.open(ICON_PATH / "main1.png").resize((700, 220))
-    await simple_paste_img(level_img, "steam库存信息", (100, 30), 40)
-    await simple_paste_img(
-        level_img, f"总物品数量：{totalCount}", (100, 90), 40
+    # 标题 (与 cs查询 一致)
+    titel_img = Image.open(TEXTURE / "base" / "title_bg.png")
+    head = downloaded.get(
+        avatar, Image.new("RGBA", (200, 600), (0, 0, 0, 255))
     )
-    await simple_paste_img(
-        level_img, f"总物品价值：{totalPrice / 100}馒头", (100, 150), 40
+    round_head = await draw_pic_with_ring(head, 100)
+    easy_paste(titel_img, round_head, (112, 108), "cc")
+    head_draw = ImageDraw.Draw(titel_img)
+    head_draw.text((250, 50), name, (255, 255, 255, 255), csgo_font_42)
+    head_draw.text(
+        (250, 100), f"ID: {uid_masked}", (255, 255, 255, 255), csgo_font_30
     )
+    head_draw.line([(250, 150), (550, 150)], fill="white", width=2)
+    img.paste(titel_img, (0, 55), titel_img)
 
-    img.paste(level_img, (100, 300), level_img)
+    # banner
+    banner = Image.open(TEXTURE / "base" / "banner.png")
+    banner_draw = ImageDraw.Draw(banner)
+    banner_draw.text((50, 10), "库存", (255, 255, 255, 255), csgo_font_42)
+    img.paste(banner, (0, 340), banner)
 
-    for index, one_get in enumerate(detail["previewItem"]):
-        site_x, site_y = calculate_position(index)
+    # 三个统计框 — 简洁半透明底
+    box_w, box_h = 300, 90
+    box_y = 420
+    gap = (1000 - box_w * 3) // 4
+    total_steam_val = sum(it.get("steamPrice", 0) or 0 for it in items) / 100
+    for i, (label, value) in enumerate(
+        [
+            ("库存数量", str(totalCount)),
+            ("完美价值", f"¥{totalPrice / 100:.1f}"),
+            ("Steam价值", f"¥{total_steam_val:.1f}"),
+        ]
+    ):
+        bx = gap + i * (box_w + gap)
+        box = Image.new("RGBA", (box_w, box_h), (255, 255, 255, 20))
+        box_draw = ImageDraw.Draw(box)
+        box_draw.text(
+            (box_w // 2, 28), label, (180, 180, 180, 255), csgo_font_20, "mm"
+        )
+        box_draw.text(
+            (box_w // 2, 60), value, (255, 255, 255, 255), csgo_font_42, "mm"
+        )
+        img.paste(box, (bx, box_y), box)
 
-        good_img = await create_good_image(one_get)
+    # 物品格子
+    for idx in range(max_items):
+        one_get = items[idx]
+        x = 15 + (idx % 3) * 325
+        y = grid_y + (idx // 3) * 200
+
+        box = Image.open(TEXTURE / "base" / "weapon_bg.png").resize((310, 180))
+        box_draw = ImageDraw.Draw(box)
+
+        pic_url = one_get.get("picUrl") or one_get.get("pic_url") or ""
+        if pic_url and pic_url in downloaded:
+            good_img = await resize_image_to_percentage(
+                downloaded[pic_url], 15
+            )
+            good_img = good_img.resize((70, 52))
+            box.paste(good_img, (20, 30), good_img)
 
         tag_data = process_tags(one_get["decorationTags"])
-        await update_tag_data_for_special_types(tag_data)
-
-        quality_info = await update_quality_info(one_get, tag_data)
-        good_img.paste(quality_info["img_qua"], (4, 6))
+        quality = tag_data.get("品质", "_default") or "_default"
+        qua_color, _ = quality_mapping.get(
+            quality, quality_mapping["_default"]
+        )
+        color_bar = Image.new("RGBA", (4, 16), qua_color)
+        box.paste(color_bar, (16, 36))
 
         name_out = one_get["name"].split("|")
-        await paste_item_name(
-            good_img,
-            name_out,
-            tag_data,
-            one_get["description"],
-            quality_info["qua_color"],
+        if len(name_out) == 1:
+            box_draw.text(
+                (110, 40), name_out[0], (255, 255, 255, 255), csgo_font_20
+            )
+        else:
+            box_draw.text(
+                (110, 30),
+                name_out[0].replace("（StatTrak™）", ""),
+                (255, 255, 255, 255),
+                csgo_font_20,
+            )
+            box_draw.text(
+                (110, 55),
+                name_out[-1].strip(),
+                (200, 150, 255, 255),
+                csgo_font_20,
+            )
+
+        wear = tag_data.get("外观", "")
+        if wear:
+            wear_color = wear_color_mapping.get(
+                wear, wear_color_mapping["_default"]
+            )
+            box_draw.text((110, 85), wear, wear_color, csgo_font_20)
+
+        box_draw.text(
+            (110, 115),
+            f"¥{one_get.get('suggestPrice', 0) / 100:.2f}",
+            (255, 255, 255, 255),
+            csgo_font_20,
         )
+        sp = one_get.get("steamPrice", 0)
+        if sp:
+            box_draw.text(
+                (200, 115),
+                f"{one_get['suggestPrice'] / sp * 100:.1f}%",
+                (180, 180, 180, 255),
+                csgo_font_20,
+            )
 
-        # Pasting price information
-        await paste_price_info(good_img, one_get)
+        img.paste(box, (x, y), box)
 
-        if index % 10 == 0:
-            logger.info(f"已读取{index}件物品")
+    # foot 贴底
+    footer_y = canvas_h - footer_h
+    img_up = Image.open(TEXTURE / "base" / "footer.png")
+    img.paste(img_up, (0, footer_y), img_up)
 
-        img.paste(good_img, (site_x, site_y), good_img)
-
-    logger.info(f"{totalCount}件物品已读取完毕，准备输出")
-
-    return await convert_img(await add_detail(img))
-
-
-def calculate_position(index: int) -> tuple[int, int]:
-    """计算物品的显示位置"""
-    site_x = 70 + (index % 3) * 260
-    site_y = 550 + (index // 3) * 200
-    return site_x, site_y
-
-
-async def create_good_image(one_get: OneGet) -> Image.Image:
-    """创建物品的图像"""
-    good_img = Image.open(ICON_PATH / "main1.png").resize((220, 180))
-    good = await save_img(one_get["picUrl"], "good")
-    good_logo = await resize_image_to_percentage(good, 12)
-    good_logo_resized = good_logo.resize((61, 46))
-    good_img.paste(good_logo_resized, (130, 20), good_logo_resized)
-    return good_img
+    return await convert_img(img)
 
 
 def process_tags(tags: list) -> dict:
@@ -163,102 +234,201 @@ def process_tags(tags: list) -> dict:
     return tag_data
 
 
-async def update_tag_data_for_special_types(tag_data: dict) -> None:
-    """更新标签数据以处理特殊类型"""
-    special_types = ["音乐盒", "收藏品", "武器箱", "涂鸦"]
-    if tag_data.get("类型") in special_types:
-        tag_data.update({"武器": "", "收藏品": "", "外观": ""})
+async def get_csgo_goods_5e_img(domain: str) -> str | bytes:
+    """获取5E平台库存信息并绘制图片。"""
+    detail = await api_5e.get_user_detail(domain)
+    if isinstance(detail, int):
+        return get_error(detail)
+
+    inventory = await api_5e.get_inventory(domain, limit=30)
+    if isinstance(inventory, int):
+        return get_error(inventory)
+
+    inv_data = inventory.get("data", inventory)
+    items = inv_data.get("list", inv_data.get("previewItem", []))
+    total = inv_data.get("total", len(items))
+
+    if not items:
+        return f"5E库存为空 (用户: {detail.get('user', {}).get('username', domain)})"
+
+    return await draw_csgo_goods_5e_img(detail, items, total)
 
 
-async def update_quality_info(one_get: OneGet, tag_data: dict) -> dict:
-    """更新物品的品质信息"""
-    quality = tag_data.get("品质", "_default") or "_default"
-    qua_color, qua_text_replacement = quality_mapping.get(
-        quality, quality_mapping["_default"]
+async def draw_csgo_goods_5e_img(
+    detail: dict, items: list, total: int
+) -> bytes | str:
+    """绘制5E库存图片。"""
+    user_info = detail.get("user", {})
+    username = user_info.get("username", "?")
+    domain_val = user_info.get("domain", "?")
+    avatar = user_info.get("avatar_url", "")
+
+    # 收集并下载图片
+    url_list: list[tuple[str, str]] = []
+    if avatar:
+        url_list.append((avatar, "avatar"))
+    for item in items:
+        pic = (
+            item.get("picUrl")
+            or item.get("pic_url")
+            or item.get("image_url")
+            or ""
+        )
+        if pic:
+            url_list.append((pic, "good"))
+    downloaded = await batch_download_images(url_list) if url_list else {}
+
+    # 动态画布
+    max_items = min(len(items), 24)
+    rows = (max_items + 2) // 3
+    grid_y = 560
+    footer_h = 60
+    canvas_h = grid_y + rows * 200 + 20 + footer_h
+    canvas_h = max(canvas_h, 900)
+
+    # 背景
+    img = Image.open(TEXTURE / "base" / "bg.jpg").resize((1000, canvas_h))
+    img_bg = Image.open(Path(TEXTURE / "bg" / "5.jpg")).resize(
+        (1000, canvas_h)
     )
-    if qua_text_replacement is not None:
-        tag_data["品质"] = qua_text_replacement
-    img_qua = Image.new("RGB", (5, 15), color=qua_color)
-    return {"img_qua": img_qua, "qua_color": qua_color}
+    new_alpha = Image.new("L", img_bg.size, 90)
+    img_bg_out = Image.merge("RGBA", img_bg.split()[:3] + (new_alpha,))
+    img.paste(img_bg_out, (0, 0), img_bg_out)
 
-
-async def paste_item_name(
-    good_img: Image.Image,
-    name_out: list,
-    tag_data: dict,
-    description: str,
-    quality_color: str,
-) -> None:
-    """粘贴物品的名称和种类"""
-    st = "ST™"
-    if len(name_out) == 1:
-        await simple_paste_img(good_img, name_out[0], (20, 25))
+    # 标题 (与 cs查询5e 一致)
+    titel_img = Image.open(TEXTURE / "base" / "title_bg.png")
+    if avatar and avatar in downloaded:
+        head_img = downloaded[avatar]
     else:
-        msg1, msg2 = name_out[0].replace("（StatTrak™）", ""), name_out[-1]
-        if tag_data["类型"] in ["音乐盒", "武器箱"]:
-            msg1, msg2 = msg2, msg1
-
-        await process_stat_trak(
-            good_img, description, tag_data, msg1, msg2, st, quality_color
-        )
-
-
-async def process_stat_trak(
-    good_img: Image.Image,
-    description: str,
-    tag_data: dict,
-    msg1: str,
-    msg2: str,
-    st: str,
-    quality_color: str,
-) -> None:
-    """处理StatTrak信息的粘贴"""
-    deta = str(description)
-    head_x = 12
-    if tag_data["类别"] != "普通":
-        await simple_paste_img(good_img, st, (10, 7), size=10, color="Purple")
-        head_x += 25
-
-    st_count = extract_stat_trak_count(deta, tag_data)
-    if st_count:
-        await simple_paste_img(
-            good_img, f"{st_count}个", (33, 5), color="red", size=13
-        )
-
-    # 使用传入的品质颜色，默认为 Purple
-    await simple_paste_img(good_img, msg1, (20, 60), color=quality_color)
-    await simple_paste_img(good_img, msg2, (20, 25), color="Purple")
-
-
-async def extract_stat_trak_count(deta: str, tag_data: dict) -> str:
-    """提取StatTrak数量"""
-    if tag_data["类型"] == "音乐盒":
-        st_nub = (
-            deta.split("官方竞技MVP次数：")[-1]
-            .strip()
-            .split("</p >")[0]
-            .strip()
-        )
-    else:
-        st_nub = (
-            deta.split("已认证杀敌数：")[-1].strip().split("</p >")[0].strip()
-        )
-    return st_nub
-
-
-async def paste_price_info(good_img: Image.Image, one_get: OneGet) -> None:
-    """粘贴价格信息"""
-    await simple_paste_img(
-        good_img,
-        f"cn价格: {one_get['suggestPrice'] / 100}馒头",
-        (20, 110),
+        head_img = Image.new("RGBA", (200, 200), (60, 60, 60, 255))
+    round_head = await draw_pic_with_ring(head_img, 80)
+    easy_paste(titel_img, round_head, (112, 108), "cc")
+    head_draw = ImageDraw.Draw(titel_img)
+    head_draw.text((250, 50), username, (255, 255, 255, 255), csgo_font_42)
+    head_draw.text(
+        (250, 100), f"id: {domain_val}", (255, 255, 255, 255), csgo_font_30
     )
-    if one_get["steamPrice"] == 0:
-        await simple_paste_img(good_img, "steam比例: 无", (20, 140))
-    else:
-        bili = one_get["suggestPrice"] / one_get["steamPrice"] * 100
-        await simple_paste_img(
-            good_img,
-            f"steam比例: {bili:.2f}%",
-            (20, 140),
+    head_draw.line([(250, 150), (550, 150)], fill="white", width=2)
+    img.paste(titel_img, (0, 55), titel_img)
+
+    # banner
+    banner = Image.open(TEXTURE / "base" / "banner.png")
+    banner_draw = ImageDraw.Draw(banner)
+    banner_draw.text((50, 10), "库存", (255, 255, 255, 255), csgo_font_42)
+    img.paste(banner, (0, 340), banner)
+
+    # 计算总价
+    total_5e_price = 0.0
+    total_steam_price = 0.0
+    for it in items:
+        p = (
+            it.get("suggestPrice")
+            or it.get("suggest_price")
+            or it.get("price")
+            or 0
         )
+        sp = it.get("steamPrice") or it.get("steam_price") or 0
+        with suppress(TypeError, ValueError):
+            total_5e_price += float(p)
+        with suppress(TypeError, ValueError):
+            total_steam_price += float(sp)
+
+    # 三个统计框 — 简洁半透明底
+    box_w, box_h = 300, 90
+    box_y = 420
+    gap = (1000 - box_w * 3) // 4
+    for i, (label, value) in enumerate(
+        [
+            ("库存数量", str(total)),
+            ("5E 总价", f"¥{total_5e_price:.1f}" if total_5e_price else "--"),
+            (
+                "Steam总价",
+                f"¥{total_steam_price:.1f}" if total_steam_price else "--",
+            ),
+        ]
+    ):
+        bx = gap + i * (box_w + gap)
+        box = Image.new("RGBA", (box_w, box_h), (255, 255, 255, 20))
+        box_draw = ImageDraw.Draw(box)
+        box_draw.text(
+            (box_w // 2, 28), label, (180, 180, 180, 255), csgo_font_20, "mm"
+        )
+        box_draw.text(
+            (box_w // 2, 60), value, (255, 255, 255, 255), csgo_font_42, "mm"
+        )
+        img.paste(box, (bx, box_y), box)
+
+    # 物品格子
+    for idx in range(max_items):
+        item = items[idx]
+        x = 15 + (idx % 3) * 325
+        y = grid_y + (idx // 3) * 200
+
+        box = Image.open(TEXTURE / "base" / "weapon_5ebg.png").resize(
+            (310, 180)
+        )
+        box_draw = ImageDraw.Draw(box)
+
+        pic_url = (
+            item.get("picUrl")
+            or item.get("pic_url")
+            or item.get("image_url")
+            or ""
+        )
+        if pic_url and pic_url in downloaded:
+            good_img = await resize_image_to_percentage(
+                downloaded[pic_url], 15
+            )
+            good_img = good_img.resize((70, 52))
+            box.paste(good_img, (20, 30), good_img)
+
+        name = item.get(
+            "name", item.get("marketName", item.get("market_name", "?"))
+        )
+        if "|" in name:
+            parts = name.split("|")
+            box_draw.text(
+                (110, 30), parts[0].strip(), (255, 255, 255, 255), csgo_font_20
+            )
+            box_draw.text(
+                (110, 55),
+                parts[-1].strip(),
+                (200, 150, 255, 255),
+                csgo_font_20,
+            )
+        else:
+            box_draw.text((110, 40), name, (255, 255, 255, 255), csgo_font_20)
+
+        price = (
+            item.get("suggestPrice")
+            or item.get("suggest_price")
+            or item.get("price")
+            or 0
+        )
+        with suppress(TypeError, ValueError):
+            box_draw.text(
+                (110, 115),
+                f"¥{float(price):.2f}",
+                (255, 255, 255, 255),
+                csgo_font_20,
+            )
+
+        steam_price = item.get("steamPrice") or item.get("steam_price") or 0
+        with suppress(TypeError, ValueError):
+            sp_f = float(steam_price)
+            if sp_f:
+                box_draw.text(
+                    (200, 115),
+                    f"¥{sp_f:.2f}",
+                    (180, 180, 180, 255),
+                    csgo_font_20,
+                )
+
+        img.paste(box, (x, y), box)
+
+    # foot 贴底
+    footer_y = canvas_h - footer_h
+    img_up = Image.open(TEXTURE / "base" / "footer5e.png")
+    img.paste(img_up, (0, footer_y), img_up)
+
+    return await convert_img(img)
